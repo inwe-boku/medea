@@ -11,7 +11,7 @@ from medea.instantiation.preprocess import df_tec_itm, df_tec_hsp, df_time
 from medea.instantiation.preprocess import df_emission_intensity, df_itm_cap, df_itm_invest
 from medea.instantiation.preprocess import data_technology, tec_props
 
-from medea.instantiation.preprocess import fuel_set, product_set, prop_set, region_set, time_set, technology_set, \
+from medea.instantiation.preprocess import fuel_set, product_set, region_set, time_set, technology_set, \
     hydro_storage_set, intermittent_set, fuel_set_inv
 from medea.instantiation.preprocess import specific_emissions, feas_op_region, itm_invest, itm_cap, \
     hyd_store_clusters, ts_medea, ntc_data
@@ -28,7 +28,7 @@ db = ws.add_database()
 f_set = df2gdx(db, df_fuel, 'f', 'set', [])
 l_set = df2gdx(db, df_lim, 'l', 'set', [])
 prd_set = df2gdx(db, df_prd, 'prd', 'set', [])
-prop_set = df2gdx(db, df_props, 'props', 'Set', [])
+prop_set = df2gdx(db, df_props, 'props', 'set', [])
 r_set = df2gdx(db, df_regions, 'r', 'set', [])
 tec_set = df2gdx(db, data_technology['medea_type'], 'tec', 'set', [])
 tec_chp_set = df2gdx(db, pd.DataFrame.from_dict({x: True for x in [y for y in data_technology.index if 'chp' in y]},
@@ -57,25 +57,27 @@ tec_itm = db.add_set('tec_itm', 1, 'intermittent technologies')
 # --------------------------------------------------------------------------- #
 # %% instantiate static PARAMETERS
 # --------------------------------------------------------------------------- #
-ANCIL_SERVICE_LVL = df2gdx(db, df_ancil, 'ANCIL_SERVICE_LVL', 'par', [r_set], '[GW]')
-# TODO: tec_props misses products and fuels dimensions
-EFFICIENCY = df2gdx(db, tec_props.stack(-1).loc[:, 'eta'], 'EFFICIENCY', 'par', [r_set, tec_set, prd_set, f_set], '[%]')
+EFFICIENCY = df2gdx(db, tec_props.loc[:, 'eta'], 'EFFICIENCY', 'par', [r_set, tec_set, prd_set, f_set], '[%]')
 EMISSION_INTENSITY = df2gdx(db, df_emission_intensity, 'EMISSION_INTENSITY', 'par', [f_set], '[kt CO2 per GWh fuel input]')
+FIXED_OM_COST = df2gdx(db, data_technology['om_fix'], 'FIXED_OM_COST', 'par', [tec_set], '[kEUR per GW]')
+VARIABLE_OM_COST = df2gdx(db, data_technology['om_var'], 'VARIABLE_OM_COST', 'par', [tec_set], '[kEUR per GWh]')
+INVESTCOST_ITM = df2gdx(db, df_itm_invest, 'INVESTCOST_ITM', 'par', [tec_itm_set], '[kEUR per GW]')
+INVESTCOST_THERMAL = df2gdx(db, data_technology['annuity'], 'INVESTCOST_THERMAL', 'par', [tec_set], '[kEUR per GW]')
+INSTALLED_CAP_ITM = df2gdx(db, df_itm_cap, 'INSTALLED_CAP_ITM', 'par', [r_set, tec_itm_set], '[GW]')
+
+INSTALLED_CAP_THERM = df2gdx(db, df_therm_cap, 'INSTALLED_CAP_THERM', 'par', [r_set, tec_set], '[GW]')
 FEASIBLE_INPUT = df2gdx(db, df_feasible_input, 'FEASIBLE_INPUT', 'par', [tec_set, l_set, f_set], '[GW]')
 FEASIBLE_OUTPUT = df2gdx(db, df_feasible_output, 'FEASIBLE_OUTPUT', 'par', [tec_set, l_set, prd_set], '[GW]')
+HSP_PROPERTIES = df2gdx(db, df_hsp, 'HSP_PROPERTIES', 'par', [r_set, tec_hsp_set, prop_set])
 
-FIXED_OM_COST = df2gdx(db, data_technology[['set_element', 'om_fix']].set_index('set_element'),
-                       'FIXED_OM_COST', 'par', [tec_set], '[kEUR per GW]')
-VARIABLE_OM_COST = df2gdx(db, data_technology[['set_element', 'om_var']].set_index('set_element'),
-                          'VARIABLE_OM_COST', 'par', [tec_set], '[kEUR per GWh]')
+for reg in region_set:
+    df_ancil.loc[reg, 'Value'] = (0.125 * np.nanmax(ts_medea[f'{reg}_load_power'])
+                                               + 0.075 * (itm_cap.loc[cfg.year, (reg, 'wind_on')]
+                                                          + itm_cap.loc[cfg.year, (reg, 'wind_off')]
+                                                          + itm_cap.loc[cfg.year, (reg, 'pv')])).round(decimals=4)
 
-HSP_PROPERTIES = df2gdx(db, 'HSP_PROPERTIES', 'par', [r_set, tec_hsp_set, prop_set])
+ANCIL_SERVICE_LVL = df2gdx(db, df_ancil, 'ANCIL_SERVICE_LVL', 'par', [r_set], '[GW]')
 
-INSTALLED_CAP_ITM = df2gdx(db, df_itm_cap, 'INSTALLED_CAP_ITM', 'par', [r_set, tec_itm_set], '[GW]')
-INSTALLED_CAP_THERM = df2gdx(db, df_therm_cap, 'INSTALLED_CAP_THERM', 'par', [r_set, tec_set], '[GW]')
-INVESTCOST_ITM = df2gdx(db, df_itm_invest, 'INVESTCOST_ITM', 'par', [tec_itm_set], '[kEUR per GW]')
-INVESTCOST_THERMAL = df2gdx(db, data_technology[['set_element', 'annuity']].set_index('set_element'),
-                            'INVESTCOST_THERMAL', 'par', [tec_set], '[kEUR per GW]')
 
 NUM = df2gdx(db, 'NUM', 'par', [r_set, tec_set], '[#]')
 TEC_SIZE = df2gdx(db, 'TEC_SIZE', 'par', [r_set, tec_set], '[]')
@@ -135,7 +137,7 @@ STORAGE_LEVEL = db.add_parameter_dc('STORAGE_LEVEL', [t], 'energy stored in hydr
 
 logging.info('medea`s timeseries instantiated')
 
-export_location = os.path.join(cfg.folder, 'medea', 'opt', 'medea_data.gdx')
+export_location = os.path.join(cfg.folder, 'medea', 'opt', 'medea_data_try.gdx')
 db.export(export_location)
 logging.info(f'medea gdx exported to {export_location}')
 
