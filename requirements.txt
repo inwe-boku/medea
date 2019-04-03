@@ -1,0 +1,9 @@
+#
+### requirements for medea
+os
+sys
+numpy
+pandas
+platform
+itertools
+subprocess
