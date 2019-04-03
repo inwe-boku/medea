@@ -41,5 +41,8 @@ is_64bit = sys.maxsize > 2 ** 32
 if not is_64bit:
     print('System appears to be 32-bit. Expected 64-bit system.')
 else:
-    folder = r'D:\git_repos\medea_reg'
+    if sys_id == 'win32 WINP1218':
+        folder = r'Y:\git_repos\medea'
+    else:
+        folder = r'D:\git_repos\medea_reg'
     gams_sysdir = os.path.join(r'C:\GAMS\win64', version[0:4])

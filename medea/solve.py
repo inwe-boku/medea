@@ -33,16 +33,16 @@ def solve(output_folder, output_name, scenario_iteration, gen_target):
     del q_enstor_dict
     """
     # read storage props from db_input
-    df_storprop = gdx2df(db_input, 'HSP_PROPERTIES', 'par', ['tec_hsp'], ['r', 'props'])
+    df_storprop = gdx2df(db_input, 'HSP_PROPERTIES', ['tec_hsp'], ['r', 'props'])
 
     # read mapping of fuels to plants from EFFICIENCY parameter
-    df_eff = gdx2df(db_input, 'EFFICIENCY', 'par', ['tec', 'f'], ['r', 'prd'])
+    df_eff = gdx2df(db_input, 'EFFICIENCY', ['tec', 'f'], ['r', 'prd'])
 
     # read emission factors
-    df_emf = gdx2df(db_input, 'EMISSION_FACTOR', 'par', ['f'], [])
+    df_emf = gdx2df(db_input, 'EMISSION_FACTOR', ['f'], [])
 
     # read day-ahead electricity price
-    df_pda = gdx2df(db_input, 'PRICE_DA', 'par', ['t'], [])
+    df_pda = gdx2df(db_input, 'PRICE_DA', ['t'], [])
     df_pda.columns = ['price_da']
 
     # --------------------------------------------------------------------------- #
@@ -162,7 +162,7 @@ def solve(output_folder, output_name, scenario_iteration, gen_target):
                           'decommission': (['tec'], ['r']), 'invest_res': (['tec_itm'], ['r']),
                           'invest_thermal': (['tec'], ['r'])}
 
-        result_dict = {key: gdx2df(db_solution, key, 'var', value[0], value[1])
+        result_dict = {key: gdx2df(db_solution, key, value[0], value[1])
                        for key, value in read_variables.items()}
         # TODO: what happens to dict when there are multiple solve iterations?
 

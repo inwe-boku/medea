@@ -15,7 +15,7 @@ def reset_parameter(gams_db, parameter_name, df):
         gams_parameter.add_record(row[0]).value = row[1]
 
 
-def gdx2df(db_gams, symbol, symbol_type, index_list, column_list):
+def gdx2df(db_gams, symbol, index_list, column_list):
     """
     writes data from a GAMS gdx to a pandas dataframe.
     :param db_gams: a GAMS database object
@@ -25,14 +25,15 @@ def gdx2df(db_gams, symbol, symbol_type, index_list, column_list):
     :param column_list:
     :return:
     """
-    if symbol_type == 'var':
-        gdx_dict = {tuple(obj.keys): obj.level for obj in db_gams.get_symbol(symbol)}
-    elif symbol_type == 'par':
-        gdx_dict = {tuple(obj.keys): obj.value for obj in db_gams.get_symbol(symbol)}
-    elif symbol_type == 'equ':
-        gdx_dict = {tuple(obj.keys): obj.marginal for obj in db_gams.get_symbol(symbol)}
-    else:
-        raise ValueError('Wrong type specified')
+    sym = db_gams.get_symbol(symbol)
+    if isinstance(sym, GamsParameter):
+        gdx_dict = {tuple(obj.keys): obj.value for obj in sym}
+    elif isinstance(sym, GamsVariable):
+        gdx_dict = {tuple(obj.keys): obj.level for obj in sym}
+    elif isinstance(sym, GamsEquation):
+        gdx_dict = {tuple(obj.keys): obj.marginal for obj in sym}
+    elif isinstance(sym, GamsSet):
+        raise ValueError('gdx2df for sets not yet implemented')
 
     gdx_df = pd.DataFrame(list(gdx_dict.values()), index=pd.MultiIndex.from_tuples(gdx_dict.keys()), columns=['Value'])
     gdx_df.index.names = db_gams.get_symbol(symbol).domains_as_strings
@@ -58,6 +59,8 @@ def df2gdx(db_gams, df, symbol_name, symbol_type, dimension_list, desc='None'):
     :param desc: optional description string
     :return: a GAMS database object
     """
+    if not isinstance(df, pd.DataFrame):
+        df = df.to_frame()
     if symbol_type is 'par':
         obj = db_gams.add_parameter_dc(symbol_name, dimension_list, desc)
         for row in df.itertuples():
@@ -66,4 +69,6 @@ def df2gdx(db_gams, df, symbol_name, symbol_type, dimension_list, desc='None'):
         obj = db_gams.add_set(symbol_name, 1, desc)
         for row in df.itertuples():
             obj.add_record(row[0])
+    else:
+        raise ValueError('improper symbol_type provided')
     return obj
