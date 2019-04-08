@@ -44,5 +44,5 @@ else:
     if sys_id == 'win32 WINP1218':
         folder = r'Y:\git_repos\medea'
     else:
-        folder = r'D:\git_repos\medea_reg'
+        folder = r'D:\git_repos\medea'
     gams_sysdir = os.path.join(r'C:\GAMS\win64', version[0:4])

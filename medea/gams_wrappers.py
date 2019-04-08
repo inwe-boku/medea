@@ -1,4 +1,5 @@
 import pandas as pd
+from gams import *
 
 
 def reset_parameter(gams_db, parameter_name, df):
@@ -20,7 +21,6 @@ def gdx2df(db_gams, symbol, index_list, column_list):
     writes data from a GAMS gdx to a pandas dataframe.
     :param db_gams: a GAMS database object
     :param symbol: string of the GAMS symbol name
-    :param symbol_type: string of symbol type ('var', 'par', 'equ')
     :param index_list:
     :param column_list:
     :return:
@@ -62,9 +62,17 @@ def df2gdx(db_gams, df, symbol_name, symbol_type, dimension_list, desc='None'):
     if not isinstance(df, pd.DataFrame):
         df = df.to_frame()
     if symbol_type is 'par':
-        obj = db_gams.add_parameter_dc(symbol_name, dimension_list, desc)
-        for row in df.itertuples():
-            obj.add_record(row[0]).value = row[1]
+        if isinstance(dimension_list, list):
+            obj = db_gams.add_parameter_dc(symbol_name, dimension_list, desc)
+            for row in df.itertuples():
+                obj.add_record(row[0]).value = row[1]
+        elif isinstance(dimension_list, int):
+            obj = db_gams.add_parameter(symbol_name, dimension_list, desc)
+            for row in df.itertuples():
+                obj.add_record().value = row[1]
+        else:
+            raise ValueError('dimension_list must be list or integer')
+
     elif symbol_type is 'set':
         obj = db_gams.add_set(symbol_name, 1, desc)
         for row in df.itertuples():

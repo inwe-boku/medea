@@ -12,6 +12,9 @@ For comments, suggestions, bug reporting and other correspondence please write t
 sebastian.wehrle@boku.ac.at
 $offtext
 
+$onEoLCom
+$EoLCom #
+
 *# DEVELOPMENT:
 *- re-check data for NTC
 *- allow for investment in grid capacity
@@ -42,29 +45,29 @@ alias(r,rr);
 parameters
          ANCIL_SERVICE_LVL(r)            generation level required for provision of ancillary services
          CONSUMPTION(r,t,prd)            hourly consumption of power and heat [GW]
-         EFFICIENCY(r,tec,prd,f)         electrical efficiency of power plant [%]
+         EFFICIENCY(tec,prd,f)           electrical efficiency of power plant [%]
          EMISSION_INTENSITY(f)              specific emission factor of each fuel [kt CO2 per GWh fuel]
-         EXPORTS(r,t)                    exports to regions not modelled [GW]
+         EXPORT_FLOWS(r,t)               exports to regions not modelled [GW]
          FEASIBLE_INPUT(tec,l,f)         fuel requirement for feasible output generation []
          FEASIBLE_OUTPUT(tec,l,prd)      feasible combinations of outputs []
          GEN_PROFILE(r,t,tec_itm)        generation profile of intermittent technologies
          HSP_PROPERTIES(r,tec_hsp,props) technical properties of hydro storage plants
-         IMPORTS(r,t)                    imports from regions not modelled [GW]
+         IMPORT_FLOWS(r,t)               imports from regions not modelled [GW]
          INSTALLED_CAP_ITM(r,tec_itm)    installed intermittent capacities [GW]
          INSTALLED_CAP_THERM(r,tec)      installed thermal capacities [GW]
          INVESTCOST_ITM(tec_itm)         annuity of investment in 1 GW intermittent technology
          INVESTCOST_THERMAL(tec)         annuity of investment in 1 GW thermal generation technology
          MAX_EMISSIONS(r)                upper emission limit
          NTC(r,rr)                       net transfer capacity from region r to region rr
-         NUM(r,tec)                      number of plants per technology
+         NUM(r,tec)                      installed capacity per technology in 100 MW slices
          OM_FIXED_COST(tec)              quasifixed cost of operation & maintenance
          OM_VARIABLE_COST(tec)           variable cost of operation & maintenance
          PRICE_DA(t)                     observed electricity price on day-ahead market [k EUR per GWh]
          PRICE_EUA(t)                    price of emission allowances [k EUR per kt CO2]
          PRICE_FUEL(t,f)                 price of fuel [k EUR per GWh]
          RESERVOIR_INFLOWS(r,t,tec_hsp)  inflows to reservoirs of hydro storage plants [GW]
-         SWITCH_INV_THERM                switch for investment in thermal units
-         SWITCH_INV_ITM                  switch for investment in intermittents
+         SWITCH_INVEST_THERM                switch for investment in thermal units
+         SWITCH_INVEST_ITM                  switch for investment in intermittents
 ;
 * starting and ending values for intra-year iterations
 parameters
@@ -81,19 +84,24 @@ $gdxin MEDEA_%scenario%_iterdata
 $load  t start_t end_t
 $gdxin
 
-$if NOT exist medea_%scenario%_data.gdx  $gdxin medea_data
-$if     exist medea_%scenario%_data.gdx  $gdxin medea_%scenario%_data
+*$if NOT exist medea_%scenario%_data.gdx  $gdxin medea_data
+$gdxin medea_data_try
+*$if     exist medea_%scenario%_data.gdx  $gdxin medea_%scenario%_data
 $load  f l tec tec_chp tec_hsp tec_itm prd props r
-$load  ANCIL_SERVICE_LVL CONSUMPTION EFFICIENCY EMISSION_INTENSITY EXPORTS
-$load  FEASIBLE_INPUT FEASIBLE_OUTPUT GEN_PROFILE HSP_PROPERTIES IMPORTS
+$load  ANCIL_SERVICE_LVL CONSUMPTION EMISSION_INTENSITY EXPORT_FLOWS EFFICIENCY
+$load  FEASIBLE_INPUT FEASIBLE_OUTPUT GEN_PROFILE HSP_PROPERTIES IMPORT_FLOWS
 $load  INSTALLED_CAP_ITM INSTALLED_CAP_THERM INVESTCOST_ITM INVESTCOST_THERMAL
 $load  NTC NUM OM_FIXED_COST OM_VARIABLE_COST PRICE_DA PRICE_EUA
-$load  PRICE_FUEL RESERVOIR_INFLOWS SWITCH_INV_THERM SWITCH_INV_ITM
+$load  PRICE_FUEL RESERVOIR_INFLOWS SWITCH_INVEST_THERM SWITCH_INVEST_ITM
 $gdxin
 
 $gdxin MEDEA_%scenario%_iterdata
 $load  INIT_GEN INIT_PUMP INIT_STORAGE INIT_TURB FINAL_STORAGE
 $gdxin
+
+*EFFICIENCY(tec,f) = FEASIBLE_OUTPUT(tec,'l1','power')/FEASIBLE_INPUT(tec,'l1',f);
+display EFFICIENCY;
+
 
 ********************************************************************************
 ********** variable declaration
@@ -190,13 +198,13 @@ SD_balance_el(r,t)..
                                  sum(tec,q_gen(r,t,tec,'power'))
                                  + sum(tec_hsp, q_turbine(r,t,tec_hsp))
                                  + sum(tec_itm, GEN_PROFILE(r,t,tec_itm) * (INSTALLED_CAP_ITM(r,tec_itm) + invest_res(r,tec_itm)) )
-                                 + IMPORTS(r,t)
+                                 + IMPORT_FLOWS(r,t)
                                  - q_curtail(r,t,'power')
                                  + q_nonserved(r,t,'power')
                                  =E=
                                  CONSUMPTION(r,t,'power')
                                  + sum(tec_hsp, q_pump(r,t,tec_hsp))
-                                 + EXPORTS(r,t)
+                                 + EXPORT_FLOWS(r,t)
                                  + sum(rr, flow(r,rr,t) )
                                  ;
 SD_balance_ht(r,t)..
@@ -214,7 +222,7 @@ caplim_generation(r,t,tec,prd)..
                                  SMAX(l, FEASIBLE_OUTPUT(tec,l,prd)) * (NUM(r,tec) - decommission(r,tec) + invest_thermal(r,tec) )
                                  ;
 nonchp_generation(r,t,tec)$(NOT tec_chp(tec))..
-                                 sum(f, q_fueluse(r,t,tec,f)*EFFICIENCY(r,tec,'power',f) )
+                                 sum(f, q_fueluse(r,t,tec,f)*EFFICIENCY(tec,'power',f) )
                                  =G=
                                  q_gen(r,t,tec,'power')
                                  ;
@@ -308,9 +316,9 @@ ancillary_service(r,t)..
 * ------------------------------------------------------------------------------
 * switches for long-term vs short-term model version
 * ------------------------------------------------------------------------------
-invest_thermal.UP(r,tec) =       SWITCH_INV_THERM;
-decommission.UP(r,tec) =         SWITCH_INV_THERM;
-invest_res.UP(r,tec_itm) =       SWITCH_INV_ITM;
+invest_thermal.UP(r,tec) =       SWITCH_INVEST_THERM;
+decommission.UP(r,tec) =         SWITCH_INVEST_THERM;
+invest_res.UP(r,tec_itm) =       SWITCH_INVEST_ITM;
 invest_res.FX(r,'ror') =         0;
 
 model medea / all /;
