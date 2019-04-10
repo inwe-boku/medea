@@ -90,7 +90,7 @@ logging.info('medea`s timeseries instantiated')
 # --------------------------------------------------------------------------- #
 # %% data export to gdx
 # --------------------------------------------------------------------------- #
-export_location = os.path.join(cfg.folder, 'medea', 'opt', 'medea_data_try.gdx')
+export_location = os.path.join(cfg.folder, 'medea', 'opt', 'medea_data.gdx')
 db.export(export_location)
 logging.info(f'medea gdx exported to {export_location}')
 

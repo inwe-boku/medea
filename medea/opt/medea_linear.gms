@@ -84,9 +84,8 @@ $gdxin MEDEA_%scenario%_iterdata
 $load  t start_t end_t
 $gdxin
 
-*$if NOT exist medea_%scenario%_data.gdx  $gdxin medea_data
-$gdxin medea_data_try
-*$if     exist medea_%scenario%_data.gdx  $gdxin medea_%scenario%_data
+$if NOT exist medea_%scenario%_data.gdx  $gdxin medea_data
+$if     exist medea_%scenario%_data.gdx  $gdxin medea_%scenario%_data
 $load  f l tec tec_chp tec_hsp tec_itm prd props r
 $load  ANCIL_SERVICE_LVL CONSUMPTION EMISSION_INTENSITY EXPORT_FLOWS EFFICIENCY
 $load  FEASIBLE_INPUT FEASIBLE_OUTPUT GEN_PROFILE HSP_PROPERTIES IMPORT_FLOWS

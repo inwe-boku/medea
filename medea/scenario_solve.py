@@ -5,14 +5,15 @@ use medea_lin to estimate pass-through from emission prices to power prices
 """
 
 import os
-import pandas as pd
-import config as cfg
-from gams import *
 from itertools import product
-from medea.solve import solve
-from medea.postprocessing.postprocess import postprocess
-from medea.gams_wrappers import reset_parameter, gdx2df
 
+import pandas as pd
+from gams import *
+
+import config as cfg
+from medea.gams_wrappers import reset_parameter, gdx2df
+from medea.postprocessing.postprocess import postprocess
+from medea.solve import solve
 
 # --------------------------------------------------------------------------- #
 # %% definition of scaling, carbon pricing and 'setting'
@@ -214,16 +215,16 @@ prd_dict = {rec.keys[0] for rec in db_input['prd']}
 fuel_dict = {rec.keys[0] for rec in db_input['f']}
 
 # read parameters
-df_eua = gdx2df(db_input, 'PRICE_EUA', 'par', ['t'], [])
-df_genprofile = gdx2df(db_input, 'GEN_PROFILE', 'par', ['r', 't', 'tec_itm'], [])
-df_capitm = gdx2df(db_input, 'INSTALLED_CAP_ITM', 'par', ['r', 'tec_itm'], [])
-df_fuelprice = gdx2df(db_input, 'PRICE_FUEL', 'par', ['t', 'f'], [])
-df_eff = gdx2df(db_input, 'EFFICIENCY', 'par', ['r', 'tec', 'prd', 'f'], [])
-df_feasgen = gdx2df(db_input, 'FEASIBLE_OUTPUT', 'par', ['tec', 'l', 'prd'], [])
-df_fuelreq = gdx2df(db_input, 'FEASIBLE_INPUT', 'par', ['tec', 'l', 'f'], [])
-df_store_props = gdx2df(db_input, 'HSP_PROPERTIES', 'par', ['r', 'tec_hsp', 'props'], [])
-df_ancillary = gdx2df(db_input, 'ANCIL_SERVICE_LVL', 'par', ['r'], [])
-df_load = gdx2df(db_input, 'CONSUMPTION', 'par', ['r', 't', 'prd'], [])
+df_eua = gdx2df(db_input, 'PRICE_EUA', ['t'], [])
+df_genprofile = gdx2df(db_input, 'GEN_PROFILE', ['r', 't', 'tec_itm'], [])
+df_capitm = gdx2df(db_input, 'INSTALLED_CAP_ITM', ['r', 'tec_itm'], [])
+df_fuelprice = gdx2df(db_input, 'PRICE_FUEL', ['t', 'f'], [])
+df_eff = gdx2df(db_input, 'EFFICIENCY', ['r', 'tec', 'prd', 'f'], [])
+df_feasgen = gdx2df(db_input, 'FEASIBLE_OUTPUT', ['tec', 'l', 'prd'], [])
+df_fuelreq = gdx2df(db_input, 'FEASIBLE_INPUT', ['tec', 'l', 'f'], [])
+df_store_props = gdx2df(db_input, 'HSP_PROPERTIES', ['r', 'tec_hsp', 'props'], [])
+df_ancillary = gdx2df(db_input, 'ANCIL_SERVICE_LVL', ['r'], [])
+df_load = gdx2df(db_input, 'CONSUMPTION', ['r', 't', 'prd'], [])
 
 # --------------------------------------------------------------------------- #
 # %% scenario generation
@@ -282,7 +283,7 @@ for scn in scenario_set:
     # prepare scenario iterations
     # --------------------------------------------------------------------------- #
     goodness_of_fit = pd.DataFrame(columns=['rmse', 'corr'])
-    tec2fuel_map = gdx2df(db_input, 'EFFICIENCY', 'par', ['tec', 'f'], ['r', 'prd']).reset_index()
+    tec2fuel_map = gdx2df(db_input, 'EFFICIENCY', ['tec', 'f'], ['r', 'prd']).reset_index()
     traded_fuels = ['Nuclear', 'Lignite', 'Gas', 'Oil', 'Coal']
     year_range = pd.date_range(pd.datetime(cfg.year, 1, 1, 0, 0, 0), end=pd.datetime(cfg.year, 12, 31, 23, 0, 0),
                                freq='H')
