@@ -158,6 +158,7 @@ equations
          flow_constraint_a               capacity restriction on exports
          flow_constraint_b               capacity restriction on imports
          ntc_invest_symmetry             ntc investment increases capacity in both directions
+         policy_100resbalance            policy constraint requiring 100% renewable electricity generation over year
 ;
 
 ********************************************************************************
@@ -175,7 +176,7 @@ objective..
                                  + cost_invgen(r)
                                  + 12500 * sum((t,prd), q_nonserved(r,t,prd))
                                  + 110 * sum((t,prd), q_curtail(r,t,prd)) )
-                                 + 10000 * sum(r,cost_gridexpansion(r))
+                                 + 1000 * sum(r,cost_gridexpansion(r))
                                  ;
 obj_fuelcost(r,t,tec)..          cost_fuel(r,t,tec)
                                  =E=
@@ -197,7 +198,7 @@ obj_invgencost(r)..              cost_invgen(r)
                                  ;
 obj_gridcost(r)..                cost_gridexpansion(r)
                                  =E=
-                                 sum(rr, ntc_invest(r,rr))
+                                 sum(rr, ntc_invest(r,rr)) / 2
                                  ;
 * ------------------------------------------------------------------------------
 * SUPPLY-DEMAND BALANCES
@@ -326,11 +327,20 @@ ancillary_service(r,t)..
                                  ANCIL_SERVICE_LVL(r)
                                  ;
 * ------------------------------------------------------------------------------
+* policy constraints
+* ------------------------------------------------------------------------------
+policy_100resbalance..           sum((t,tec_itm), GEN_PROFILE('AT',t,tec_itm) * (INSTALLED_CAP_ITM('AT',tec_itm) + invest_res('AT',tec_itm)) )
+                                 + sum((t,tec_hsp), q_turbine('AT',t,tec_hsp))
+                                 =G=
+                                 sum(t, CONSUMPTION('AT',t,'power'))
+                                 ;
+
+* ------------------------------------------------------------------------------
 * switches for long-term vs short-term model version
 * ------------------------------------------------------------------------------
-invest_thermal.UP(r,tec) =       0;  # SWITCH_INVEST_THERM;
-decommission.UP(r,tec) =         0;  # SWITCH_INVEST_THERM;
-invest_res.UP(r,tec_itm) =       0;  # SWITCH_INVEST_ITM;
+invest_thermal.UP(r,tec) =       SWITCH_INVEST_THERM;
+decommission.UP(r,tec) =         SWITCH_INVEST_THERM;
+invest_res.UP(r,tec_itm) =       SWITCH_INVEST_ITM;
 invest_res.FX(r,'ror') =         0;
 
 * ------------------------------------------------------------------------------
