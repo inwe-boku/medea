@@ -36,10 +36,10 @@ def solve(output_folder, output_name, scenario_iteration, gen_target):
     df_storprop = gdx2df(db_input, 'HSP_PROPERTIES', ['tec_hsp'], ['r', 'props'])
 
     # read mapping of fuels to plants from EFFICIENCY parameter
-    df_eff = gdx2df(db_input, 'EFFICIENCY', ['tec', 'f'], ['r', 'prd'])
+    df_eff = gdx2df(db_input, 'EFFICIENCY', ['tec', 'f'], ['prd'])
 
     # read emission factors
-    df_emf = gdx2df(db_input, 'EMISSION_FACTOR', ['f'], [])
+    df_emf = gdx2df(db_input, 'EMISSION_INTENSITY', ['f'], [])
 
     # read day-ahead electricity price
     df_pda = gdx2df(db_input, 'PRICE_DA', ['t'], [])

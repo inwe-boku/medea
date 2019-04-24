@@ -80,13 +80,13 @@ parameters
 ********************************************************************************
 ********** data instantiation
 ********************************************************************************
-$gdxin MEDEA_%scenario%_iterdata
-$load  t start_t end_t
-$gdxin
+*$gdxin MEDEA_%scenario%_iterdata
+*$load  t start_t end_t
+*$gdxin
 
 $if NOT exist medea_%scenario%_data.gdx  $gdxin medea_data
 $if     exist medea_%scenario%_data.gdx  $gdxin medea_%scenario%_data
-$load  f l tec tec_chp tec_hsp tec_itm prd props r
+$load  t f l tec tec_chp tec_hsp tec_itm prd props r
 $load  ANCIL_SERVICE_LVL CONSUMPTION EMISSION_INTENSITY EXPORT_FLOWS EFFICIENCY
 $load  FEASIBLE_INPUT FEASIBLE_OUTPUT GEN_PROFILE HSP_PROPERTIES IMPORT_FLOWS
 $load  INSTALLED_CAP_ITM INSTALLED_CAP_THERM INVESTCOST_ITM INVESTCOST_THERMAL
@@ -94,9 +94,9 @@ $load  NTC NUM OM_FIXED_COST OM_VARIABLE_COST PRICE_DA PRICE_EUA
 $load  PRICE_FUEL RESERVOIR_INFLOWS SWITCH_INVEST_THERM SWITCH_INVEST_ITM
 $gdxin
 
-$gdxin MEDEA_%scenario%_iterdata
-$load  INIT_GEN INIT_PUMP INIT_STORAGE INIT_TURB FINAL_STORAGE
-$gdxin
+*$gdxin MEDEA_%scenario%_iterdata
+*$load  INIT_GEN INIT_PUMP INIT_STORAGE INIT_TURB FINAL_STORAGE
+*$gdxin
 
 *EFFICIENCY(tec,f) = FEASIBLE_OUTPUT(tec,'l1','power')/FEASIBLE_INPUT(tec,'l1',f);
 display EFFICIENCY;
@@ -324,15 +324,15 @@ model medea / all /;
 
 ********************************************************************************
 ******* set starting values
-q_gen.FX(r,start_t,tec,prd)      $INIT_GEN(r,start_t,tec,prd)            = INIT_GEN(r,start_t,tec,prd);
-q_pump.FX(r,start_t,tec_hsp)     $INIT_PUMP(r,start_t,tec_hsp)           = INIT_PUMP(r,start_t,tec_hsp);
-q_turbine.FX(r,start_t,tec_hsp)  $INIT_TURB(r,start_t,tec_hsp)           = INIT_TURB(r,start_t,tec_hsp);
-res_level.FX(r,start_t,tec_hsp)  $INIT_STORAGE(r,start_t,tec_hsp)        = INIT_STORAGE(r,start_t,tec_hsp);
-res_level.FX(r,end_t,tec_hsp)    $FINAL_STORAGE(r,end_t,tec_hsp)         = FINAL_STORAGE(r,end_t,tec_hsp);
+*q_gen.FX(r,start_t,tec,prd)      $INIT_GEN(r,start_t,tec,prd)            = INIT_GEN(r,start_t,tec,prd);
+*q_pump.FX(r,start_t,tec_hsp)     $INIT_PUMP(r,start_t,tec_hsp)           = INIT_PUMP(r,start_t,tec_hsp);
+*q_turbine.FX(r,start_t,tec_hsp)  $INIT_TURB(r,start_t,tec_hsp)           = INIT_TURB(r,start_t,tec_hsp);
+*res_level.FX(r,start_t,tec_hsp)  $INIT_STORAGE(r,start_t,tec_hsp)        = INIT_STORAGE(r,start_t,tec_hsp);
+*res_level.FX(r,end_t,tec_hsp)    $FINAL_STORAGE(r,end_t,tec_hsp)         = FINAL_STORAGE(r,end_t,tec_hsp);
 
 
 options
-LP = OSIGurobi,
+LP = Gurobi,
 reslim = 3600,
 threads = 8,
 optCR = 0.01,
