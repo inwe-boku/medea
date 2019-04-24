@@ -1,7 +1,9 @@
 import os
 import subprocess
+
 import pandas as pd
 from gams import *
+
 import config as cfg
 from medea.gams_wrappers import gdx2df
 
@@ -300,12 +302,15 @@ def solve(output_folder, output_name, scenario_iteration, gen_target):
     # --------------------------------------------------------------------------- #
     # model fit - correlation & rmse
     # --------------------------------------------------------------------------- #
+    # TODO: adjust to multiple regions
+    """
     gof = pd.DataFrame(columns=['correl', 'rmse_p', 'co2', 'rmse_g'])
     price_measure = pd.merge(marginal_power, df_pda, left_index=True, right_index=True)
-    price_measure['sq_err'] = (price_measure['price_da'] - price_measure[0]) ** 2
-    rmse = price_measure['sq_err'].mean() ** 0.5
+    sq_err = (price_measure.sub(price_measure['price_da'], axis=0)) ** 2
+    sq_err = sq_err.drop('price_da', axis=1)
+    rmse = sq_err.mean() ** 0.5
     gen_fuel_annual = gen_by_fuel.sum()
-    rmse_gen = ((gen_target - gen_fuel_annual / 1000) ** 2).mean(axis=1) ** 0.5
+    # rmse_gen = ((gen_target - gen_fuel_annual / 1000) ** 2).mean(axis=1) ** 0.5
     correl = price_measure.corr()
     gof.loc[scenario_iteration, 'correl'] = correl.iloc[0, 1]
     gof.loc[scenario_iteration, 'rmse_p'] = rmse
@@ -313,3 +318,4 @@ def solve(output_folder, output_name, scenario_iteration, gen_target):
     gof.loc[scenario_iteration, 'rmse_g'] = rmse_gen.values
     print(f'\n Corr_p: {"%.3f" % correl.iloc[0,1]} , RMSE_p: {"%.3f" % rmse}, CO2: {"%.2f" % co2_total}, RMSE_g: {"%.2f" % rmse_gen.values} \n')
     return {'rmse_price': rmse, 'corr': correl.iloc[0, 1], 'co2': co2_total, 'rmse_gen': rmse_gen.values}
+    """

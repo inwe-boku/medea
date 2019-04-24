@@ -82,7 +82,7 @@ data_technology = data_technology.loc[(data_technology['medea_type'] < 60) | (da
 data_hydstores = pd.read_excel(os.path.join(cfg.folder, 'data', 'processed', 'plant-list_hydro.xlsx'), 'opsd_hydro')
 data_ntc = pd.read_excel(os.path.join(cfg.folder, 'data', 'processed', 'plant_props.xlsx'), 'NTC', index_col=[0])
 data_ntc = data_ntc.loc[data_ntc.index.str.contains('|'.join(cfg.regions)),
-                        data_ntc.columns.str.contains('|'.join(cfg.regions))]
+                        data_ntc.columns.str.contains('|'.join(cfg.regions))] / 1000
 
 # --------------------------------------------------------------------------- #
 # %% preprocessing plant data

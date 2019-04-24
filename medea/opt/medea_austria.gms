@@ -80,13 +80,13 @@ parameters
 ********************************************************************************
 ********** data instantiation
 ********************************************************************************
-*$gdxin MEDEA_%scenario%_iterdata
-*$load  t start_t end_t
-*$gdxin
+$gdxin MEDEA_%scenario%_iterdata
+$load  t start_t end_t
+$gdxin
 
 $if NOT exist medea_%scenario%_data.gdx  $gdxin medea_data
 $if     exist medea_%scenario%_data.gdx  $gdxin medea_%scenario%_data
-$load  t f l tec tec_chp tec_hsp tec_itm prd props r
+$load  f l tec tec_chp tec_hsp tec_itm prd props r
 $load  ANCIL_SERVICE_LVL CONSUMPTION EMISSION_INTENSITY EXPORT_FLOWS EFFICIENCY
 $load  FEASIBLE_INPUT FEASIBLE_OUTPUT GEN_PROFILE HSP_PROPERTIES IMPORT_FLOWS
 $load  INSTALLED_CAP_ITM INSTALLED_CAP_THERM INVESTCOST_ITM INVESTCOST_THERMAL
@@ -94,9 +94,9 @@ $load  NTC NUM OM_FIXED_COST OM_VARIABLE_COST PRICE_DA PRICE_EUA
 $load  PRICE_FUEL RESERVOIR_INFLOWS SWITCH_INVEST_THERM SWITCH_INVEST_ITM
 $gdxin
 
-*$gdxin MEDEA_%scenario%_iterdata
-*$load  INIT_GEN INIT_PUMP INIT_STORAGE INIT_TURB FINAL_STORAGE
-*$gdxin
+$gdxin MEDEA_%scenario%_iterdata
+$load  INIT_GEN INIT_PUMP INIT_STORAGE INIT_TURB FINAL_STORAGE
+$gdxin
 
 *EFFICIENCY(tec,f) = FEASIBLE_OUTPUT(tec,'l1','power')/FEASIBLE_INPUT(tec,'l1',f);
 display EFFICIENCY;
@@ -158,6 +158,7 @@ equations
          flow_constraint_a               capacity restriction on exports
          flow_constraint_b               capacity restriction on imports
          ntc_invest_symmetry             ntc investment increases capacity in both directions
+         policy_100resbalance            policy constraint requiring 100% renewable electricity generation over year
 ;
 
 ********************************************************************************
@@ -175,7 +176,7 @@ objective..
                                  + cost_invgen(r)
                                  + 12500 * sum((t,prd), q_nonserved(r,t,prd))
                                  + 110 * sum((t,prd), q_curtail(r,t,prd)) )
-                                 + 10000 * sum(r,cost_gridexpansion(r))
+                                 + 1000 * sum(r,cost_gridexpansion(r))
                                  ;
 obj_fuelcost(r,t,tec)..          cost_fuel(r,t,tec)
                                  =E=
@@ -197,7 +198,7 @@ obj_invgencost(r)..              cost_invgen(r)
                                  ;
 obj_gridcost(r)..                cost_gridexpansion(r)
                                  =E=
-                                 sum(rr, ntc_invest(r,rr))
+                                 sum(rr, ntc_invest(r,rr)) / 2
                                  ;
 * ------------------------------------------------------------------------------
 * SUPPLY-DEMAND BALANCES
@@ -326,11 +327,20 @@ ancillary_service(r,t)..
                                  ANCIL_SERVICE_LVL(r)
                                  ;
 * ------------------------------------------------------------------------------
+* policy constraints
+* ------------------------------------------------------------------------------
+policy_100resbalance..           sum((t,tec_itm), GEN_PROFILE('AT',t,tec_itm) * (INSTALLED_CAP_ITM('AT',tec_itm) + invest_res('AT',tec_itm)) )
+                                 + sum((t,tec_hsp), q_turbine('AT',t,tec_hsp))
+                                 =G=
+                                 sum(t, CONSUMPTION('AT',t,'power'))
+                                 ;
+
+* ------------------------------------------------------------------------------
 * switches for long-term vs short-term model version
 * ------------------------------------------------------------------------------
-invest_thermal.UP(r,tec) =       0;  # SWITCH_INVEST_THERM;
-decommission.UP(r,tec) =         0;  # SWITCH_INVEST_THERM;
-invest_res.UP(r,tec_itm) =       0;  # SWITCH_INVEST_ITM;
+invest_thermal.UP(r,tec) =       SWITCH_INVEST_THERM;
+decommission.UP(r,tec) =         SWITCH_INVEST_THERM;
+invest_res.UP(r,tec_itm) =       SWITCH_INVEST_ITM;
 invest_res.FX(r,'ror') =         0;
 
 * ------------------------------------------------------------------------------
@@ -342,14 +352,14 @@ model medea / all /;
 
 ********************************************************************************
 ******* set starting values
-*q_gen.FX(r,start_t,tec,prd)      $INIT_GEN(r,start_t,tec,prd)            = INIT_GEN(r,start_t,tec,prd);
-*q_pump.FX(r,start_t,tec_hsp)     $INIT_PUMP(r,start_t,tec_hsp)           = INIT_PUMP(r,start_t,tec_hsp);
-*q_turbine.FX(r,start_t,tec_hsp)  $INIT_TURB(r,start_t,tec_hsp)           = INIT_TURB(r,start_t,tec_hsp);
-*res_level.FX(r,start_t,tec_hsp)  $INIT_STORAGE(r,start_t,tec_hsp)        = INIT_STORAGE(r,start_t,tec_hsp);
-*res_level.FX(r,end_t,tec_hsp)    $FINAL_STORAGE(r,end_t,tec_hsp)         = FINAL_STORAGE(r,end_t,tec_hsp);
+q_gen.FX(r,start_t,tec,prd)      $INIT_GEN(r,start_t,tec,prd)            = INIT_GEN(r,start_t,tec,prd);
+q_pump.FX(r,start_t,tec_hsp)     $INIT_PUMP(r,start_t,tec_hsp)           = INIT_PUMP(r,start_t,tec_hsp);
+q_turbine.FX(r,start_t,tec_hsp)  $INIT_TURB(r,start_t,tec_hsp)           = INIT_TURB(r,start_t,tec_hsp);
+res_level.FX(r,start_t,tec_hsp)  $INIT_STORAGE(r,start_t,tec_hsp)        = INIT_STORAGE(r,start_t,tec_hsp);
+res_level.FX(r,end_t,tec_hsp)    $FINAL_STORAGE(r,end_t,tec_hsp)         = FINAL_STORAGE(r,end_t,tec_hsp);
 
 options
-LP = Gurobi,
+LP = OSIGurobi,
 reslim = 3600,
 threads = 8,
 optCR = 0.01,

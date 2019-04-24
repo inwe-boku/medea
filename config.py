@@ -22,10 +22,10 @@ iter_num = 1
 # set iteration offset, i.e. number of hours cut off at each iteration-end to avoid last-round effects
 iter_offset = 72
 # covered regions - currently available: 'AT', 'DE'
-regions = ['AT', 'DE']
+regions = ['AT', 'DE', 'CH']
 # enabled model features
-invest_renewables = True
-invest_conventionals = True
+invest_renewables = False
+invest_conventionals = False
 
 
 

@@ -89,7 +89,6 @@ baseline = {
 # --------------------------------------------------------------------------- #
 # %% definition of general scenario parameters
 # --------------------------------------------------------------------------- #
-
 if carbon_pricing == 'range':
     scenario_carbon = {
         'price_CO2': list(range(0, 101, 5))
@@ -284,7 +283,7 @@ for scn in scenario_set:
     # --------------------------------------------------------------------------- #
     goodness_of_fit = pd.DataFrame(columns=['rmse', 'corr'])
     tec2fuel_map = gdx2df(db_input, 'EFFICIENCY', ['tec', 'f'], ['prd']).reset_index()
-    tec2fuel_map = tec2fuel_map.loc[tec2fuel_map['tec'].isin(df_feasgen.index.get_level_values(0)),:]
+    tec2fuel_map = tec2fuel_map.loc[tec2fuel_map['tec'].isin(df_feasgen.index.get_level_values(0)), :]
     traded_fuels = ['Nuclear', 'Lignite', 'Gas', 'Oil', 'Coal']
     year_range = pd.date_range(pd.datetime(cfg.year, 1, 1, 0, 0, 0), end=pd.datetime(cfg.year, 12, 31, 23, 0, 0),
                                freq='H')
@@ -379,9 +378,9 @@ for scn in scenario_set:
 
         # call iterative model solution
         goodfit = solve(campaign, scn, scenario_iteration, gen_target=tgt)
-
-        for key in goodfit.keys():
-            goodness_of_fit.loc[scenario_iteration, key] = goodfit[key]
+# TODO: reactivate goodsness of fit tracking, when issue in solve.py is resolved
+#        for key in goodfit.keys():
+#            goodness_of_fit.loc[scenario_iteration, key] = goodfit[key]
 
         # delete scenario data file
     if os.path.isfile(os.path.join(cfg.folder, 'medea', 'opt', f'MEDEA_{scenario_name}_data.gdx')):
