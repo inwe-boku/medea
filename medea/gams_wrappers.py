@@ -12,8 +12,14 @@ def reset_parameter(gams_db, parameter_name, df):
     """
     gams_parameter = gams_db.get_parameter(parameter_name)
     gams_parameter.clear()
-    for row in df.itertuples():
-        gams_parameter.add_record(row[0]).value = row[1]
+    if gams_parameter.get_dimension() > 0:
+        for row in df.itertuples():
+            gams_parameter.add_record(row[0]).value = row[1]
+    elif gams_parameter.get_dimension() == 0:
+        for row in df.itertuples():
+            gams_parameter.add_record().value = row[1]
+    else:
+        raise ValueError('dimension_list must be list or integer')
 
 
 def gdx2df(db_gams, symbol, index_list, column_list):

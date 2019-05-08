@@ -18,7 +18,7 @@ from medea.solve import solve
 # --------------------------------------------------------------------------- #
 # %% definition of scaling, carbon pricing and 'setting'
 # --------------------------------------------------------------------------- #
-campaign = 'PsTru_ic'
+campaign = 'PolicyBurden'
 # currently implemented res scalings:
 # * res_pen - renewable capacity is scaled to a generation level relative to electricity demand ('penetration')
 # * res_base - renewable capacity is scaled relative to res capacity in base year
@@ -45,7 +45,7 @@ tgt = pd.DataFrame(
 #                'CapCoal0_CapLignite0_CapGas175_2030', 'CapCoal0_CapLignite0_CapGas175_DemAncillary05_2030',
 #                'CapLignite0_CapGas175_2030', 'CoalCommission_2030', 'CoalCommission_DemAncillary05_2030']
 
-scenario_set = ['Base']
+scenario_set = ['CoalCommission_2030']
 
 # --------------------------------------------------------------------------- #
 # %% definition of 'baseline" parameters
@@ -306,7 +306,7 @@ for scn in scenario_set:
         for fl in traded_fuels:
             df_eff_mod.loc[idx[:, :, fl], :] = \
                 df_eff.loc[idx[:, :, fl], :] * scenarios.loc[scenario_iteration, f'e_{fl}']
-        reset_parameter(db_input, 'EFFICIENCY', df_eff)
+        reset_parameter(db_input, 'EFFICIENCY', df_eff_mod)
 
         # feasible input of thermal plants
         df_fuelreq_mod = df_fuelreq

@@ -32,7 +32,7 @@ sets
          tec_chp(tec)                    subset of CHP technologies
          tec_hsp                         hydro storage technologies
          tec_itm                         renewable generation technologies
-         t                               time - hours
+         t                               time - hours      / t1*t8760 /
          start_t(t)                      hour for initial values
          end_t(t)                        end time of iteration
 ;
@@ -66,8 +66,9 @@ parameters
          PRICE_EUA(t)                    price of emission allowances [k EUR per kt CO2]
          PRICE_FUEL(t,f)                 price of fuel [k EUR per GWh]
          RESERVOIR_INFLOWS(r,t,tec_hsp)  inflows to reservoirs of hydro storage plants [GW]
-         SWITCH_INVEST_THERM                switch for investment in thermal units
-         SWITCH_INVEST_ITM                  switch for investment in intermittents
+         SWITCH_INVEST_THERM             switch for investment in thermal units
+         SWITCH_INVEST_ITM               switch for investment in intermittents
+         WON_LIMIT                       upper limit on onshore wind deployment
 ;
 * starting and ending values for intra-year iterations
 parameters
@@ -80,35 +81,38 @@ parameters
 ********************************************************************************
 ********** data instantiation
 ********************************************************************************
-$gdxin MEDEA_%scenario%_iterdata
-$load  t start_t end_t
-$gdxin
-
-$if NOT exist medea_%scenario%_data.gdx  $gdxin medea_data
-$if     exist medea_%scenario%_data.gdx  $gdxin medea_%scenario%_data
+$if NOT exist MEDEA_%scenario%_data.gdx  $gdxin medea_data
+$if     exist MEDEA_%scenario%_data.gdx  $gdxin medea_%scenario%_data
 $load  f l tec tec_chp tec_hsp tec_itm prd props r
 $load  ANCIL_SERVICE_LVL CONSUMPTION EMISSION_INTENSITY EXPORT_FLOWS EFFICIENCY
 $load  FEASIBLE_INPUT FEASIBLE_OUTPUT GEN_PROFILE HSP_PROPERTIES IMPORT_FLOWS
 $load  INSTALLED_CAP_ITM INSTALLED_CAP_THERM INVESTCOST_ITM INVESTCOST_THERMAL
 $load  NTC NUM OM_FIXED_COST OM_VARIABLE_COST PRICE_DA PRICE_EUA
 $load  PRICE_FUEL RESERVOIR_INFLOWS SWITCH_INVEST_THERM SWITCH_INVEST_ITM
+$load  WON_LIMIT
 $gdxin
 
-$gdxin MEDEA_%scenario%_iterdata
-$load  INIT_GEN INIT_PUMP INIT_STORAGE INIT_TURB FINAL_STORAGE
-$gdxin
+********************************************************************************
+********** helper parameters
+********************************************************************************
+parameters
+PEAK_LOAD(r),
+PEAK_PROFILE(r,tec_itm);
 
-*EFFICIENCY(tec,f) = FEASIBLE_OUTPUT(tec,'l1','power')/FEASIBLE_INPUT(tec,'l1',f);
-display EFFICIENCY;
+PEAK_LOAD(r) = smax(t, CONSUMPTION(r,t,'power'));
+PEAK_PROFILE(r,tec_itm) = smax(t, GEN_PROFILE(r,t,tec_itm) );
+
+display PEAK_LOAD, PEAK_PROFILE;
 
 
 ********************************************************************************
 ********** variable declaration
 ********************************************************************************
 variables
-         cost                            total system cost (to be minimized)
-         emissions                       total emissions from power generation
-         flow(r,rr,t)                    electricity exchange flow [GW]
+         syscost                         total system cost (to be minimized)
+         cost(r)                         total cost per region
+         emissions(r)                    total emissions from power generation
+         flow(r,rr,t)                    electricity flow from r to rr (i.e. export if positive) [GW]
 ;
 positive variables
          cc_weights(r,t,tec,l)           weights of co-generation convex combination
@@ -135,6 +139,7 @@ positive variables
 ********************************************************************************
 equations
          objective                       total system cost calculation
+         obj_costreg                     calculation of cost per region
          obj_fuelcost                    total fuel cost
          obj_emissioncost                total emission cost
          obj_omcost                      total O&M cost
@@ -159,6 +164,8 @@ equations
          flow_constraint_b               capacity restriction on imports
          ntc_invest_symmetry             ntc investment increases capacity in both directions
          policy_100resbalance            policy constraint requiring 100% renewable electricity generation over year
+         policy_balancedflows            policy constraint for balanced imports and exports
+         policy_fixgen                   forces model to seek alternatives to subsidized thermal dispatch
 ;
 
 ********************************************************************************
@@ -166,17 +173,19 @@ equations
 * ------------------------------------------------------------------------------
 * OBJECTIVES
 * ------------------------------------------------------------------------------
-objective..
-                                 cost
+objective..                      syscost
                                  =E=
-                                 sum(r,
+                                 sum(r, cost(r))
+                                 ;
+obj_costreg(r)..                 cost(r)
+                                 =E=
                                  sum((t,tec), cost_fuel(r,t,tec))
                                  + sum((t,tec), cost_emission(r,t,tec))
                                  + sum(tec, cost_om(r,tec))
                                  + cost_invgen(r)
                                  + 12500 * sum((t,prd), q_nonserved(r,t,prd))
-                                 + 110 * sum((t,prd), q_curtail(r,t,prd)) )
-                                 + 1000 * sum(r,cost_gridexpansion(r))
+                                 + 110 * sum((t,prd), q_curtail(r,t,prd))
+                                 + 1000 * cost_gridexpansion(r)
                                  ;
 obj_fuelcost(r,t,tec)..          cost_fuel(r,t,tec)
                                  =E=
@@ -289,9 +298,9 @@ flow_constraint_a(r,rr,t)$NTC(r,rr)..
                                  NTC(r,rr) + ntc_invest(r,rr)
                                  ;
 flow_constraint_b(r,rr,t)$NTC(rr,r)..
-                                 flow(rr,r,t)
-                                 =L=
-                                 NTC(rr,r) + ntc_invest(rr,r)
+                                 flow(r,rr,t)
+                                 =G=
+                                 - (NTC(rr,r) + ntc_invest(rr,r))
                                  ;
 ntc_invest_symmetry(r,rr)..      ntc_invest(r,rr)
                                  =E=
@@ -303,10 +312,10 @@ flow.FX(rr,r,t)$(not NTC(rr,r))   = 0;
 * ------------------------------------------------------------------------------
 * emissions
 * ------------------------------------------------------------------------------
-emission_calculation..
-                                 emissions
+emission_calculation(r)..
+                                 emissions(r)
                                  =E=
-                                 sum((r,t,f), EMISSION_INTENSITY(f) * sum(tec,q_fueluse(r,t,tec,f)))
+                                 sum((t,f), EMISSION_INTENSITY(f) * sum(tec,q_fueluse(r,t,tec,f)))
                                  ;
 * ------------------------------------------------------------------------------
 * decommissioning
@@ -324,17 +333,30 @@ ancillary_service(r,t)..
                                  + sum(tec_hsp, q_turbine(r,t,tec_hsp))
                                  + sum(tec_hsp, q_pump(r,t,tec_hsp))
                                  =G=
-                                 ANCIL_SERVICE_LVL(r)
-                                 ;
+                                 0.125 * PEAK_LOAD(r)
+                                 + 0.075 * sum(tec_itm$(NOT SAMEAS(tec_itm,'ror')),
+                                 PEAK_PROFILE(r,tec_itm) * (INSTALLED_CAP_ITM(r,tec_itm) + invest_res(r,tec_itm))
+                                 );
 * ------------------------------------------------------------------------------
 * policy constraints
 * ------------------------------------------------------------------------------
 policy_100resbalance..           sum((t,tec_itm), GEN_PROFILE('AT',t,tec_itm) * (INSTALLED_CAP_ITM('AT',tec_itm) + invest_res('AT',tec_itm)) )
                                  + sum((t,tec_hsp), q_turbine('AT',t,tec_hsp))
+                                 - sum((t,tec_hsp), q_pump('AT',t,tec_hsp) * HSP_PROPERTIES('AT',tec_hsp,'efficiency_pump'))
+                                 - sum(t, q_curtail('AT',t,'power'))
                                  =G=
-                                 sum(t, CONSUMPTION('AT',t,'power'))
+                                 0.88 * sum(t, CONSUMPTION('AT',t,'power'))
                                  ;
-
+policy_balancedflows..           sum((rr,t), flow('AT',rr,t))
+                                 - sum(t, IMPORT_FLOWS('AT',t))
+                                 + sum(t, EXPORT_FLOWS('AT',t))
+                                 =E=
+                                 0
+                                 ;
+policy_fixgen..                  sum((t,tec), q_gen('AT',t,tec,'power') )
+                                 =L=
+                                 25348.620
+                                 ;
 * ------------------------------------------------------------------------------
 * switches for long-term vs short-term model version
 * ------------------------------------------------------------------------------
@@ -342,32 +364,94 @@ invest_thermal.UP(r,tec) =       SWITCH_INVEST_THERM;
 decommission.UP(r,tec) =         SWITCH_INVEST_THERM;
 invest_res.UP(r,tec_itm) =       SWITCH_INVEST_ITM;
 invest_res.FX(r,'ror') =         0;
+invest_res.UP(r,'wind_on') =     WON_LIMIT;
 
 * ------------------------------------------------------------------------------
 * restrict fuel use according to technology
 * ------------------------------------------------------------------------------
 q_fueluse.UP(r,t,tec,f)$(NOT sum(prd,EFFICIENCY(tec,prd,f))) = 0;
 
-model medea / all /;
+model medea / all - policy_fixgen /;
 
 ********************************************************************************
 ******* set starting values
-q_gen.FX(r,start_t,tec,prd)      $INIT_GEN(r,start_t,tec,prd)            = INIT_GEN(r,start_t,tec,prd);
-q_pump.FX(r,start_t,tec_hsp)     $INIT_PUMP(r,start_t,tec_hsp)           = INIT_PUMP(r,start_t,tec_hsp);
-q_turbine.FX(r,start_t,tec_hsp)  $INIT_TURB(r,start_t,tec_hsp)           = INIT_TURB(r,start_t,tec_hsp);
-res_level.FX(r,start_t,tec_hsp)  $INIT_STORAGE(r,start_t,tec_hsp)        = INIT_STORAGE(r,start_t,tec_hsp);
-res_level.FX(r,end_t,tec_hsp)    $FINAL_STORAGE(r,end_t,tec_hsp)         = FINAL_STORAGE(r,end_t,tec_hsp);
+*q_gen.FX(r,start_t,tec,prd)      $INIT_GEN(r,start_t,tec,prd)            = INIT_GEN(r,start_t,tec,prd);
+*q_pump.FX(r,start_t,tec_hsp)     $INIT_PUMP(r,start_t,tec_hsp)           = INIT_PUMP(r,start_t,tec_hsp);
+*q_turbine.FX(r,start_t,tec_hsp)  $INIT_TURB(r,start_t,tec_hsp)           = INIT_TURB(r,start_t,tec_hsp);
+*res_level.FX(r,start_t,tec_hsp)  $INIT_STORAGE(r,start_t,tec_hsp)        = INIT_STORAGE(r,start_t,tec_hsp);
+*res_level.FX(r,end_t,tec_hsp)    $FINAL_STORAGE(r,end_t,tec_hsp)         = FINAL_STORAGE(r,end_t,tec_hsp);
 
 options
 LP = OSIGurobi,
-reslim = 3600,
+reslim = 54000,
 threads = 8,
 optCR = 0.01,
 BRatio = 1
 ;
 
-solve medea using LP minimizing cost;
+solve medea using LP minimizing syscost;
 
+
+********************************************************************************
+******* reporting
+
+******* solution details
 scalars modelStat, solveStat;
 modelStat = medea.modelstat;
 solveStat = medea.solvestat;
+
+******* system operations
+parameter
+annual_generation(r,prd),
+annual_pumping(r),
+annual_turbining(r),
+annual_netflow(r),
+annual_fixedexports,
+annual_fixedimports,
+annual_curtail(r);
+
+annual_generation(r,prd) = sum((t,tec), q_gen.L(r, t, tec, prd));
+annual_pumping(r) = sum((t,tec_hsp), q_pump.L(r,t,tec_hsp));
+annual_turbining(r) = sum((t,tec_hsp), q_turbine.L(r,t,tec_hsp));
+annual_netflow(r) = sum(t, flow.L('AT',r,t));
+annual_fixedexports = sum(t, EXPORT_FLOWS('AT',t));
+annual_fixedimports = sum(t, IMPORT_FLOWS('AT',t));
+annual_curtail(r) = sum(t, q_curtail.L(r,t,'power'));
+
+display annual_generation, annual_netflow, annual_fixedexports, annual_fixedimports, annual_curtail;
+
+******* prices, cost, producer surplus
+parameter
+annual_price_el(r),
+annual_price_ht(r),
+annual_cost(r,tec),
+annual_surplus_therm(r,tec),
+annual_surplus_stor(r,tec_hsp),
+producer_surplus(r);
+
+annual_price_el(r) = sum(t, SD_balance_el.M(r,t))/card(t);
+annual_price_ht(r) = sum(t, SD_balance_ht.M(r,t))/card(t);
+annual_cost(r,tec) = sum(t, cost_fuel.L(r,t,tec)
+                         + cost_emission.L(r,t,tec)
+                         + sum(prd, OM_VARIABLE_COST(tec) * q_gen.L(r,t,tec,prd)));
+annual_surplus_therm(r,tec) =   sum(t,
+                         SD_balance_el.M(r,t) * q_gen.L(r,t,tec,'power')
+                         + SD_balance_ht.M(r,t) * q_gen.L(r,t,tec,'heat')
+                         - cost_fuel.L(r,t,tec)
+                         - cost_emission.L(r,t,tec)
+                         - sum(prd, OM_VARIABLE_COST(tec) * q_gen.L(r,t,tec,prd))
+                         );
+annual_surplus_stor(r,tec_hsp) = sum(t,
+                         SD_balance_el.M(r,t) * q_turbine.L(r,t,tec_hsp)
+                         - SD_balance_el.M(r,t) * q_pump.L(r,t,tec_hsp)
+                         );
+producer_surplus(r) =    sum(tec, annual_surplus_therm(r,tec))
+                         + sum(tec_hsp, annual_surplus_stor(r,tec_hsp))
+                         ;
+
+display
+annual_price_el, annual_price_ht, annual_cost, annual_surplus_therm, annual_surplus_stor, producer_surplus;
+
+parameter av_cap(r, tec, prd);
+av_cap(r,tec,prd) = smax(l, FEASIBLE_OUTPUT(tec,l,prd)) * NUM(r,tec);
+display NUM, av_cap;

@@ -133,6 +133,8 @@ for typ in df_feasops.index.get_level_values(0).unique():
     for lim in df_feasops.index.get_level_values(1).unique():
         df_feasops.loc[(typ, lim), 'fuel_need'] = df_feasops.loc[(typ, lim), 'fuel'].values / df_eff.loc[
             (typ, lim)].values
+# adjustment to account for model being in GW while plant size is in steps of 100 MW
+df_feasops = df_feasops / 10
 
 # hydro storage data
 # hydro storages
