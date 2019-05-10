@@ -56,8 +56,8 @@ capcy = {
 capcy_2030 = {
     'AT': {
         'bio': 0.8,
-        'coal': 0.75,
-        'lig': 0.8,
+        'coal': 0,
+        'lig': 0,
         'ng': 0.85,
         'nuc': 0.8,
         'oil': 0.85
@@ -195,7 +195,7 @@ WONLIM = df2gdx(db_input, df_wonlim, 'WON_LIMIT', 'par', 0, 'upper limit on onsh
 os.chdir(os.path.join(cfg.folder, 'medea', 'opt'))
 
 for it in scenario_AT2030['lim_wind_on']:
-    scenario_name = f'PoBu_fxbal_lcoeq_wonmx{it}'
+    scenario_name = f'PoBu_maxwind_AT_{it}'
     # modify wind_on limit
     reset_parameter(db_input, 'WON_LIMIT', pd.DataFrame(data=[it]))
     # export gdx
