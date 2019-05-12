@@ -85,9 +85,9 @@ scenario_DE2030 = {
     'av_Oil': [0.8],
     'av_Biomass': [0.85],
     # expansion of res generation as laid out in German EEG 2017 by 2030: 90.8 GW onshore, 15 GW offshore, 73 GWp PV
-    'c_wind_on': [1.808],
-    'c_wind_off': [2.764],
-    'c_pv': [1.724]
+    'c_wind_on': [1.0],  # [1.808],
+    'c_wind_off': [1.0],  # [2.764],
+    'c_pv': [1.0]  # [1.724]
 }
 
 # Austria 2030: additional electricity consumption due to electric mobility, heating, industry

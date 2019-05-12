@@ -7,7 +7,7 @@ import config as cfg
 from medea.gams_wrappers import gdx2df
 
 output_folder = 'PolicyBurden'
-campaign_string = 'PoBu_nobal_lcoeq_wonmx'
+campaign_string = 'PoBu_maxwind_AT_'
 directory = os.path.join(cfg.folder, 'medea', 'opt')
 
 ws = GamsWorkspace(system_directory=cfg.gams_sysdir)
