@@ -90,7 +90,7 @@ $load  FEASIBLE_INPUT FEASIBLE_OUTPUT GEN_PROFILE HSP_PROPERTIES IMPORT_FLOWS
 $load  INSTALLED_CAP_ITM INSTALLED_CAP_THERM INVESTCOST_ITM INVESTCOST_THERMAL
 $load  NTC NUM OM_FIXED_COST OM_VARIABLE_COST PRICE_DA PRICE_EUA
 $load  PRICE_FUEL RESERVOIR_INFLOWS SWITCH_INVEST_THERM SWITCH_INVEST_ITM
-$load  WON_LIMIT
+* $load  WON_LIMIT
 $gdxin
 
 ********************************************************************************
@@ -115,6 +115,12 @@ OM_VAR_COST('AT','coal_usc_chp') = OM_VARIABLE_COST('coal_usc_chp') + 10;
 OM_VAR_COST('AT','coal_igcc') = OM_VARIABLE_COST('coal_igcc') + 10;
 *display OM_VAR_COST;
 
+
+parameter
+FullLoadHours(r,tec_itm);
+FullLoadHours(r,tec_itm) = sum(t, GEN_PROFILE(r,t,tec_itm));
+display FullLoadHours;
+$exit
 
 ********************************************************************************
 ********** variable declaration
@@ -197,7 +203,7 @@ obj_costreg(r)..                 cost(r)
                                  + cost_invgen(r)
                                  + 12500 * sum((t,prd), q_nonserved(r,t,prd))
                                  + 110 * sum((t,prd), q_curtail(r,t,prd))
-                                 + 1000 * cost_gridexpansion(r)
+                                 + 10000 * cost_gridexpansion(r)
                                  ;
 obj_fuelcost(r,t,tec)..          cost_fuel(r,t,tec)
                                  =E=
@@ -371,7 +377,7 @@ policy_fixgen..                  sum((t,tec), q_gen('AT',t,tec,'power') )
                                  ;
 policy_emlim..                   emissions('DE')
                                  =L=
-                                 183000
+                                 179000
                                  ;
 * ------------------------------------------------------------------------------
 * switches for long-term vs short-term model version
@@ -381,6 +387,7 @@ decommission.UP(r,tec) =         SWITCH_INVEST_THERM;
 invest_res.UP(r,tec_itm) =       SWITCH_INVEST_ITM;
 invest_res.FX(r,'ror') =         0;
 invest_res.UP('AT','wind_on') =  WON_LIMIT;
+ntc_invest.UP(r,rr) =            0;  # NTC(r,rr);
 
 * ------------------------------------------------------------------------------
 * restrict fuel use according to technology
@@ -398,7 +405,7 @@ model medea / all - policy_fixgen - policy_balancedflows /;
 *res_level.FX(r,end_t,tec_hsp)    $FINAL_STORAGE(r,end_t,tec_hsp)         = FINAL_STORAGE(r,end_t,tec_hsp);
 
 options
-LP = OSIGurobi,
+*LP = OSIGurobi,
 reslim = 54000,
 threads = 8,
 optCR = 0.01,

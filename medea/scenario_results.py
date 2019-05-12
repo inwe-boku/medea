@@ -93,7 +93,7 @@ scenario_DE2030 = {
 # Austria 2030: additional electricity consumption due to electric mobility, heating, industry
 scenario_AT2030 = {
     'd_Power': [1.18276362],
-    'lim_wind_on': list(range(0, 12, 1))
+    'lim_wind_on': list(range(110, 111, 1))
 }
 
 # --------------------------------------------------------------------------- #
@@ -195,7 +195,7 @@ WONLIM = df2gdx(db_input, df_wonlim, 'WON_LIMIT', 'par', 0, 'upper limit on onsh
 os.chdir(os.path.join(cfg.folder, 'medea', 'opt'))
 
 for it in scenario_AT2030['lim_wind_on']:
-    scenario_name = f'PoBu_maxwind_AT_{it}'
+    scenario_name = f'PoBu_uncons_{it}'
     # modify wind_on limit
     reset_parameter(db_input, 'WON_LIMIT', pd.DataFrame(data=[it]))
     # export gdx
