@@ -45,7 +45,8 @@ EMISSION_INTENSITY = df2gdx(db, df_emission_intensity, 'EMISSION_INTENSITY', 'pa
                             '[kt CO2 per GWh fuel input]')
 FIXED_OM_COST = df2gdx(db, data_technology['om_fix'], 'OM_FIXED_COST', 'par', [tec_set], '[kEUR per GW]')
 VARIABLE_OM_COST = df2gdx(db, data_technology['om_var'], 'OM_VARIABLE_COST', 'par', [tec_set], '[kEUR per GWh]')
-INVESTCOST_ITM = df2gdx(db, df_itm_invest.round(4), 'INVESTCOST_ITM', 'par', [tec_itm_set], '[kEUR per GW]')
+INVESTCOST_ITM = df2gdx(db, df_itm_invest.stack().reorder_levels([1, 0]).round(4), 'INVESTCOST_ITM', 'par',
+                        [r_set, tec_itm_set], '[kEUR per GW]')
 INVESTCOST_THERMAL = df2gdx(db, data_technology['annuity'].round(4),
                             'INVESTCOST_THERMAL', 'par', [tec_set], '[kEUR per GW]')
 INSTALLED_CAP_ITM = df2gdx(db, df_itm_cap, 'INSTALLED_CAP_ITM', 'par', [r_set, tec_itm_set], '[GW]')

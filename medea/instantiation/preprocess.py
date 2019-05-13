@@ -49,7 +49,7 @@ efficiency_electric = {'nuc': 0.34, 'lig_stm': 0.33, 'lig_stm_chp': 0.33, 'lig_b
                        'ng_boiler_chp': 0.90, 'oil_stm': 0.31, 'oil_stm_chp': 0.31, 'oil_cbt': 0.35,
                        'oil_cbt_chp': 0.35, 'oil_cc': 0.42, 'oil_cc_chp': 0.42, 'hyd_ror': 0.98, 'hyd_res': 0.94,
                        'hyd_psp': 0.8, 'bio': 0.35, 'bio_chp': 0.35}
-df_efficiency = pd.DataFrame().from_dict(efficiency_electric, orient='index', columns=['l1'])
+df_efficiency = pd.DataFrame.from_dict(efficiency_electric, orient='index', columns=['l1'])
 dict_name2fuel = {'nuc': 'Nuclear', 'lig': 'Lignite', 'coal': 'Coal', 'ng': 'Gas', 'oil': 'Oil', 'bio': 'Biomass'}
 df_efficiency['product'] = 'power'
 df_efficiency['fuel'] = df_efficiency.index.to_series().str.split('_').str.get(0).replace(dict_name2fuel)
@@ -70,7 +70,8 @@ df_itm_cap = data_itm_cap.loc[cfg.year, :]
 
 data_itm_invest = pd.read_excel(os.path.join(cfg.folder, 'data', 'processed', 'plant_props.xlsx'), 'itm_invest',
                                 index_col=[0])
-df_itm_invest = data_itm_invest.loc[:, 'annuity']
+df_itm_invest = data_itm_invest.loc[:, [f'annuity-{r}' for r in cfg.regions]]
+df_itm_invest.columns = pd.MultiIndex.from_product([['annuity'], cfg.regions])
 
 data_technology = pd.read_excel(os.path.join(cfg.folder, 'data', 'processed', 'plant_props.xlsx'), 'flex_params')
 

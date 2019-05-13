@@ -55,7 +55,7 @@ parameters
          IMPORT_FLOWS(r,t)               imports from regions not modelled [GW]
          INSTALLED_CAP_ITM(r,tec_itm)    installed intermittent capacities [GW]
          INSTALLED_CAP_THERM(r,tec)      installed thermal capacities [GW]
-         INVESTCOST_ITM(tec_itm)         annuity of investment in 1 GW intermittent technology
+         INVESTCOST_ITM(r,tec_itm)       annuity of investment in 1 GW intermittent technology
          INVESTCOST_THERMAL(tec)         annuity of investment in 1 GW thermal generation technology
          MAX_EMISSIONS(r)                upper emission limit
          NTC(r,rr)                       net transfer capacity from region r to region rr
@@ -90,7 +90,7 @@ $load  FEASIBLE_INPUT FEASIBLE_OUTPUT GEN_PROFILE HSP_PROPERTIES IMPORT_FLOWS
 $load  INSTALLED_CAP_ITM INSTALLED_CAP_THERM INVESTCOST_ITM INVESTCOST_THERMAL
 $load  NTC NUM OM_FIXED_COST OM_VARIABLE_COST PRICE_DA PRICE_EUA
 $load  PRICE_FUEL RESERVOIR_INFLOWS SWITCH_INVEST_THERM SWITCH_INVEST_ITM
-* $load  WON_LIMIT
+$load  WON_LIMIT
 $gdxin
 
 ********************************************************************************
@@ -120,7 +120,6 @@ parameter
 FullLoadHours(r,tec_itm);
 FullLoadHours(r,tec_itm) = sum(t, GEN_PROFILE(r,t,tec_itm));
 display FullLoadHours;
-$exit
 
 ********************************************************************************
 ********** variable declaration
@@ -221,7 +220,7 @@ obj_omcost(r,tec)..              cost_om(r,tec)
 obj_invgencost(r)..              cost_invgen(r)
                                  =E=
                                  sum(tec, INVESTCOST_THERMAL(tec) * invest_thermal(r,tec))
-                                 + sum(tec_itm, INVESTCOST_ITM(tec_itm) * invest_res(r,tec_itm))
+                                 + sum(tec_itm, INVESTCOST_ITM(r,tec_itm) * invest_res(r,tec_itm))
                                  ;
 obj_gridcost(r)..                cost_gridexpansion(r)
                                  =E=
