@@ -30,6 +30,8 @@ r_set = df2gdx(db, df_regions, 'r', 'set', [])
 tec_set = df2gdx(db, data_technology['medea_type'], 'tec', 'set', [])
 tec_chp_set = df2gdx(db, pd.DataFrame.from_dict({x: True for x in [y for y in data_technology.index if 'chp' in y]},
                                                 orient='index'), 'tec_chp', 'set', [])
+tec_pth_set = df2gdx(db, pd.DataFrame.from_dict({x: True for x in [y for y in data_technology.index if 'pth' in y]},
+                                                orient='index'), 'tec_pth', 'set', [])
 tec_hsp_set = df2gdx(db, df_tec_hsp, 'tec_hsp', 'set', [])
 tec_itm_set = df2gdx(db, df_tec_itm, 'tec_itm', 'set', [])
 t_set = df2gdx(db, df_time, 't', 'set', [])
@@ -45,7 +47,8 @@ EMISSION_INTENSITY = df2gdx(db, df_emission_intensity, 'EMISSION_INTENSITY', 'pa
                             '[kt CO2 per GWh fuel input]')
 FIXED_OM_COST = df2gdx(db, data_technology['om_fix'], 'OM_FIXED_COST', 'par', [tec_set], '[kEUR per GW]')
 VARIABLE_OM_COST = df2gdx(db, data_technology['om_var'], 'OM_VARIABLE_COST', 'par', [tec_set], '[kEUR per GWh]')
-INVESTCOST_ITM = df2gdx(db, df_itm_invest.round(4), 'INVESTCOST_ITM', 'par', [tec_itm_set], '[kEUR per GW]')
+INVESTCOST_ITM = df2gdx(db, df_itm_invest.stack().reorder_levels([1, 0]).round(4), 'INVESTCOST_ITM', 'par',
+                        [r_set, tec_itm_set], '[kEUR per GW]')
 INVESTCOST_THERMAL = df2gdx(db, data_technology['annuity'].round(4),
                             'INVESTCOST_THERMAL', 'par', [tec_set], '[kEUR per GW]')
 INSTALLED_CAP_ITM = df2gdx(db, df_itm_cap, 'INSTALLED_CAP_ITM', 'par', [r_set, tec_itm_set], '[GW]')

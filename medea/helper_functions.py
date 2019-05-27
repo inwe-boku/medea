@@ -5,6 +5,12 @@ import pandas as pd
 from medea.gams_wrappers import gdx2df
 
 
+def is_leapyear(year):
+    """Determine whether a given year is a leapyear"""
+    flag = year % 400 == 0 or (year % 4 == 0 and year % 100 != 0)
+    return flag
+
+
 def solve_gams(gams_dir, gms_model, gdx_out, scenario_name):
     subprocess.run(f'{gams_dir}\\gams {gms_model} {gdx_out} lo=3 --scenario={scenario_name}')
 
