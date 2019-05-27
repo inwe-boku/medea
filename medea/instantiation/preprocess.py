@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 import config as cfg
+from medea.helper_functions import is_leapyear
 
 # --------------------------------------------------------------------------- #
 # %% settings and initializing
@@ -31,8 +32,12 @@ df_regions = pd.DataFrame(data=True, index=cfg.regions, columns=['Value'])
 df_tec_itm = pd.DataFrame(data=True, index=['pv', 'ror', 'wind_on', 'wind_off'], columns=['Value'])
 df_tec_hsp = pd.DataFrame(data=True, index=['psp_day', 'psp_week', 'psp_season', 'res_day', 'res_week', 'res_season'],
                           columns=['Value'])
-df_time = pd.DataFrame({f't{hour}': True for hour in range(1, 8761)}.values(),
-                       index={f't{hour}': True for hour in range(1, 8761)}.keys(), columns=['Value'])
+if is_leapyear(cfg.year):
+    df_time = pd.DataFrame({f't{hour}': True for hour in range(1, 8785)}.values(),
+                           index={f't{hour}': True for hour in range(1, 8785)}.keys(), columns=['Value'])
+else:
+    df_time = pd.DataFrame({f't{hour}': True for hour in range(1, 8761)}.values(),
+                           index={f't{hour}': True for hour in range(1, 8761)}.keys(), columns=['Value'])
 
 # --------------------------------------------------------------------------- #
 # %% prepare static data
@@ -48,10 +53,12 @@ efficiency_electric = {'nuc': 0.34, 'lig_stm': 0.33, 'lig_stm_chp': 0.33, 'lig_b
                        'ng_cc_lo_chp': 0.38, 'ng_cc_hi': 0.55, 'ng_cc_hi_chp': 0.55, 'ng_mtr': 0.40, 'ng_mtr_chp': 0.40,
                        'ng_boiler_chp': 0.90, 'oil_stm': 0.31, 'oil_stm_chp': 0.31, 'oil_cbt': 0.35,
                        'oil_cbt_chp': 0.35, 'oil_cc': 0.42, 'oil_cc_chp': 0.42, 'hyd_ror': 0.98, 'hyd_res': 0.94,
-                       'hyd_psp': 0.8, 'bio': 0.35, 'bio_chp': 0.35}
+                       'hyd_psp': 0.8, 'bio': 0.35, 'bio_chp': 0.35, 'heatpump_pth': 3.0}
 df_efficiency = pd.DataFrame.from_dict(efficiency_electric, orient='index', columns=['l1'])
-dict_name2fuel = {'nuc': 'Nuclear', 'lig': 'Lignite', 'coal': 'Coal', 'ng': 'Gas', 'oil': 'Oil', 'bio': 'Biomass'}
+dict_name2fuel = {'nuc': 'Nuclear', 'lig': 'Lignite', 'coal': 'Coal', 'ng': 'Gas', 'oil': 'Oil', 'bio': 'Biomass',
+                  'heatpump': 'Power'}
 df_efficiency['product'] = 'power'
+df_efficiency.loc[df_efficiency.index.str.contains('pth'), 'product'] = 'heat'
 df_efficiency['fuel'] = df_efficiency.index.to_series().str.split('_').str.get(0).replace(dict_name2fuel)
 df_efficiency.set_index(['product', 'fuel'], append=True, inplace=True)
 df_efficiency.index.set_names(['medea_type', 'product', 'fuel_name'], inplace=True)
@@ -108,6 +115,12 @@ dict_boil_props = {('cap', 'AT'): 4.5, ('cap', 'DE'): 25.5, ('eta', 'AT'): 0.9, 
                    ('count', 'AT'): 15, ('count', 'DE'): 85, ('num', 'AT'): 85, ('num', 'DE'): 255}
 tec_props = tec_props.append(pd.DataFrame(data=dict_boil_props.values(), index=dict_boil_props.keys(),
                                           columns=[49.5]).T)
+# add data for heatpumps
+dict_htpump_props = {('cap', 'AT'): 0.1, ('cap', 'DE'): 0.1, ('eta', 'AT'): 3.0, ('eta', 'DE'): 3.0,
+                     ('count', 'AT'): 1, ('count', 'DE'): 1, ('num', 'AT'): 1, ('num', 'DE'): 1}
+tec_props = tec_props.append(pd.DataFrame(data=dict_htpump_props.values(), index=dict_htpump_props.keys(),
+                                          columns=[100.0]).T)
+
 for reg in cfg.regions:
     tec_props.loc[:, 'eta'].update(pd.DataFrame.from_dict(efficiency_electric, orient='index', columns=[reg]),
                                    overwrite=False)

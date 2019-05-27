@@ -30,6 +30,13 @@ ts_medea.rename(columns={'AT_load_entsoe_transparency': 'AT-power-load',
                          'DE_wind_onshore_profile': 'DE-wind_on-profile',
                          'DE_wind_offshore_profile': 'DE-wind_off-profile',
                          'DE_price_day_ahead': 'price_day_ahead'}, inplace=True)
+if ts_medea.index.max() < pd.Timestamp(f'{ts_medea.index.max().year}-07-01 00:00:00', tz='UTC'):
+    df_expand = pd.DataFrame(
+        index=pd.date_range(start=ts_medea.index.max()+pd.Timedelta(hours=1),
+                            end=pd.Timestamp(f'{ts_medea.index.max().year}-07-01 00:00:00', tz='UTC'), freq='H'),
+        columns=ts_medea.columns)
+    ts_medea = ts_medea.append(df_expand)
+
 ts_medea['AT-power-load'] = ts_medea['AT-power-load'] / 1000
 ts_medea['DE-power-load'] = ts_medea['DE-power-load'] / 1000
 ts_medea['AT-pv-generation'] = ts_medea['AT-pv-generation'] / 1000
@@ -39,7 +46,7 @@ ts_medea['AT-wind_on-generation'] = ts_medea['AT-wind_on-generation'] / 1000
 itm_capacities = pd.read_excel(os.path.join(cfg.folder, 'data', 'processed', 'plant_props.xlsx'), 'itm_installed',
                                header=[0, 1], index_col=[0])
 itm_capacities['year'] = itm_capacities.index
-itm_capacities['date'] = pd.to_datetime(itm_capacities['year'] + 1, format='%Y', utc='true') - pd.Timedelta(hours=1)
+itm_capacities['date'] = pd.to_datetime(itm_capacities['year'] + 1, format='%Y', utc='true') - pd.Timedelta(days=184)
 itm_capacities.set_index('date', inplace=True)
 ts_medea['AT-pv-capacity'] = itm_capacities[('AT', 'pv')]
 ts_medea['AT-pv-capacity'] = ts_medea['AT-pv-capacity'].interpolate()
@@ -98,10 +105,21 @@ for reg in cfg.regions:
     ts_medea.loc[ts_medea[f'{reg}-inflows-reservoir'] < 0, f'{reg}-inflows-reservoir'] = 0
 
 # fuel price data
-ts_prices = pd.read_excel(os.path.join(cfg.folder, 'data', 'raw', 'prices_medea.xlsx'), index_col=[0])
+df_fuels = pd.read_excel(os.path.join(cfg.folder, 'data', 'raw', 'monthly_fuel_prices.xlsx'), 'fuels_monthly',
+                         skiprows=[1, 2])  # , parse_dates=True)
+df_fuels.set_index('Date', inplace=True)
+ts_prices = df_fuels[['Ngas_Border_MWh', 'Brent_MWh', 'Coal_SA_MWh']]
+ts_prices = ts_prices.resample('H').interpolate('pchip')
+ts_prices.rename({'Ngas_Border_MWh': 'Gas', 'Coal_SA_MWh': 'Coal', 'Brent_MWh': 'Oil'}, axis=1, inplace=True)
 ts_prices.index = ts_prices.index.tz_localize('utc')
-ts_prices = ts_prices.resample('1H', convention='end').interpolate(method='pchip')  # .pad()
-ts_prices.drop(ts_prices.tail(1).index, inplace=True)
+df_eua =  pd.read_excel(os.path.join(cfg.folder, 'data', 'raw', 'monthly_fuel_prices.xlsx'), 'EUA_daily')
+df_eua.set_index('Date', inplace=True)
+df_eua.index = df_eua.index.tz_localize('utc')
+ts_prices['EUA'] = df_eua.resample('H').interpolate('pchip')
+# ts_prices = pd.read_excel(os.path.join(cfg.folder, 'data', 'raw', 'prices_medea.xlsx'), index_col=[0])
+# ts_prices.index = ts_prices.index.tz_localize('utc')
+# ts_prices = ts_prices.resample('1H', convention='end').interpolate(method='pchip')  # .pad()
+# ts_prices.drop(ts_prices.tail(1).index, inplace=True)
 ts_medea = pd.merge(ts_medea, ts_prices, how='outer', left_index=True, right_index=True)
 
 # Write only one date, call that column DateTime

@@ -7,7 +7,7 @@ import config as cfg
 from medea.gams_wrappers import gdx2df
 
 output_folder = 'PolicyBurden'
-campaign_string = 'PoBu_maxwind_AT_'
+campaign_string = 'PoBu_EUA60_htpmp'
 directory = os.path.join(cfg.folder, 'medea', 'opt')
 
 ws = GamsWorkspace(system_directory=cfg.gams_sysdir)
@@ -16,8 +16,8 @@ ws = GamsWorkspace(system_directory=cfg.gams_sysdir)
 #     if campaign_string in filename:
 
 df_all = pd.DataFrame()
-for num in range(0, 12):
-    filename = f'medea_out_{campaign_string}{num}.gdx'
+for num in range(0, 16):
+    filename = f'medea_out_{campaign_string}_{num}.gdx'
     db_output = ws.add_database_from_gdx(os.path.join(cfg.folder, 'medea', 'opt', filename))
 
     read_variables = {

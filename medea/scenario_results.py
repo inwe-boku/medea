@@ -73,27 +73,27 @@ capcy_2030 = {
 }
 
 # Germany 2030: nuclear exit, coal phase out, renewables expansion as in EEG 2017
-scenario_DE2030 = {
+scenario_RES_DE2030 = {
     # nuclear phase-out in Germany
-    'av_Nuclear': [0.0],
+    # 'av_Nuclear': [0.0],
     # reduction of coal and lignite capacities in line with coal phase-out
-    'av_Lignite': [0.45],
-    'av_Coal': [0.35],
-    'av_Coal_chp': [0.35],
-    'av_Gas': [0.9],
-    'av_Gas_chp': [1],
-    'av_Oil': [0.8],
-    'av_Biomass': [0.85],
+    # 'av_Lignite': [0.45],
+    # 'av_Coal': [0.35],
+    # 'av_Coal_chp': [0.35],
+    # 'av_Gas': [0.9],
+    # 'av_Gas_chp': [1],
+    # 'av_Oil': [0.8],
+    # 'av_Biomass': [0.85],
     # expansion of res generation as laid out in German EEG 2017 by 2030: 90.8 GW onshore, 15 GW offshore, 73 GWp PV
-    'c_wind_on': [1.0],  # [1.808],
-    'c_wind_off': [1.0],  # [2.764],
-    'c_pv': [1.0]  # [1.724]
+    'c_wind_on': [90.8],  # [1.808],
+    'c_wind_off': [15],  # [2.764],
+    'c_pv': [73]  # [1.724]
 }
 
 # Austria 2030: additional electricity consumption due to electric mobility, heating, industry
 scenario_AT2030 = {
     'd_Power': [1.18276362],
-    'lim_wind_on': list(range(110, 111, 1))
+    'lim_wind_on': list(range(0, 16, 1))
 }
 
 # --------------------------------------------------------------------------- #
@@ -159,31 +159,24 @@ for reg in cfg.regions:
             np.ceil(df_num[df_num.index.get_level_values(0).str.contains(reg) &
                            (df_num.index.get_level_values(1).str.contains(fu))] * capcy_2030[reg][fu])
 reset_parameter(db_input, 'NUM', df_num_mod)
+#                            (df_num.index.get_level_values(1).str.contains(fu))] * capcy[reg][fu])
 
-"""
-# feasible output of thermal plants
-df_feasgen_mod = df_feasgen
-for fl in traded_fuels:
-    df_feasgen_mod.loc[tec2fuel_map.loc[tec2fuel_map['f'] == fl, 'tec'], :] = \
-        df_feasgen_mod.loc[tec2fuel_map.loc[tec2fuel_map['f'] == fl, 'tec'], :] * baseline[f'av_{fl}'][0]
-#        df_feasgen_mod.loc[tec2fuel_map.loc[tec2fuel_map['f'] == fl, 'tec'], :] * scenario_DE2030[f'av_{fl}'][0]
-reset_parameter(db_input, 'FEASIBLE_OUTPUT', df_feasgen_mod)
-"""
 # renewables expansion in Germany
 df_capitm_mod = df_capitm
 for itm in itm_dict:
     if itm != 'ror':
-        df_capitm_mod.loc[idx['DE', itm], :] = df_capitm.loc[idx['DE', itm], :] * scenario_DE2030[f'c_{itm}'][0]
+        df_capitm_mod.loc[idx['DE', itm], :] = scenario_RES_DE2030[f'c_{itm}'][0]
 reset_parameter(db_input, 'INSTALLED_CAP_ITM', df_capitm_mod)
-
-# allow for investment and disinvestment
-reset_parameter(db_input, 'SWITCH_INVEST_THERM', pd.DataFrame([float('inf')], columns=['Value']))
-reset_parameter(db_input, 'SWITCH_INVEST_ITM', pd.DataFrame([float('inf')]))
+# df_capitm_mod.loc[idx['DE', itm], :] = df_capitm.loc[idx['DE', itm], :] * scenario_RES_DE2030[f'c_{itm}'][0]
 
 # additional electricity consumption in Austria
 df_load_mod = df_load
 df_load_mod.loc[idx['AT', :, 'Power'], :] = df_load_mod.loc[idx['AT', :, 'Power'], :] * scenario_AT2030['d_Power'][0]
 reset_parameter(db_input, 'CONSUMPTION', df_load_mod)
+
+# allow for investment and disinvestment
+reset_parameter(db_input, 'SWITCH_INVEST_THERM', pd.DataFrame([float('inf')], columns=['Value']))
+reset_parameter(db_input, 'SWITCH_INVEST_ITM', pd.DataFrame([float('inf')]))
 
 
 # %% iterate over changing values, i.e. over max wind_on capacity
@@ -191,21 +184,27 @@ reset_parameter(db_input, 'CONSUMPTION', df_load_mod)
 # create wind_on-limit parameter
 df_wonlim = pd.DataFrame(data=[0])
 WONLIM = df2gdx(db_input, df_wonlim, 'WON_LIMIT', 'par', 0, 'upper limit on onshore wind capacity addition')
+df_euafixed = pd.DataFrame(data=[0])
+EUA_SCENARIO = df2gdx(db_input, df_euafixed, 'EUA_SCENARIO', 'par', 0, 'EUA price - scenario')
 
 os.chdir(os.path.join(cfg.folder, 'medea', 'opt'))
 
-for it in scenario_AT2030['lim_wind_on']:
-    scenario_name = f'PoBu_uncons_{it}'
-    # modify wind_on limit
-    reset_parameter(db_input, 'WON_LIMIT', pd.DataFrame(data=[it]))
-    # export gdx
-    export_location = os.path.join(cfg.folder, 'medea', 'opt', f'MEDEA_{scenario_name}_data.gdx')
-    db_input.export(export_location)
-    # --------------------------------------------------------------------------- #
-    # call GAMS
-    gms_model = os.path.join(cfg.folder, 'medea', 'opt', 'medea_austria.gms')
-    gdx_out = f'gdx=medea_out_{scenario_name}.gdx'
-    subprocess.run(f'{cfg.gams_sysdir}\\gams {gms_model} {gdx_out} lo=3 --scenario={scenario_name}')
+for eua in range(30, 81, 10):
+    reset_parameter(db_input, 'EUA_SCENARIO', pd.DataFrame(data=[eua]))
+    for it in scenario_AT2030['lim_wind_on']:
+        scenario_name = f'PoBu_EUA20_curt_htpmp_{it}'
+        # modify wind_on limit
+        reset_parameter(db_input, 'WON_LIMIT', pd.DataFrame(data=[it]))
+        # export gdx
+        export_location = os.path.join(cfg.folder, 'medea', 'opt', f'MEDEA_{scenario_name}_data.gdx')
+        db_input.export(export_location)
+        # --------------------------------------------------------------------------- #
+        # call GAMS
+        gms_model = os.path.join(cfg.folder, 'medea', 'opt', 'medea_austria_htpmp.gms')
+        gdx_out = f'gdx=medea_out_{scenario_name}.gdx'
+        subprocess.run(f'{cfg.gams_sysdir}\\gams {gms_model} {gdx_out} lo=3 --scenario={scenario_name}')
+
+    # delete input
 
 
 """

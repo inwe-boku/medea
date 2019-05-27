@@ -32,7 +32,7 @@ sets
          tec_chp(tec)                    subset of CHP technologies
          tec_hsp                         hydro storage technologies
          tec_itm                         renewable generation technologies
-         t                               time - hours      / t1*t8760 /
+         t                               time - hours      / t1*t8784 /
          start_t(t)                      hour for initial values
          end_t(t)                        end time of iteration
 ;
@@ -106,20 +106,36 @@ PEAK_PROFILE(r,tec_itm) = smax(t, GEN_PROFILE(r,t,tec_itm) );
 display PEAK_LOAD, PEAK_PROFILE;
 
 OM_VAR_COST(r,tec) = OM_VARIABLE_COST(tec);
-OM_VAR_COST('AT','coal_sub') = OM_VARIABLE_COST('coal_sub') + 10;
-OM_VAR_COST('AT','coal_sub_chp') = OM_VARIABLE_COST('coal_sub_chp') + 10;
-OM_VAR_COST('AT','coal_sc') = OM_VARIABLE_COST('coal_sc') + 10;
-OM_VAR_COST('AT','coal_sc_chp') = OM_VARIABLE_COST('coal_sc_chp') + 10;
-OM_VAR_COST('AT','coal_usc') = OM_VARIABLE_COST('coal_usc') + 10;
-OM_VAR_COST('AT','coal_usc_chp') = OM_VARIABLE_COST('coal_usc_chp') + 10;
-OM_VAR_COST('AT','coal_igcc') = OM_VARIABLE_COST('coal_igcc') + 10;
+OM_VAR_COST('AT',tec) = OM_VARIABLE_COST(tec) + 3;
+OM_VAR_COST('AT','coal_sub') = OM_VARIABLE_COST('coal_sub') + 6;
+OM_VAR_COST('AT','coal_sub_chp') = OM_VARIABLE_COST('coal_sub_chp') + 6;
+OM_VAR_COST('AT','coal_sc') = OM_VARIABLE_COST('coal_sc') + 6;
+OM_VAR_COST('AT','coal_sc_chp') = OM_VARIABLE_COST('coal_sc_chp') + 6;
+OM_VAR_COST('AT','coal_usc') = OM_VARIABLE_COST('coal_usc') + 6;
+OM_VAR_COST('AT','coal_usc_chp') = OM_VARIABLE_COST('coal_usc_chp') + 6;
+OM_VAR_COST('AT','coal_igcc') = OM_VARIABLE_COST('coal_igcc') + 6;
 *display OM_VAR_COST;
 
-
 parameter
-FullLoadHours(r,tec_itm);
-FullLoadHours(r,tec_itm) = sum(t, GEN_PROFILE(r,t,tec_itm));
-display FullLoadHours;
+FULL_LOAD_HOURS(r,tec_itm);
+FULL_LOAD_HOURS(r,tec_itm) = sum(t, GEN_PROFILE(r,t,tec_itm));
+display FULL_LOAD_HOURS;
+
+parameter CONS(r,prd);
+CONS(r,prd) = sum(t, CONSUMPTION(r,t,prd));
+display CONS;
+
+parameter AVG_PRICE(f);
+AVG_PRICE(f) = sum(t, PRICE_FUEL(t,f)) / card(t);
+display AVG_PRICE;
+
+parameter AVG_PRICE_DA;
+AVG_PRICE_DA = sum(t, PRICE_DA(t)) / card(t);
+display AVG_PRICE_DA;
+
+parameter AVG_PRICE_EUA;
+AVG_PRICE_EUA = sum(t, PRICE_EUA(t)) / card(t);
+display AVG_PRICE_EUA;
 
 ********************************************************************************
 ********** variable declaration
@@ -175,6 +191,7 @@ equations
          emission_calculation            total CO2 emissions from fuel combustion
          decommission_limit              only active plants can be decommissioned
          ancillary_service               must-run for provision of ancillary services
+         curtail_limit                   only generation from intermittent sources can be curtailed
          flow_balance                    imports are exports from elsewhere
          flow_constraint_a               capacity restriction on exports
          flow_constraint_b               capacity restriction on imports
@@ -202,7 +219,7 @@ obj_costreg(r)..                 cost(r)
                                  + cost_invgen(r)
                                  + 12500 * sum((t,prd), q_nonserved(r,t,prd))
                                  + 110 * sum((t,prd), q_curtail(r,t,prd))
-                                 + 10000 * cost_gridexpansion(r)
+                                 + 2000 * cost_gridexpansion(r)
                                  ;
 obj_fuelcost(r,t,tec)..          cost_fuel(r,t,tec)
                                  =E=
@@ -233,13 +250,13 @@ SD_balance_el(r,t)..
                                  sum(tec,q_gen(r,t,tec,'power'))
                                  + sum(tec_hsp, q_turbine(r,t,tec_hsp))
                                  + sum(tec_itm, GEN_PROFILE(r,t,tec_itm) * (INSTALLED_CAP_ITM(r,tec_itm) + invest_res(r,tec_itm)) )
-*                                 + IMPORT_FLOWS(r,t)
+                                 + IMPORT_FLOWS(r,t)
                                  - q_curtail(r,t,'power')
                                  + q_nonserved(r,t,'power')
                                  =E=
                                  CONSUMPTION(r,t,'power')
                                  + sum(tec_hsp, q_pump(r,t,tec_hsp))
-*                                 + EXPORT_FLOWS(r,t)
+                                 + EXPORT_FLOWS(r,t)
                                  + sum(rr, flow(r,rr,t) )
                                  ;
 SD_balance_ht(r,t)..
@@ -350,9 +367,17 @@ ancillary_service(r,t)..
                                  + sum(tec_hsp, q_turbine(r,t,tec_hsp))
                                  + sum(tec_hsp, q_pump(r,t,tec_hsp))
                                  =G=
-                                 0.125 * PEAK_LOAD(r)
-                                 + 0.075 * sum(tec_itm$(NOT SAMEAS(tec_itm,'ror')),
+                                 0.25 * PEAK_LOAD(r)  # 0.125
+                                 + 0.15 * sum(tec_itm$(NOT SAMEAS(tec_itm,'ror')),  # 0.075
                                  PEAK_PROFILE(r,tec_itm) * (INSTALLED_CAP_ITM(r,tec_itm) + invest_res(r,tec_itm))
+                                 );
+* ------------------------------------------------------------------------------
+* curtail of intermittent generation only
+* ------------------------------------------------------------------------------
+curtail_limit(r,t)..             q_curtail(r,t,'power')
+                                 =L=
+                                 sum(tec_itm$(NOT SAMEAS(tec_itm,'ror')),
+                                     GEN_PROFILE(r,t,tec_itm) * (INSTALLED_CAP_ITM(r,tec_itm) + invest_res(r,tec_itm))
                                  );
 * ------------------------------------------------------------------------------
 * policy constraints
@@ -362,7 +387,7 @@ policy_100resbalance..           sum((t,tec_itm), GEN_PROFILE('AT',t,tec_itm) * 
                                  - sum((t,tec_hsp), q_pump('AT',t,tec_hsp) * HSP_PROPERTIES('AT',tec_hsp,'efficiency_pump'))
 *                                 - sum(t, q_curtail('AT',t,'power'))
                                  =G=
-                                 0.88 * sum(t, CONSUMPTION('AT',t,'power'))
+                                 0.90 * sum(t, CONSUMPTION('AT',t,'power'))
                                  ;
 policy_balancedflows..           sum((rr,t), flow('AT',rr,t))
                                  - sum(t, IMPORT_FLOWS('AT',t))
@@ -386,14 +411,17 @@ decommission.UP(r,tec) =         SWITCH_INVEST_THERM;
 invest_res.UP(r,tec_itm) =       SWITCH_INVEST_ITM;
 invest_res.FX(r,'ror') =         0;
 invest_res.UP('AT','wind_on') =  WON_LIMIT;
-ntc_invest.UP(r,rr) =            0;  # NTC(r,rr);
+invest_res.UP('DE','wind_off') = 15 - INSTALLED_CAP_ITM('DE','wind_off');
+ntc_invest.UP(r,rr) =            10 * NTC(r,rr);
 
 * ------------------------------------------------------------------------------
 * restrict fuel use according to technology
 * ------------------------------------------------------------------------------
 q_fueluse.UP(r,t,tec,f)$(NOT sum(prd,EFFICIENCY(tec,prd,f))) = 0;
 
-model medea / all - policy_fixgen - policy_balancedflows /;
+*PRICE_EUA(t) = 20;
+
+model medea / all - policy_fixgen - policy_balancedflows - policy_emlim /;
 
 ********************************************************************************
 ******* set starting values
@@ -425,6 +453,7 @@ solveStat = medea.solvestat;
 ******* system operations
 parameter
 annual_generation(r,prd),
+annual_generation_by_tec(r,tec,prd),
 annual_pumping(r),
 annual_turbining(r),
 annual_netflow(r),
@@ -434,9 +463,10 @@ annual_fixedimports,
 annual_curtail(r);
 
 annual_generation(r,prd) = sum((t,tec), q_gen.L(r, t, tec, prd));
+annual_generation_by_tec(r,tec,prd) = sum(t, q_gen.L(r, t, tec, prd));
 annual_pumping(r) = sum((t,tec_hsp), q_pump.L(r,t,tec_hsp));
 annual_turbining(r) = sum((t,tec_hsp), q_turbine.L(r,t,tec_hsp));
-annual_netflow(r) = sum(t, flow.L('AT',r,t));
+annual_netflow(rr) = sum(t, flow.L('AT',rr,t));
 annual_fueluse(r,f) = sum((t,tec), q_fueluse.L(r,t,tec,f));
 annual_fixedexports = sum(t, EXPORT_FLOWS('AT',t));
 annual_fixedimports = sum(t, IMPORT_FLOWS('AT',t));
@@ -449,6 +479,7 @@ parameter
 annual_price_el(r),
 annual_price_ht(r),
 annual_cost(r,tec),
+annual_revenue(r,tec),
 annual_surplus_therm(r,tec),
 annual_surplus_stor(r,tec_hsp),
 producer_surplus(r);
@@ -458,6 +489,9 @@ annual_price_ht(r) = sum(t, SD_balance_ht.M(r,t))/card(t);
 annual_cost(r,tec) = sum(t, cost_fuel.L(r,t,tec)
                          + cost_emission.L(r,t,tec)
                          + sum(prd, OM_VARIABLE_COST(tec) * q_gen.L(r,t,tec,prd)));
+annual_revenue(r,tec) = sum(t,
+                         SD_balance_el.M(r,t) * q_gen.L(r,t,tec,'power')
+                         + SD_balance_ht.M(r,t) * q_gen.L(r,t,tec,'heat'));
 annual_surplus_therm(r,tec) =   sum(t,
                          SD_balance_el.M(r,t) * q_gen.L(r,t,tec,'power')
                          + SD_balance_ht.M(r,t) * q_gen.L(r,t,tec,'heat')

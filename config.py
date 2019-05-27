@@ -14,7 +14,7 @@ from gams import *
 # set model type -- either 'linear' or 'clustered'
 model_type = 'linear'
 # set year of underlying simulation data -- currently available: [2013:2017]
-year = 2017
+year = 2016
 # set number of hours to be simulated in each iteration
 iter_range = 8760
 # set number of iterations for solving a full year (iter_range * iter_num must equal 8760!)
