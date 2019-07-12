@@ -33,7 +33,7 @@ efficiency = {
 # [capacities in 2030]
 # - thermal capacities relative to installed capacities in 2016
 # - intermittent capacities in GW(p)
-x = list(range(15, -1, -1))
+x = list(range(12, -1, -1))
 x.insert(0, float('inf'))
 scenario_2030 = {
     'AT': {

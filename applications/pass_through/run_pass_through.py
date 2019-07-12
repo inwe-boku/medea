@@ -5,6 +5,7 @@ use medea to estimate emission cost pass-through to electricity prices in the cu
 """
 
 import os
+import subprocess
 from shutil import copyfile
 
 import pandas as pd
@@ -153,9 +154,9 @@ for cap_scenario in range(0, 3, 1):   # capacity_scenarios:
         db_input.export(export_location)
 
         # call GAMS
-        gms_model = os.path.join(cfg.folder, 'applications', project, 'opt', 'medea_vanilla.gms')
+        gms_model = os.path.join(cfg.folder, 'applications', project, 'opt', 'medea_main.gms')
         gdx_out = f'gdx=medea_out_{scenario}.gdx'
-        subprocess.run(f'{cfg.gams_sysdir}\\gams {gms_model} {gdx_out} lo=3 --scenario={scenario}')
+        subprocess.run(f'{cfg.gams_sysdir}\\gams {gms_model} {gdx_out} lo=3 --project={project} --scenario={scenario}')
 
         # delete input
         if os.path.isfile(export_location):
