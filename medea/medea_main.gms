@@ -402,9 +402,10 @@ invest_ntc.UP(r,rr) =            SWITCH_INVEST_NTC(r,rr);
 * ==============================================================================
 * include specific changes
 * ==============================================================================
+$if not set project $goto next
 $include medea_%project%.gms
 * ==============================================================================
-
+$label next
 
 model medea / all /;
 
