@@ -5,7 +5,7 @@ import pandas as pd
 from gams import *
 
 import config as cfg
-from medea.gams_wrappers import gdx2df
+from legacy.gams_wrappers import gdx2df
 
 """
 solves medea regional models (iteratively), compiles and writes output to csv-files 

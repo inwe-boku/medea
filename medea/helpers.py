@@ -2,7 +2,7 @@ import subprocess
 
 import pandas as pd
 
-from medea.gams_wrappers import gdx2df
+from medea.gams_io import gdx2df
 
 
 def is_leapyear(year):
