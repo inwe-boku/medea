@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # --------------------------------------------------------------------------- #
 # config for power system model suite _medea_
-# @author: Sebastian Wehrle
+# @author: sweer
 # --------------------------------------------------------------------------- #
 
 import os
@@ -23,10 +23,20 @@ iter_num = 1
 iter_offset = 72
 # covered regions - currently available: 'AT', 'DE'
 regions = ['AT', 'DE']
-# enabled model features
-invest_renewables = True
-invest_conventionals = True
+# long-run (invest) vs short-run (no invest) model version
+long_run = True
 
+# [investment conditions]
+if long_run:
+    invest_renewables = True
+    invest_conventionals = True
+    invest_storage = True
+    invest_ntc = True
+else:
+    invest_renewables = False
+    invest_conventionals = False
+    invest_storage = False
+    invest_ntc = False
 
 # [package directory]
 sys_id = f'{sys.platform} {platform.node()}'

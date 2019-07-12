@@ -155,8 +155,8 @@ for cap_scenario in range(0, 3, 1):   # capacity_scenarios:
         # call GAMS
         gms_model = os.path.join(cfg.folder, 'applications', project, 'opt', 'medea_vanilla.gms')
         gdx_out = f'gdx=medea_out_{scenario}.gdx'
-        # subprocess.run(f'{cfg.gams_sysdir}\\gams {gms_model} {gdx_out} lo=3 --scenario={scenario}')
+        subprocess.run(f'{cfg.gams_sysdir}\\gams {gms_model} {gdx_out} lo=3 --scenario={scenario}')
 
         # delete input
-        # if os.path.isfile(export_location):
-        #    os.remove(export_location)
+        if os.path.isfile(export_location):
+            os.remove(export_location)

@@ -156,9 +156,6 @@ WIND_ON_LIMIT = df2gdx(db_input, pd.DataFrame(data=[0]), 'WIND_ON_LIMIT', 'par',
 FLOW_LIMIT = df2gdx(db_input, pd.DataFrame(data=[0]), 'FLOW_LIMIT', 'par', 0, 'max wind_on capacity addition')
 
 # emission prices
-# for scenario in electricity_exchange.keys():
-
-
 for peua in eua_range:
     reset_parameter(db_input, 'EUA_SCENARIO', pd.DataFrame(data=[peua]))
 
@@ -181,5 +178,5 @@ for peua in eua_range:
         subprocess.run(f'{cfg.gams_sysdir}\\gams {gms_model} {gdx_out} lo=3 --project={project} --scenario={scenario_string}')
 
         # delete input
-        # if os.path.isfile(export_location):
-        #    os.remove(export_location)
+        if os.path.isfile(export_location):
+            os.remove(export_location)

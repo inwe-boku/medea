@@ -67,22 +67,26 @@ df_efficiency.drop('hyd', level='fuel_name', inplace=True)
 # --------------------------------------------------------------------------- #
 # %% data inputs
 # --------------------------------------------------------------------------- #
-data_itm_cap = pd.read_excel(os.path.join(cfg.folder, 'medea', 'data', 'data_static.xlsx'), 'installed_itm',
-                             header=[0, 1], index_col=[0])
+data_itm_cap = pd.read_excel(os.path.join(cfg.folder, 'medea', 'data', 'processed', 'data_static.xlsx'),
+                             'installed_itm', header=[0, 1], index_col=[0])
 df_itm_cap = data_itm_cap.loc[cfg.year, :]
 
-df_itm_invest = pd.read_excel(os.path.join(cfg.folder, 'medea', 'data', 'data_static.xlsx'), 'invest_itm',
-                                header=[0, 1], index_col=[0])
+df_itm_invest = pd.read_excel(os.path.join(cfg.folder, 'medea', 'data', 'processed', 'data_static.xlsx'),
+                              'invest_itm', header=[0, 1], index_col=[0])
 
-data_technology = pd.read_excel(os.path.join(cfg.folder, 'medea', 'data', 'data_static.xlsx'), 'param_thermal')
+data_technology = pd.read_excel(os.path.join(cfg.folder, 'medea', 'data', 'processed', 'data_static.xlsx'),
+                                'param_thermal')
 
-data_feasops = pd.read_excel(os.path.join(cfg.folder, 'medea', 'data', 'data_static.xlsx'), 'feasgen_thermal')
+data_feasops = pd.read_excel(os.path.join(cfg.folder, 'medea', 'data', 'processed', 'data_static.xlsx'),
+                             'feasgen_thermal')
 
 data_technology.set_index('set_element', inplace=True)
 data_technology = data_technology.loc[(data_technology['medea_type'] < 60) | (data_technology['medea_type'] >= 70), :]
 
-data_hydstores = pd.read_excel(os.path.join(cfg.folder, 'medea', 'data', 'plant-list_hydro.xlsx'), 'opsd_hydro')
-data_ntc = pd.read_excel(os.path.join(cfg.folder, 'medea', 'data', 'data_static.xlsx'), 'NTC', index_col=[0])
+data_hydstores = pd.read_excel(os.path.join(cfg.folder, 'medea', 'data', 'processed', 'plant-list_hydro.xlsx'),
+                               'opsd_hydro')
+data_ntc = pd.read_excel(os.path.join(cfg.folder, 'medea', 'data', 'processed', 'data_static.xlsx'),
+                         'NTC', index_col=[0])
 data_ntc = data_ntc.loc[data_ntc.index.str.contains('|'.join(cfg.regions)),
                         data_ntc.columns.str.contains('|'.join(cfg.regions))] / 1000
 
@@ -90,7 +94,7 @@ data_ntc = data_ntc.loc[data_ntc.index.str.contains('|'.join(cfg.regions)),
 # %% preprocessing plant data
 # --------------------------------------------------------------------------- #
 # select active thermal plants
-data_plant = pd.read_excel(os.path.join(cfg.folder, 'medea', 'data', 'power_plant_db.xlsx'))
+data_plant = pd.read_excel(os.path.join(cfg.folder, 'medea', 'data', 'processed', 'power_plant_db.xlsx'))
 data_plant_active = data_plant[(data_plant['UnitOperOnlineDate'] < pd.Timestamp(cfg.year, 1, 1)) &
                                ((data_plant['UnitOperRetireDate'] > pd.Timestamp(cfg.year, 12, 31)) | np.isnat(
                                  data_plant['UnitOperRetireDate']))]
@@ -146,7 +150,8 @@ df_feasops = df_feasops / 10
 
 # hydro storage data
 # hydro storages
-hyd_store_data = pd.read_excel(os.path.join(cfg.folder, 'medea', 'data', 'plant-list_hydro.xlsx'), 'opsd_hydro')
+hyd_store_data = pd.read_excel(os.path.join(cfg.folder, 'medea', 'data', 'processed', 'plant-list_hydro.xlsx'),
+                               'opsd_hydro')
 # drop all ror data
 hyd_store_data.drop(hyd_store_data[hyd_store_data.technology == 'Run-of-river'].index, inplace=True)
 # filter out data without reservoir size in GWh
@@ -178,8 +183,8 @@ del hyd_store_data
 storage_clusters = hyd_store_clusters.loc[:, ['power_in', 'power_out', 'energy_max', 'efficiency_in', 'efficiency_out',
                                               'cost_power', 'cost_energy', 'inflow_factor']].copy()
 # append battery data
-df_inv_storage = pd.read_excel(os.path.join(cfg.folder, 'medea', 'data', 'data_static.xlsx'), 'invest_storage',
-                               header=[0, 1], index_col=[0])
+df_inv_storage = pd.read_excel(os.path.join(cfg.folder, 'medea', 'data', 'processed', 'data_static.xlsx'),
+                               'invest_storage', header=[0, 1], index_col=[0])
 
 dict_battery = {
     'power_in': [0],
@@ -202,7 +207,7 @@ storage_clusters = storage_clusters.append(df_battery)
 # --------------------------------------------------------------------------- #
 # %% process time series data
 # --------------------------------------------------------------------------- #
-ts_medea = pd.read_csv(os.path.join(cfg.folder, 'medea', 'data', 'medea_regional_timeseries.csv'))
+ts_medea = pd.read_csv(os.path.join(cfg.folder, 'medea', 'data', 'processed', 'medea_regional_timeseries.csv'))
 ts_medea['DateTime'] = pd.to_datetime(ts_medea['DateTime'])
 ts_medea.set_index('DateTime', inplace=True)
 # constrain data to scenario year
@@ -228,8 +233,8 @@ ts_medea['Biomass'] = 6.5
 
 model_prices = ['Coal', 'Oil', 'Gas', 'EUA', 'Nuclear', 'Lignite', 'Biomass', 'price_day_ahead']
 
-data_cost_transport = pd.read_excel(os.path.join(cfg.folder, 'medea', 'data', 'data_static.xlsx'), 'cost_transport',
-                                    header=[0], index_col=[0])
+data_cost_transport = pd.read_excel(os.path.join(cfg.folder, 'medea', 'data', 'processed', 'data_static.xlsx'),
+                                    'cost_transport', header=[0], index_col=[0])
 ts_price = pd.DataFrame(index=ts_medea.index, columns=pd.MultiIndex.from_product([model_prices, cfg.regions]))
 for reg in cfg.regions:
     for fuel in model_prices:
@@ -252,8 +257,8 @@ df_ancil = ts_regional.loc[:, idx[:, 'power', 'load']].max().unstack((1, 2)).squ
 # --------------------------------------------------------------------------- #
 # %% limits on investment - long-run vs short-run & # TODO: potentials
 # --------------------------------------------------------------------------- #
-invest_potentials = pd.read_excel(os.path.join(cfg.folder, 'medea', 'data', 'data_static.xlsx'), 'potentials',
-                                  header=[0], index_col=[0])
+invest_potentials = pd.read_excel(os.path.join(cfg.folder, 'medea', 'data', 'processed', 'data_static.xlsx'),
+                                  'potentials', header=[0], index_col=[0])
 lim_invest_thermal = pd.DataFrame([0])
 if cfg.invest_conventionals:
     lim_invest_thermal = pd.DataFrame([float('inf')])
