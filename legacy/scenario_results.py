@@ -12,7 +12,7 @@ import pandas as pd
 from gams import *
 
 import config as cfg
-from medea.gams_wrappers import reset_parameter, gdx2df, df2gdx
+from legacy.gams_wrappers import reset_parameter, gdx2df, df2gdx
 
 # %% scenario assumptions
 # Calibration of model (via efficiencies and capacities) to 2017 prices, fuel burn and emissions
@@ -189,10 +189,10 @@ EUA_SCENARIO = df2gdx(db_input, df_euafixed, 'EUA_SCENARIO', 'par', 0, 'EUA pric
 
 os.chdir(os.path.join(cfg.folder, 'medea', 'opt'))
 
-for eua in range(30, 81, 10):
+for eua in range(50, 61, 10):
     reset_parameter(db_input, 'EUA_SCENARIO', pd.DataFrame(data=[eua]))
     for it in scenario_AT2030['lim_wind_on']:
-        scenario_name = f'PoBu_EUA20_curt_htpmp_{it}'
+        scenario_name = f'PoBu_EUA{eua}_curt_htpmp_{it}'
         # modify wind_on limit
         reset_parameter(db_input, 'WON_LIMIT', pd.DataFrame(data=[it]))
         # export gdx

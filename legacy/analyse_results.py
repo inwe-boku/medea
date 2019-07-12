@@ -3,7 +3,7 @@ import os
 from gams import *
 
 import config as cfg
-from medea.gams_wrappers import gdx2df
+from legacy.gams_wrappers import gdx2df
 
 # df = pd.read_csv(os.path.join(cfg.folder, 'medea', 'opt'))
 run_string = 'PoBu_EUA20_curt_htpmp_1'

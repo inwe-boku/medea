@@ -4,10 +4,10 @@ import pandas as pd
 from gams import *
 
 import config as cfg
-from medea.gams_wrappers import gdx2df
+from legacy.gams_wrappers import gdx2df
 
 output_folder = 'PolicyBurden'
-campaign_string = 'PoBu_EUA60_htpmp'
+campaign_string = 'PoBu_EUA40_curt_htpmp'
 directory = os.path.join(cfg.folder, 'medea', 'opt')
 
 ws = GamsWorkspace(system_directory=cfg.gams_sysdir)

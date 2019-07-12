@@ -11,9 +11,9 @@ import pandas as pd
 from gams import *
 
 import config as cfg
-from medea.gams_wrappers import reset_parameter, gdx2df
-from medea.postprocessing.postprocess import postprocess
-from medea.solve import solve
+from legacy.gams_wrappers import reset_parameter, gdx2df
+from legacy.postprocessing.postprocess import postprocess
+from legacy.solve import solve
 
 # --------------------------------------------------------------------------- #
 # %% definition of scaling, carbon pricing and 'setting'

@@ -1,0 +1,18 @@
+# IDE
+.idea
+*.xml
+
+# GAMS
+*.gpr
+*.log
+*.lst
+*.lxi
+*.~gm
+
+# LaTex
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.spl
+*.synctex.gz
