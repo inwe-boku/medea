@@ -72,7 +72,7 @@ if not os.path.isfile(os.path.join(cfg.folder, 'applications', project, 'opt', '
              os.path.join(cfg.folder, 'applications', project, 'opt', 'medea_main.gms'))
 # fetch main gams data, if required
 if not os.path.isfile(os.path.join(cfg.folder, 'applications', project, 'opt', 'medea_main_data.gdx')):
-    copyfile(os.path.join(cfg.folder, 'medea', 'data', 'medea_main_data.gdx'),
+    copyfile(os.path.join(cfg.folder, 'medea', 'data', 'input', 'medea_main_data.gdx'),
              os.path.join(cfg.folder, 'applications', project, 'opt', 'medea_main_data.gdx'))
 
 ws = GamsWorkspace(system_directory=cfg.gams_sysdir)
@@ -159,5 +159,5 @@ for cap_scenario in range(0, 3, 1):   # capacity_scenarios:
         subprocess.run(f'{cfg.gams_sysdir}\\gams {gms_model} {gdx_out} lo=3 --project={project} --scenario={scenario}')
 
         # delete input
-        if os.path.isfile(export_location):
-            os.remove(export_location)
+        #if os.path.isfile(export_location):
+        #    os.remove(export_location)
