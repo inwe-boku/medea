@@ -263,12 +263,12 @@ caplim_generation(r,t,tec,prd)..
                                  SMAX(l, FEASIBLE_OUTPUT(tec,l,prd)) * (NUM(r,tec) - decommission(r,tec) + invest_thermal(r,tec) )
                                  ;
 nonchp_generation(r,t,tec)$(NOT tec_chp(tec))..
-                                 sum(f, q_fueluse(r,t,tec,f)*EFFICIENCY(tec,'power',f) )
+                                 sum(f, q_fueluse(r,t,tec,f) * EFFICIENCY(tec,'power',f) )
                                  =E=
                                  q_gen(r,t,tec,'power')
                                  ;
 pth_generation(r,t,tec)$(tec_pth(tec))..
-                                 sum(f, q_fueluse(r,t,tec,f)*EFFICIENCY(tec,'heat',f) )
+                                 sum(f, q_fueluse(r,t,tec,f) * EFFICIENCY(tec,'heat',f) )
                                  =E=
                                  q_gen(r,t,tec,'heat')
                                  ;
@@ -541,3 +541,16 @@ annual_price_el, annual_price_ht, annual_cost, annual_surplus_therm, annual_surp
 parameter AV_CAP(r, tec, prd);
 AV_CAP(r,tec,prd) = smax(l, FEASIBLE_OUTPUT(tec,l,prd)) * NUM(r,tec);
 display NUM, av_cap;
+
+******* marginals of equations
+parameter
+hourly_price_el(r,t),
+hourly_price_ht(r,t),
+hourly_price_ancillary(r,t),
+hourly_price_exports(r,rr,t)
+;
+
+hourly_price_el(r,t) = SD_balance_el.M(r,t);
+hourly_price_ht(r,t) = SD_balance_ht.M(r,t);
+hourly_price_ancillary(r,t) = ancillary_service.M(r,t);
+hourly_price_exports(r,rr,t) = flow_balance.M(r,rr,t);

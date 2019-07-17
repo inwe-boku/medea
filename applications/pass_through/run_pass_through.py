@@ -7,61 +7,12 @@ use medea to estimate emission cost pass-through to electricity prices in the cu
 import os
 import subprocess
 from shutil import copyfile
-
 import pandas as pd
 from gams import *
 
 import config as cfg
 from medea.gams_io import reset_parameter, gdx2df, df2gdx
-
-# ---------------------------------------------------------------
-# %% settings & scenario assumptions
-project = 'pass_through'
-
-# Calibration of model (via efficiencies and capacities) to 2017 prices, fuel burn and emissions
-fuels = ['Nuclear', 'Lignite', 'Gas', 'Oil', 'Coal', 'Biomass']
-techs = ['bio', 'coal', 'lig', 'ng', 'nuc', 'oil', 'wind_on', 'wind_off', 'pv']
-efficiency = {
-    # [plant efficiencies] -------------- #
-    'e_Nuclear': [1],
-    'e_Biomass': [1],
-    'e_Lignite': [1.15],
-    'e_Coal': [1.225],
-    'e_Gas': [1.15],
-    'e_Oil': [1]
-}
-
-capacity_scenario_name = ['cap_avail', 'cap_inst', 'cap_2030']
-
-capacity_scenarios = {
-    'AT': {
-        'bio': [0.8, 1, 0.8],
-        'coal': [0.75, 1, 0],
-        'heatpump': [1, 1, 1],
-        'lig': [0.8, 1, 0],
-        'ng': [0.85, 1, 0.85],
-        'nuc': [0, 0, 0],
-        'oil': [0.85, 1, 0.85],
-        'wind_on': [2, 2, 8],
-        'wind_off': [0, 0, 0],
-        'pv': [1, 1, 5]
-    },
-    'DE': {
-        'bio': [0.8, 1, 0.85],
-        'coal': [0.75, 1, 0.35],
-        'heatpump': [1, 1, 1],
-        'lig': [0.88, 1, 0.45],
-        'ng': [0.9, 1, 0.9],
-        'nuc': [0.72, 1, 0],
-        'oil': [0.9, 1, 0.9],
-        'wind_on': [50, 50, 90.8],
-        'wind_off': [5, 5, 15],
-        'pv': [50, 50, 73]
-    }
-}
-
-euarange = range(5, 76, 5)
-
+from applications.pass_through.settings_pass_through import *
 
 # --------------------------------------------------------------------------- #
 # %% initialize GAMS, GAMS workspace and load model data
@@ -144,20 +95,20 @@ for cap_scenario in range(0, 3, 1):   # capacity_scenarios:
     reset_parameter(db_input, 'INSTALLED_CAP_ITM', df_capitm_mod)
 
     # emission prices
-    for peua in euarange:
+    for peua in eua_range:
         reset_parameter(db_input, 'EUA_SCENARIO', pd.DataFrame(data=[peua]))
 
-        scenario = f'{capacity_scenario_name[cap_scenario]}_eua{peua}'
+        scenario_string = output_naming.format(capacity_scenario_name[cap_scenario], peua)
         # --------------------------------------------------------------------------- #
         # export gdx
-        export_location = os.path.join(cfg.folder, 'applications', project, 'opt', f'MEDEA_{scenario}_data.gdx')
+        export_location = os.path.join(cfg.folder, 'applications', project, 'opt', f'MEDEA_{scenario_string}_data.gdx')
         db_input.export(export_location)
 
         # call GAMS
         gms_model = os.path.join(cfg.folder, 'applications', project, 'opt', 'medea_main.gms')
-        gdx_out = f'gdx=medea_out_{scenario}.gdx'
-        subprocess.run(f'{cfg.gams_sysdir}\\gams {gms_model} {gdx_out} lo=3 --project={project} --scenario={scenario}')
+        gdx_out = f'gdx=medea_out_{scenario_string}.gdx'
+        subprocess.run(f'{cfg.gams_sysdir}\\gams {gms_model} {gdx_out} lo=3 --project={project} --scenario={scenario_string}')
 
         # delete input
-        #if os.path.isfile(export_location):
-        #    os.remove(export_location)
+        if os.path.isfile(export_location):
+            os.remove(export_location)
