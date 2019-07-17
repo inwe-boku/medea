@@ -1,9 +1,3 @@
-# -*- coding: utf-8 -*-
-# --------------------------------------------------------------------------- #
-# config for power system model suite _medea_
-# @author: sweer
-# --------------------------------------------------------------------------- #
-
 import os
 import platform
 import sys

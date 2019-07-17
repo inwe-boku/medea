@@ -1,9 +1,3 @@
-
-"""
-use medea to estimate impact of substituting pv for wind energy
-@author: sweer
-"""
-
 import os
 import subprocess
 from shutil import copyfile
@@ -12,66 +6,8 @@ import pandas as pd
 from gams import *
 
 import config as cfg
+from applications.wind_vs_pv.settings_wind_vs_pv import *
 from medea.gams_io import reset_parameter, gdx2df, df2gdx
-
-# ---------------------------------------------------------------
-# %% Settings & Scenario Assumptions
-project = 'wind_vs_pv'
-fuels = ['Nuclear', 'Lignite', 'Gas', 'Oil', 'Coal', 'Biomass']
-
-# calibration of power plant efficiencies
-efficiency = {
-    # [plant efficiencies]
-    'e_Nuclear': [1],
-    'e_Biomass': [1],
-    'e_Lignite': [1.15],
-    'e_Coal': [1.225],
-    'e_Gas': [1.15],
-    'e_Oil': [1]
-}
-
-# [capacities in 2030]
-# - thermal capacities relative to installed capacities in 2016
-# - intermittent capacities in GW(p)
-x = list(range(12, -1, -1))
-x.insert(0, float('inf'))
-scenario_2030 = {
-    'AT': {
-        'bio': [0.8],
-        'coal': [0],
-        'heatpump': [1],
-        'lig': [0],
-        'ng': [0.85],
-        'nuc': [0.8],
-        'oil': [0.85],
-        'wind_on': [2.6],
-        'wind_off': [0],
-        'pv': [1.1],
-        'd_power': [1.18276362],
-        'lim_wind_on': x
-    },
-    'DE': {
-        'bio': [0.85],
-        'coal': [0.35],
-        'heatpump': [1],
-        'lig': [0.45],
-        'ng': [0.9],
-        'nuc': [0.0],
-        'oil': [0.9],
-        'wind_on': [90.8],
-        'wind_off': [15],
-        'pv': [73]
-    }
-}
-
-# [CO2 emission prices]
-eua_range = range(10, 81, 10)
-
-# [electricity exchange]
-electricity_exchange = {
-    'Autarky': [0],
-    'Openness': [float('inf')]
-}
 
 # ---------------------------------------------------------------
 # %% initialize GAMS, GAMS workspace & load model data
@@ -155,18 +91,19 @@ EUA_SCENARIO = df2gdx(db_input, pd.DataFrame(data=[0]), 'EUA_SCENARIO', 'par', 0
 WIND_ON_LIMIT = df2gdx(db_input, pd.DataFrame(data=[0]), 'WIND_ON_LIMIT', 'par', 0, 'max wind_on capacity addition')
 FLOW_LIMIT = df2gdx(db_input, pd.DataFrame(data=[0]), 'FLOW_LIMIT', 'par', 0, 'max wind_on capacity addition')
 
-# emission prices
-for peua in eua_range:
-    reset_parameter(db_input, 'EUA_SCENARIO', pd.DataFrame(data=[peua]))
+for wind_limit in scenario_2030['AT']['lim_wind_on']:
+    scenario = 'Autarky' if wind_limit == float('inf') else 'Openness'
+    reset_parameter(db_input, 'FLOW_LIMIT', pd.DataFrame(data=electricity_exchange[scenario]))
 
-    for wind_limit in scenario_2030['AT']['lim_wind_on']:
-        scenario = 'Autarky' if wind_limit == float('inf') else 'Openness'
-        reset_parameter(db_input, 'FLOW_LIMIT', pd.DataFrame(data=electricity_exchange[scenario]))
+    # modify wind_on limit
+    reset_parameter(db_input, 'WIND_ON_LIMIT', pd.DataFrame(data=[wind_limit]))
 
-        # modify wind_on limit
-        reset_parameter(db_input, 'WIND_ON_LIMIT', pd.DataFrame(data=[wind_limit]))
+    # emission prices
+    for peua in eua_range:
+        reset_parameter(db_input, 'EUA_SCENARIO', pd.DataFrame(data=[peua]))
 
-        scenario_string = f'{scenario}_eua-{peua}_won-{wind_limit}'
+        # scenario_string = f'{scenario}_eua-{peua}_won-{wind_limit}'
+        scenario_string = output_naming.format(scenario, peua, wind_limit)
         # --------------------------------------------------------------------------- #
         # export gdx
         export_location = os.path.join(cfg.folder, 'applications', project, 'opt', f'MEDEA_{scenario_string}_data.gdx')
