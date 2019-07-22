@@ -41,9 +41,12 @@ def gdx2df(db_gams, symbol, index_list, column_list):
     elif isinstance(sym, GamsSet):
         raise ValueError('gdx2df for sets not yet implemented')
 
-    gdx_df = pd.DataFrame(list(gdx_dict.values()), index=pd.MultiIndex.from_tuples(gdx_dict.keys()), columns=['Value'])
-    gdx_df.index.names = db_gams.get_symbol(symbol).domains_as_strings
-    gdx_df = pd.pivot_table(gdx_df, values='Value', index=index_list, columns=column_list)
+    if not gdx_dict:
+        gdx_df = pd.DataFrame([False], index=[symbol], columns=['Value'])
+    else:
+        gdx_df = pd.DataFrame(list(gdx_dict.values()), index=pd.MultiIndex.from_tuples(gdx_dict.keys()), columns=['Value'])
+        gdx_df.index.names = db_gams.get_symbol(symbol).domains_as_strings
+        gdx_df = pd.pivot_table(gdx_df, values='Value', index=index_list, columns=column_list)
     if 't' in index_list:
         gdx_df.reset_index(inplace=True)
         gdx_df['tix'] = pd.to_numeric(gdx_df['t'].str.split(pat='t').str.get(1))
@@ -86,3 +89,4 @@ def df2gdx(db_gams, df, symbol_name, symbol_type, dimension_list, desc='None'):
     else:
         raise ValueError('improper symbol_type provided')
     return obj
+
