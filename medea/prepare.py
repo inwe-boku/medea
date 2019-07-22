@@ -134,8 +134,8 @@ tec_props = tec_props.dropna()
 
 df_feasops = data_feasops.copy()
 df_feasops['fuel_name'] = (df_feasops['medea_type']/10).apply(np.floor)*10
-df_feasops['fuel_name'] = df_feasops['fuel_name'].replace({y: x for x, y in fuel_set.items()})
 df_feasops['medea_type'] = df_map.loc[df_feasops['medea_type'], 'set_element'].values
+df_feasops['fuel_name'] = df_feasops['fuel_name'].replace({y: x for x, y in fuel_set.items()})
 df_feasops.dropna(inplace=True)
 df_feasops.set_index(['medea_type', 'l', 'fuel_name'], inplace=True)
 df_eff = df_efficiency.droplevel('product').stack().reorder_levels([0, 2, 1])
