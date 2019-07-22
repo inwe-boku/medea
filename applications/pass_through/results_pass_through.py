@@ -32,7 +32,7 @@ df_all = pd.DataFrame()
 for scenario in capacity_scenario_name:
 
     for peua in eua_range:
-        filename = 'testcase.gdx'  # f'medea_out_{output_naming}.gdx'.format(scenario, peua)
+        filename = f'medea_out_{output_naming}.gdx'.format(scenario, peua)
         db_output = ws.add_database_from_gdx(os.path.join(cfg.folder, 'applications', project, 'opt', filename))
 
         result_dict = {key: gdx2df(db_output, key, value[0], value[1])

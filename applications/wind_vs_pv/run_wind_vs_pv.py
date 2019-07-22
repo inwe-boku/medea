@@ -112,7 +112,8 @@ for wind_limit in scenario_2030['AT']['lim_wind_on']:
         # call GAMS
         gms_model = os.path.join(cfg.folder, 'applications', project, 'opt', 'medea_main.gms')
         gdx_out = f'gdx=medea_out_{scenario_string}.gdx'
-        subprocess.run(f'{cfg.gams_sysdir}\\gams {gms_model} {gdx_out} lo=3 --project={project} --scenario={scenario_string}')
+        gams_call = os.path.join(cfg.gams_sysdir, 'gams')
+        subprocess.run(f'{gams_call} {gms_model} {gdx_out} lo=3 --project={project} --scenario={scenario_string}')
 
         # delete input
         if os.path.isfile(export_location):
