@@ -3,15 +3,15 @@ import pandas as pd
 from gams import *
 
 
-def reset_parameter(gams_db, parameter_name, df):
+def reset_parameter(db_gams, parameter_name, df):
     """
     writes values in df to the already existing parameter "parameter name" in GAMS-database gams_db
-    :param gams_db: a GAMS database object
+    :param db_gams: a GAMS database object
     :param parameter_name: a string with the parameter name
     :param df: a pandas dataframe with one line per value and all correspondong dimensions in the index
     :return: modifies gams database, does not return anything
     """
-    gams_parameter = gams_db.get_parameter(parameter_name)
+    gams_parameter = db_gams.get_parameter(parameter_name)
     gams_parameter.clear()
     if gams_parameter.get_dimension() > 0:
         for row in df.itertuples():
