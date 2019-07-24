@@ -19,7 +19,7 @@ core model.
 A medea call including these options and dumping the results to `output.gdx` might then look like
 ```
 gams medea_main.gms --scenario=scenario --project=project --gdx=output.gdx
-``` 
+```
 This run requires the files `medea_project.gms` and `medea_scenario_data.gdx` to be present in the folder where the 
 model is executed. Otherwise _medea_ will run in its base version, i.e. without model or data adaptations.
 
