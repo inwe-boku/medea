@@ -1,4 +1,3 @@
-import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import pandas as pd
 from gams import *
@@ -92,7 +91,8 @@ def df2gdx(db_gams, df, symbol_name, symbol_type, dimension_list, desc='None'):
         raise ValueError('improper symbol_type provided')
     return obj
 
-def gdx2plot(db_gams, symbol, index_list, column_list, base_year, xlabel, ylabel):
+
+def gdx2plot(db_gams, symbol, index_list, column_list, base_year, slicer=None, stacked=False):
     """
     function to create plots from gdx files
     :param db_gams: a python-GAMS database
@@ -100,33 +100,36 @@ def gdx2plot(db_gams, symbol, index_list, column_list, base_year, xlabel, ylabel
     :param index_list: set(s) to be used as index
     :param column_list: set(s) to be used as columns
     :param base_year: year of model simulation
-    :param xlabel: x-axis label-string on plot
-    :param ylabel: y-axis label-string on plot
+    :param slicer: slices the column-data
     :return:
     """
+    idx = pd.IndexSlice
     df = gdx2df(db_gams, symbol, index_list, column_list)
+    df = df.loc[:, (df != 0).any(axis=0)]
+    if slicer:
+        df = df.loc[:, idx[slicer]]
 
+    # convert model time to actual time
     if 't' in index_list:
-        # convert model time to actual time
         start_time = pd.Timestamp(f'{base_year}-01-01')
         time_offset = pd.to_timedelta(df.index.str.replace('t', '').astype('float'), unit='h')
         model_time = start_time + time_offset
         df.index = model_time
 
     # plot data
-    fig, ax = plt.subplots(figsize=(8, 5))
 
-    ax.plot(df)
+    fig, ax = plt.subplots(figsize=(16, 10))  # figsize=(16, 10)
+
+    if not stacked:
+        ax.plot(df)
+    elif stacked:
+        ax.stackplot(df.index, df.T)
+
     ax.grid(b=True, which='both')
 
-    if xlabel:
-        ax.set_xlabel(xlabel)
-    if ylabel:
-        ax.set_ylabel(ylabel)
-
-    ax.legend(symbol)
-
+    ax.legend(df.columns.values)
     fig.autofmt_xdate()
-    ax.xaxis.set_major_formatter(mdates.DateFormatter('%a, %m/%d'))
-
+    fig.suptitle(symbol, y=0.9975)
     fig.tight_layout()
+    plt.show()
+    return df

@@ -17,7 +17,7 @@ $gdxin
 PRICE_EUA(t,r) = EUA_SCENARIO;
 
 invest_res.UP('AT','wind_on') =  WIND_ON_LIMIT;
-invest_res.UP('AT','pv') = 16;
+invest_res.UP('AT','pv') = 32.5;
 
 flow.UP(r,rr,t) = FLOW_LIMIT;
 flow.LO(r,rr,t) = -FLOW_LIMIT;
