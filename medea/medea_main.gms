@@ -69,7 +69,7 @@ parameters
          INVESTCOST_ITM(r,tec_itm)               annuity of investment in 1 GW intermittent technology
          INVESTCOST_THERMAL(tec)                 annuity of investment in 1 GW thermal generation technology
          MAX_EMISSIONS(r)                        upper emission limit
-         NTC(r,rr)                               net transfer capacity from region r to region rr
+         ATC(r,rr)                               net transfer capacity from region r to region rr
          NUM(r,tec)                              number of installed 100 MW capacity slices of each technology
          OM_FIXED_COST(tec)                      quasifixed cost of operation & maintenance
          OM_VARIABLE_COST(tec)                   variable cost of operation & maintenance
@@ -81,7 +81,7 @@ parameters
          SWITCH_INVEST_THERM                     switch for investment in thermal units
          SWITCH_INVEST_ITM(r,tec_itm)            switch for investment in intermittents
          SWITCH_INVEST_STORAGE(r, tec_strg)      switch for investment in storage technologies
-         SWITCH_INVEST_NTC(r,rr)                 switch for investment in interconnectors
+         SWITCH_INVEST_ATC(r,rr)                 switch for investment in interconnectors
 ;
 * starting and ending values (mostly for intra-year iterations)
 parameters
@@ -100,9 +100,9 @@ $load  f l t tec tec_chp tec_strg tec_itm tec_pth prd props r
 $load  ANCIL_SERVICE_LVL CONSUMPTION EMISSION_INTENSITY FLOW_EXPORT EFFICIENCY
 $load  FEASIBLE_INPUT FEASIBLE_OUTPUT GEN_PROFILE STORAGE_PROPERTIES FLOW_IMPORT
 $load  INSTALLED_CAP_ITM INSTALLED_CAP_THERM INVESTCOST_ITM INVESTCOST_THERMAL
-$load  NTC NUM OM_FIXED_COST OM_VARIABLE_COST PRICE_DA PRICE_EUA
+$load  ATC NUM OM_FIXED_COST OM_VARIABLE_COST PRICE_DA PRICE_EUA
 $load  PRICE_FUEL RESERVOIR_INFLOWS SWITCH_INVEST_THERM SWITCH_INVEST_ITM
-$load  SWITCH_INVEST_STORAGE SWITCH_INVEST_NTC
+$load  SWITCH_INVEST_STORAGE SWITCH_INVEST_ATC
 $gdxin
 
 ********************************************************************************
@@ -139,14 +139,14 @@ positive variables
          invest_thermal(r,tec)                   thermal power plant investment
          invest_storage_power(r,tec_strg)        invested storage power (charge - discharge)
          invest_storage_energy(r,tec_strg)       invested storage energy
-         q_curtail(r,t,prd)                      unused renewable generation
+         q_curtail(r,t)                          unused renewable generation
          q_fueluse(r,t,tec,f)                    fuel consumed
          q_gen(r,t,tec,prd)                      energy generation
          q_nonserved(r,t,prd)                    consumption for which there is no supply
          q_store_in(r,t,tec_strg)                 electricity stored
          q_store_out(r,t,tec_strg)                electricity generated from storages
          storage_level(r,t,tec_strg)              energy stored in storages
-         invest_ntc(r,rr)                        investment in transmission capacity
+         invest_atc(r,rr)                        investment in transmission capacity
 ;
 
 ********************************************************************************
@@ -181,7 +181,7 @@ equations
          flow_balance                            imports are exports from elsewhere
          flow_constraint_a                       capacity restriction on exports
          flow_constraint_b                       capacity restriction on imports
-         ntc_invest_symmetry                     ntc investment increases capacity in both directions
+         atc_invest_symmetry                     atc investment increases capacity in both directions
 ;
 
 ********************************************************************************
@@ -229,7 +229,7 @@ obj_invstoragecost(r)..          cost_invstrg(r)
                                  );
 obj_gridcost(r)..                cost_gridexpansion(r)
                                  =E=
-                                 sum(rr, invest_ntc(r,rr)) / 2
+                                 sum(rr, invest_atc(r,rr)) / 2
                                  ;
 * ------------------------------------------------------------------------------
 * SUPPLY-DEMAND BALANCES
@@ -246,7 +246,7 @@ SD_balance_el(r,t)..
                                  + sum(tec_strg, q_store_in(r,t,tec_strg))
                                  + FLOW_EXPORT(r,t)
                                  + sum(rr, flow(r,rr,t) )
-                                 + q_curtail(r,t,'power')
+                                 + q_curtail(r,t)
                                  ;
 SD_balance_ht(r,t)..
                                  sum(tec,q_gen(r,t,tec,'heat'))
@@ -268,6 +268,7 @@ nonchp_generation(r,t,tec)$(NOT tec_chp(tec))..
                                  q_gen(r,t,tec,'power')
                                  ;
 pth_generation(r,t,tec)$(tec_pth(tec))..
+* replace sum(f,.) with q_fueluse(r,t,tec,'power') * EFFICIENCY(tec,'heat','power') ?
                                  sum(f, q_fueluse(r,t,tec,f) * EFFICIENCY(tec,'heat',f) )
                                  =E=
                                  q_gen(r,t,tec,'heat')
@@ -326,28 +327,28 @@ storage_sizing(r,tec_strg)..
 * ------------------------------------------------------------------------------
 * international commercial electricity exchange
 * ------------------------------------------------------------------------------
-flow_balance(r,rr,t)$NTC(r,rr)..
+flow_balance(r,rr,t)$ATC(r,rr)..
                                  flow(r,rr,t)
                                  =E=
                                  -flow(rr,r,t)
                                  ;
-flow_constraint_a(r,rr,t)$NTC(r,rr)..
+flow_constraint_a(r,rr,t)$ATC(r,rr)..
                                  flow(r,rr,t)
                                  =L=
-                                 NTC(r,rr) + invest_ntc(r,rr)
+                                 ATC(r,rr) + invest_atc(r,rr)
                                  ;
-flow_constraint_b(r,rr,t)$NTC(rr,r)..
+flow_constraint_b(r,rr,t)$ATC(rr,r)..
                                  flow(r,rr,t)
                                  =G=
-                                 - (NTC(rr,r) + invest_ntc(rr,r))
+                                 - (ATC(rr,r) + invest_atc(rr,r))
                                  ;
-ntc_invest_symmetry(r,rr)..      invest_ntc(r,rr)
+atc_invest_symmetry(r,rr)..      invest_atc(r,rr)
                                  =E=
-                                 invest_ntc(rr,r)
+                                 invest_atc(rr,r)
                                  ;
 * no flows from region to itself
-flow.FX(r,rr,t)$(not NTC(r,rr))   = 0;
-flow.FX(rr,r,t)$(not NTC(rr,r))   = 0;
+flow.FX(r,rr,t)$(not ATC(r,rr))   = 0;
+flow.FX(rr,r,t)$(not ATC(rr,r))   = 0;
 * ------------------------------------------------------------------------------
 * emissions
 * ------------------------------------------------------------------------------
@@ -379,7 +380,7 @@ ancillary_service(r,t)..
 * ------------------------------------------------------------------------------
 * curtail of intermittent generation only
 * ------------------------------------------------------------------------------
-curtail_limit(r,t)..             q_curtail(r,t,'power')
+curtail_limit(r,t)..             q_curtail(r,t)
                                  =L=
                                  sum(tec_itm$(NOT SAMEAS(tec_itm,'ror')),
                                      GEN_PROFILE(r,t,tec_itm) * (INSTALLED_CAP_ITM(r,tec_itm) + invest_res(r,tec_itm))
@@ -397,7 +398,7 @@ decommission.UP(r,tec) =         SWITCH_INVEST_THERM;
 invest_res.UP(r,tec_itm) =       SWITCH_INVEST_ITM(r, tec_itm);
 invest_storage_power.UP(r,tec_strg) = SWITCH_INVEST_STORAGE(r, tec_strg);
 invest_storage_energy.UP(r,tec_strg) = SWITCH_INVEST_STORAGE(r, tec_strg);
-invest_ntc.UP(r,rr) =            SWITCH_INVEST_NTC(r,rr);
+invest_atc.UP(r,rr) =            SWITCH_INVEST_ATC(r,rr);
 
 * ==============================================================================
 * include specific changes
@@ -480,7 +481,7 @@ annual_netflow(rr) = sum(t, flow.L('AT',rr,t));
 annual_fueluse(r,f) = sum((t,tec), q_fueluse.L(r,t,tec,f));
 annual_fixedexports = sum(t, FLOW_EXPORT('AT',t));
 annual_fixedimports = sum(t, FLOW_IMPORT('AT',t));
-annual_curtail(r) = sum(t, q_curtail.L(r,t,'power'));
+annual_curtail(r) = sum(t, q_curtail.L(r,t));
 
 display annual_generation, annual_netflow, annual_fueluse, annual_fixedexports, annual_fixedimports, annual_curtail;
 
@@ -498,7 +499,7 @@ ann_value_generation_by_tec(r,tec,prd) = sum(t, SD_balance_el.M(r,t) * q_gen.L(r
 ann_value_pumping(r) = sum((t,tec_strg), SD_balance_el.M(r,t) * q_store_in.L(r,t,tec_strg));
 ann_value_turbining(r) = sum((t,tec_strg), SD_balance_el.M(r,t) * q_store_out.L(r,t,tec_strg));
 ann_value_flows(r,rr) = sum(t, SD_balance_el.M(r,t) * flow.L(r,rr,t));
-ann_value_curtail(r) = sum(t, SD_balance_el.M(r,t) * q_curtail.L(r,t,'power'));
+ann_value_curtail(r) = sum(t, SD_balance_el.M(r,t) * q_curtail.L(r,t));
 
 display ann_value_generation, ann_value_generation_by_tec, ann_value_pumping, ann_value_turbining, ann_value_flows, ann_value_curtail;
 

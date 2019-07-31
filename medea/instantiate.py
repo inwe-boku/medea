@@ -7,8 +7,8 @@ from gams import *
 import config as cfg
 from medea.gams_io import df2gdx
 from medea.prepare import df_fuel, df_lim, df_prd, df_props, df_regions, df_tec_itm, df_tec_strg, \
-    df_time, data_technology, data_ntc, tec_props, df_efficiency, df_emission_intensity, df_itm_invest, df_itm_cap, \
-    df_ancil, lim_invest_itm, lim_invest_thermal, lim_invest_ntc, lim_invest_storage, df_feasops, storage_clusters, \
+    df_time, data_technology, data_atc, tec_props, df_efficiency, df_emission_intensity, df_itm_invest, df_itm_cap, \
+    df_ancil, lim_invest_itm, lim_invest_thermal, lim_invest_atc, lim_invest_storage, df_feasops, storage_clusters, \
     ts_regional, ts_price, ts_inflows
 
 # TODO: Add energy stored in hydro reservoirs - STORAGE_LEVEL
@@ -42,7 +42,7 @@ logging.info('medea sets instantiated')
 # --------------------------------------------------------------------------- #
 # %% instantiate static PARAMETERS
 # --------------------------------------------------------------------------- #
-NTC = df2gdx(db, data_ntc.stack(), 'NTC', 'par', [r_set, r_set], '[GW]')
+ATC = df2gdx(db, data_atc.stack(), 'ATC', 'par', [r_set, r_set], '[GW]')
 EFFICIENCY = df2gdx(db, df_efficiency['l1'], 'EFFICIENCY', 'par', [tec_set, prd_set, f_set], '[%]')
 EMISSION_INTENSITY = df2gdx(db, df_emission_intensity, 'EMISSION_INTENSITY', 'par', [f_set],
                             '[kt CO2 per GWh fuel input]')
@@ -66,7 +66,7 @@ YEAR = df2gdx(db, pd.DataFrame([cfg.year]), 'YEAR', 'par', 0, '[#]')
 SWITCH_INVEST_THERM = df2gdx(db, lim_invest_thermal, 'SWITCH_INVEST_THERM', 'par', 0, 'in {0, inf}')
 SWITCH_INVEST_ITM = df2gdx(db, lim_invest_itm.stack(), 'SWITCH_INVEST_ITM', 'par', [r_set, tec_itm_set], 'upper invest limit')
 SWITCH_INVEST_STORAGE = df2gdx(db, lim_invest_storage.stack(), 'SWITCH_INVEST_STORAGE', 'par', [r_set, tec_strg_set], 'upper limit')
-SWITCH_INVEST_NTC = df2gdx(db, lim_invest_ntc.stack(), 'SWITCH_INVEST_NTC', 'par', [r_set, r_set], 'upper invest limit')
+SWITCH_INVEST_ATC = df2gdx(db, lim_invest_atc.stack(), 'SWITCH_INVEST_ATC', 'par', [r_set, r_set], 'upper invest limit')
 logging.info('medea parameters instantiated')
 
 # --------------------------------------------------------------------------- #
