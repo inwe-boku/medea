@@ -85,10 +85,10 @@ data_technology = data_technology.loc[(data_technology['medea_type'] < 60) | (da
 
 data_hydstores = pd.read_excel(os.path.join(cfg.folder, 'medea', 'data', 'processed', 'plant-list_hydro.xlsx'),
                                'opsd_hydro')
-data_ntc = pd.read_excel(os.path.join(cfg.folder, 'medea', 'data', 'processed', 'data_static.xlsx'),
+data_atc = pd.read_excel(os.path.join(cfg.folder, 'medea', 'data', 'processed', 'data_static.xlsx'),
                          'NTC', index_col=[0])
-data_ntc = data_ntc.loc[data_ntc.index.str.contains('|'.join(cfg.regions)),
-                        data_ntc.columns.str.contains('|'.join(cfg.regions))] / 1000
+data_atc = data_atc.loc[data_atc.index.str.contains('|'.join(cfg.regions)),
+                        data_atc.columns.str.contains('|'.join(cfg.regions))] / 1000
 
 # --------------------------------------------------------------------------- #
 # %% preprocessing plant data
@@ -277,8 +277,8 @@ if cfg.invest_storage:
         for strg in lim_invest_storage.columns:
             lim_invest_storage.loc[reg, strg] = float(invest_potentials.loc[strg, reg])
 
-# dimension lim_invest_ntc[r,rr]
-lim_invest_ntc = pd.DataFrame(data=0, index=cfg.regions, columns=cfg.regions)
-if cfg.invest_ntc:
+# dimension lim_invest_atc[r,rr]
+lim_invest_atc = pd.DataFrame(data=0, index=cfg.regions, columns=cfg.regions)
+if cfg.invest_tc:
     for reg in cfg.regions:
-        lim_invest_ntc.loc[reg, lim_invest_ntc.index.difference([reg])] = float('inf')
+        lim_invest_atc.loc[reg, lim_invest_atc.index.difference([reg])] = float('inf')

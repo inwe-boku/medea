@@ -25,12 +25,12 @@ if long_run:
     invest_renewables = True
     invest_conventionals = True
     invest_storage = True
-    invest_ntc = True
+    invest_tc = True
 else:
     invest_renewables = False
     invest_conventionals = False
     invest_storage = False
-    invest_ntc = False
+    invest_tc = False
 
 # [package directory]
 sys_id = f'{sys.platform} {platform.node()}'
