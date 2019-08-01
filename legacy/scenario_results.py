@@ -152,7 +152,7 @@ reset_parameter(db_input, 'FEASIBLE_INPUT', df_fuelreq_mod)
 
 # available capacity / number of plants
 df_num_mod = df_num.copy()
-for reg in cfg.regions:
+for reg in cfg.zones:
     for fu in capcy[reg].keys():
         df_num_mod[df_num_mod.index.get_level_values(0).str.contains(reg) &
                (df_num_mod.index.get_level_values(1).str.contains(fu))] = \

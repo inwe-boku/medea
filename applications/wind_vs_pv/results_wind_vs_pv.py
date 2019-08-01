@@ -42,7 +42,7 @@ for peua in eua_range:
     result_dict = {key: gdx2df(db_output, key, value[0], value[1])
                    for key, value in read_variables.items()}
 
-    df = pd.DataFrame(columns=cfg.regions)
+    df = pd.DataFrame(columns=cfg.zones)
     for key, value in result_dict.items():
         if value.index.any() == 'Value':
             value.index = [key]
@@ -68,7 +68,7 @@ for peua in eua_range:
             result_dict = {key: gdx2df(db_output, key, value[0], value[1])
                            for key, value in read_variables.items()}
 
-            df = pd.DataFrame(columns=cfg.regions)
+            df = pd.DataFrame(columns=cfg.zones)
             for key, value in result_dict.items():
                 if value.index.any() == 'Value':
                     value.index = [key]

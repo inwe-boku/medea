@@ -60,13 +60,13 @@ ts_medea['AT-pv-profile'] = ts_medea['AT-pv-generation'] / ts_medea['AT-pv-capac
 ts_load_ht = pd.read_csv(os.path.join(cfg.folder, 'data', 'processed', 'heat_hourly_consumption.csv'),
                          index_col=[0], header=[0, 1])
 ts_load_ht.index = pd.DatetimeIndex(ts_load_ht.index).tz_localize('utc')
-for reg in cfg.regions:
+for reg in cfg.zones:
     ts_medea[f'{reg}-heat-load'] = ts_load_ht.loc[:, reg].sum(axis=1)
 
 # read hydro data
 ts_hydro_ror = pd.read_csv(os.path.join(cfg.folder, 'data', 'processed', 'generation_hydro.csv'), index_col=[0])
 ts_hydro_ror.index = pd.DatetimeIndex(ts_hydro_ror.index).tz_localize('utc')
-for reg in cfg.regions:
+for reg in cfg.zones:
     ts_medea[f'{reg}-ror-capacity'] = itm_capacities[(reg, 'ror')]
     ts_medea[f'{reg}-ror-capacity'] = ts_medea[f'{reg}-ror-capacity'].interpolate()
     ts_medea[f'{reg}-ror-profile'] = ts_hydro_ror[f'ror_{reg}'] / 1000 / ts_medea[f'{reg}-ror-capacity']
@@ -74,7 +74,7 @@ for reg in cfg.regions:
 # commercial flows
 ts_flows = pd.read_csv(os.path.join(cfg.folder, 'data', 'processed', 'commercial_flows.csv'), index_col=[0])
 ts_flows.index = pd.DatetimeIndex(ts_flows.index).tz_localize('utc')
-for reg in cfg.regions:
+for reg in cfg.zones:
     ts_medea[f'{reg}-imports-flow'] = ts_flows.loc[:, f'imp_{reg}'] / 1000
     ts_medea[f'{reg}-exports-flow'] = ts_flows.loc[:, f'exp_{reg}'] / 1000
 
@@ -84,17 +84,17 @@ df_hydro_fill.index = pd.DatetimeIndex(df_hydro_fill.index).tz_localize('utc')
 ts_hydro_fill = pd.DataFrame(
     index=pd.date_range(pd.datetime(df_hydro_fill.head(1).index.year[0], 1, 1, 0, 0),
                         pd.datetime(df_hydro_fill.tail(1).index.year[0], 12, 31, 23, 0),
-                        freq='h', tz='utc'), columns=cfg.regions)
-ts_hydro_fill.update(df_hydro_fill[cfg.regions].resample('H').interpolate(method='pchip'))
+                        freq='h', tz='utc'), columns=cfg.zones)
+ts_hydro_fill.update(df_hydro_fill[cfg.zones].resample('H').interpolate(method='pchip'))
 # ts_hydro_fill.update(df_hydro_fill[cfg.regions].resample('H').interpolate(method='pchip') / df_hydro_fill[cfg.regions].max())
 ts_hydro_fill = ts_hydro_fill.fillna(method='pad')
 ts_hydro_fill = ts_hydro_fill.fillna(method='bfill')
-for reg in cfg.regions:
+for reg in cfg.zones:
     ts_medea[f'{reg}-fill-reservoir'] = ts_hydro_fill.loc[:, reg] / df_hydro_fill[reg].max()
 
 # reservoir inflows
-inflows = pd.DataFrame(columns=cfg.regions)
-for reg in cfg.regions:
+inflows = pd.DataFrame(columns=cfg.zones)
+for reg in cfg.zones:
     # upsample turbining and pumping to fill rate times and calculate balance at time of fill readings
     inflows[reg] = (df_hydro_fill[reg] - df_hydro_fill[reg].shift(periods=-1) - ts_hydro_ror[f'psp_con_{reg}'].resample(
         'W-MON').sum() + ts_hydro_ror[f'psp_gen_{reg}'].resample('W-MON').sum() + ts_hydro_ror[f'res_{reg}'].resample(

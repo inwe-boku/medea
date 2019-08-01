@@ -21,10 +21,10 @@ fuel_set = {'Nuclear': 10, 'Lignite': 20, 'Coal': 30, 'Gas': 40, 'Oil': 50, 'Hyd
             'Biomass': 70, 'Solar': 80, 'Wind': 90, 'Power': 100, 'Heat': 110}
 df_fuel = pd.DataFrame(fuel_set.values(), fuel_set.keys(), ['Value'])
 df_lim = pd.DataFrame(data=True, index=[f'l{x}' for x in range(1, 6)], columns=['Value'])
-df_prd = pd.DataFrame(data=True, index=['power', 'heat'], columns=['Value'])
+df_prd = pd.DataFrame(data=True, index=['el', 'ht'], columns=['Value'])
 df_props = pd.DataFrame(data=True, index=['power_out', 'power_in', 'energy_max', 'efficiency_out', 'efficiency_in',
                                           'cost_power', 'cost_energy'], columns=['Value'])
-df_regions = pd.DataFrame(data=True, index=cfg.regions, columns=['Value'])
+df_zones = pd.DataFrame(data=True, index=cfg.zones, columns=['Value'])
 df_tec_itm = pd.DataFrame(data=True, index=['pv', 'ror', 'wind_on', 'wind_off'], columns=['Value'])
 df_tec_strg = pd.DataFrame(data=True, index=['psp_day', 'psp_week', 'psp_season', 'res_day', 'res_week', 'res_season',
                                              'battery'], columns=['Value'])
@@ -53,8 +53,8 @@ efficiency_electric = {'nuc': 0.34, 'lig_stm': 0.33, 'lig_stm_chp': 0.33, 'lig_b
 df_efficiency = pd.DataFrame.from_dict(efficiency_electric, orient='index', columns=['l1'])
 dict_name2fuel = {'nuc': 'Nuclear', 'lig': 'Lignite', 'coal': 'Coal', 'ng': 'Gas', 'oil': 'Oil', 'bio': 'Biomass',
                   'heatpump': 'Power'}
-df_efficiency['product'] = 'power'
-df_efficiency.loc[df_efficiency.index.str.contains('pth'), 'product'] = 'heat'
+df_efficiency['product'] = 'el'
+df_efficiency.loc[df_efficiency.index.str.contains('pth'), 'product'] = 'ht'
 df_efficiency['fuel'] = df_efficiency.index.to_series().str.split('_').str.get(0).replace(dict_name2fuel)
 df_efficiency.set_index(['product', 'fuel'], append=True, inplace=True)
 df_efficiency.index.set_names(['medea_type', 'product', 'fuel_name'], inplace=True)
@@ -87,8 +87,8 @@ data_hydstores = pd.read_excel(os.path.join(cfg.folder, 'medea', 'data', 'proces
                                'opsd_hydro')
 data_atc = pd.read_excel(os.path.join(cfg.folder, 'medea', 'data', 'processed', 'data_static.xlsx'),
                          'NTC', index_col=[0])
-data_atc = data_atc.loc[data_atc.index.str.contains('|'.join(cfg.regions)),
-                        data_atc.columns.str.contains('|'.join(cfg.regions))] / 1000
+data_atc = data_atc.loc[data_atc.index.str.contains('|'.join(cfg.zones)),
+                        data_atc.columns.str.contains('|'.join(cfg.zones))] / 1000
 
 # --------------------------------------------------------------------------- #
 # %% preprocessing plant data
@@ -120,8 +120,8 @@ tec_props = tec_props.append(pd.DataFrame(data=dict_htpump_props.values(), index
                                           columns=[100.0]).T)
 
 # TODO: Throws SettingWithCopyWarning: A value is trying to be set on a copy of a slice from a DataFrame
-for reg in cfg.regions:
-    tec_props.loc[:, 'eta'].update(pd.DataFrame.from_dict(efficiency_electric, orient='index', columns=[reg]),
+for zone in cfg.zones:
+    tec_props.loc[:, 'eta'].update(pd.DataFrame.from_dict(efficiency_electric, orient='index', columns=[zone]),
                                    overwrite=False)
 
 # set index of tec_props to plant names
@@ -145,8 +145,8 @@ df_feasops['fuel_need'] = np.nan
 for typ in df_feasops.index.get_level_values(0).unique():
     for lim in df_feasops.index.get_level_values(1).unique():
         df_feasops.loc[idx[typ, lim], 'fuel_need'] = df_feasops.loc[idx[typ, lim], 'fuel'].mean() / df_eff.loc[idx[typ, lim], :].mean()
-# adjustment to account for model being in GW while plant size is in steps of 100 MW
-df_feasops = df_feasops / 10
+# if unit commit model: consider adjustment to account for model being in GW while plant size is in steps of 100 MW
+# df_feasops = df_feasops / 10
 
 # hydro storage data
 # hydro storages
@@ -165,7 +165,7 @@ hyd_store_clusters['efficiency_in'] = hyd_store_clusters['efficiency_in'] / hyd_
 hyd_store_clusters['efficiency_out'] = hyd_store_clusters['efficiency_out'] / hyd_store_clusters['count']
 hyd_store_clusters['cost_power'] = np.nan
 hyd_store_clusters['cost_energy'] = np.nan
-# assign technology and region index to rows
+# assign technology and zone index to rows
 hyd_store_clusters['country'] = hyd_store_clusters.index.get_level_values(1)
 hyd_store_clusters['category'] = hyd_store_clusters.index.get_level_values(2).rename_categories(
     ['day', 'week', 'season']).astype(str)
@@ -196,11 +196,11 @@ dict_battery = {
     'cost_energy': [df_inv_storage.loc['battery', ('annuity-energy', 'AT')].round(4)],
     'inflow_factor': [0]
 }
-bat_idx = pd.MultiIndex.from_product([['battery'], list(cfg.regions)])
+bat_idx = pd.MultiIndex.from_product([['battery'], list(cfg.zones)])
 df_battery = pd.DataFrame(np.nan, bat_idx, dict_battery.keys())
-for reg in list(cfg.regions):
+for zone in list(cfg.zones):
     for key in dict_battery.keys():
-        df_battery.loc[('battery', reg), key] = dict_battery[key][0]
+        df_battery.loc[('battery', zone), key] = dict_battery[key][0]
 
 storage_clusters = storage_clusters.append(df_battery)
 
@@ -222,9 +222,11 @@ ts_medea['DE-power-load'] = ts_medea['DE-power-load'] / 0.91
 # for 0.91 scaling factor see
 # https://www.entsoe.eu/fileadmin/user_upload/_library/publications/ce/Load_and_Consumption_Data.pdf
 
-# subset of regional time series
-ts_regional = ts_medea.loc[:, ts_medea.columns.str.startswith(('AT', 'DE'))].copy()
-ts_regional.columns = ts_regional.columns.str.split('-', expand=True)
+# subset of zonal time series
+ts_zonal = ts_medea.loc[:, ts_medea.columns.str.startswith(('AT', 'DE'))].copy()
+ts_zonal.columns = ts_zonal.columns.str.split('-', expand=True)
+# adjust column naming to reflect proper product names ('el' and 'ht')
+ts_zonal = ts_zonal.rename(columns={'power': 'el', 'heat': 'ht'})
 
 # create price time series incl transport cost
 ts_medea['Nuclear'] = 3.5
@@ -235,23 +237,23 @@ model_prices = ['Coal', 'Oil', 'Gas', 'EUA', 'Nuclear', 'Lignite', 'Biomass', 'p
 
 data_cost_transport = pd.read_excel(os.path.join(cfg.folder, 'medea', 'data', 'processed', 'data_static.xlsx'),
                                     'cost_transport', header=[0], index_col=[0])
-ts_price = pd.DataFrame(index=ts_medea.index, columns=pd.MultiIndex.from_product([model_prices, cfg.regions]))
-for reg in cfg.regions:
+ts_price = pd.DataFrame(index=ts_medea.index, columns=pd.MultiIndex.from_product([model_prices, cfg.zones]))
+for zone in cfg.zones:
     for fuel in model_prices:
         if fuel in data_cost_transport.index:
-            ts_price[(fuel, reg)] = ts_medea[fuel] + data_cost_transport.loc[fuel, reg]
+            ts_price[(fuel, zone)] = ts_medea[fuel] + data_cost_transport.loc[fuel, zone]
         else:
-            ts_price[(fuel, reg)] = ts_medea[fuel]
+            ts_price[(fuel, zone)] = ts_medea[fuel]
 
 
-ts_inflows = pd.DataFrame(index=list(ts_regional.index), columns=pd.MultiIndex.from_product([cfg.regions, df_tec_strg.index]))
-for reg in list(cfg.regions):
+ts_inflows = pd.DataFrame(index=list(ts_zonal.index), columns=pd.MultiIndex.from_product([cfg.zones, df_tec_strg.index]))
+for zone in list(cfg.zones):
     for strg in df_tec_strg.index:
         if 'battery' not in strg:
-            ts_inflows.loc[:, (reg, strg)] = ts_regional.loc[:, idx[reg, 'inflows', 'reservoir']] * \
-                storage_clusters.loc[(strg, reg), 'inflow_factor']
+            ts_inflows.loc[:, (zone, strg)] = ts_zonal.loc[:, idx[zone, 'inflows', 'reservoir']] * \
+                                              storage_clusters.loc[(strg, zone), 'inflow_factor']
 
-df_ancil = ts_regional.loc[:, idx[:, 'power', 'load']].max().unstack((1, 2)).squeeze() * 0.125 + \
+df_ancil = ts_zonal.loc[:, idx[:, 'el', 'load']].max().unstack((1, 2)).squeeze() * 0.125 + \
            df_itm_cap.unstack(1).drop('ror', axis=1).sum(axis=1) * 0.075
 
 # --------------------------------------------------------------------------- #
@@ -264,21 +266,21 @@ if cfg.invest_conventionals:
     lim_invest_thermal = pd.DataFrame([float('inf')])
 
 # dimension lim_invest_itm[r, tec_itm]
-lim_invest_itm = pd.DataFrame(data=0, index=cfg.regions, columns=df_tec_itm.index)
+lim_invest_itm = pd.DataFrame(data=0, index=cfg.zones, columns=df_tec_itm.index)
 if cfg.invest_renewables:
-    for reg in cfg.regions:
+    for zone in cfg.zones:
         for itm in lim_invest_itm.columns:
-            lim_invest_itm.loc[reg, itm] = float(invest_potentials.loc[itm, reg])
+            lim_invest_itm.loc[zone, itm] = float(invest_potentials.loc[itm, zone])
 
 # dimension lim_invest_storage[r, tec_strg]
-lim_invest_storage = pd.DataFrame(data=0, index=cfg.regions, columns=df_tec_strg.index)
+lim_invest_storage = pd.DataFrame(data=0, index=cfg.zones, columns=df_tec_strg.index)
 if cfg.invest_storage:
-    for reg in cfg.regions:
+    for zone in cfg.zones:
         for strg in lim_invest_storage.columns:
-            lim_invest_storage.loc[reg, strg] = float(invest_potentials.loc[strg, reg])
+            lim_invest_storage.loc[zone, strg] = float(invest_potentials.loc[strg, zone])
 
 # dimension lim_invest_atc[r,rr]
-lim_invest_atc = pd.DataFrame(data=0, index=cfg.regions, columns=cfg.regions)
+lim_invest_atc = pd.DataFrame(data=0, index=cfg.zones, columns=cfg.zones)
 if cfg.invest_tc:
-    for reg in cfg.regions:
-        lim_invest_atc.loc[reg, lim_invest_atc.index.difference([reg])] = float('inf')
+    for zone in cfg.zones:
+        lim_invest_atc.loc[zone, lim_invest_atc.index.difference([zone])] = float('inf')

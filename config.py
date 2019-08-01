@@ -16,7 +16,7 @@ iter_num = 1
 # set iteration offset, i.e. number of hours cut off at each iteration-end to avoid last-round effects
 iter_offset = 72
 # covered regions - currently available: 'AT', 'DE'
-regions = ['AT', 'DE']
+zones = ['AT', 'DE']
 # long-run (invest) vs short-run (no invest) model version
 long_run = True
 

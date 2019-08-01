@@ -64,7 +64,7 @@ reset_parameter(db_input, 'FEASIBLE_INPUT', df_fuelreq_mod)
 
 # conventional capacities
 df_num_mod = df_num
-for reg in cfg.regions:
+for reg in cfg.zones:
     for gen in df_num.loc[reg].index:
         df_num_mod.loc[idx[reg, gen]] = (df_num.loc[idx[reg, gen]] *
                                          scenario_2030[reg][gen.split('_')[0]][0]).round(0)
@@ -72,7 +72,7 @@ reset_parameter(db_input, 'NUM', df_num_mod)
 
 # intermittent capacities
 df_capitm_mod = df_capitm
-for reg in cfg.regions:
+for reg in cfg.zones:
     for itm in itm_dict:
         if itm != 'ror':
             df_capitm_mod.loc[idx[reg, itm], :] = scenario_2030[reg][itm][0]

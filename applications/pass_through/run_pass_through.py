@@ -7,12 +7,13 @@ use medea to estimate emission cost pass-through to electricity prices in the cu
 import os
 import subprocess
 from shutil import copyfile
+
 import pandas as pd
 from gams import *
 
 import config as cfg
-from medea.gams_io import reset_parameter, gdx2df, df2gdx
 from applications.pass_through.settings_pass_through import *
+from medea.gams_io import reset_parameter, gdx2df, df2gdx
 
 # --------------------------------------------------------------------------- #
 # %% initialize GAMS, GAMS workspace and load model data
@@ -78,7 +79,7 @@ EUA_SCENARIO = df2gdx(db_input, pd.DataFrame(data=[0]), 'EUA_SCENARIO', 'par', 0
 for cap_scenario in range(0, 3, 1):   # capacity_scenarios:
     # conventional capacities
     df_num_mod = df_num
-    for reg in cfg.regions:
+    for reg in cfg.zones:
         for gen in df_num.loc[reg].index:
             df_num_mod.loc[idx[reg, gen]] = (df_num.loc[idx[reg, gen]] *
                                              capacity_scenarios[reg][gen.split('_')[0]][cap_scenario]).round(0)
@@ -87,7 +88,7 @@ for cap_scenario in range(0, 3, 1):   # capacity_scenarios:
 
     # renewable capacities
     df_capitm_mod = df_capitm
-    for reg in cfg.regions:
+    for reg in cfg.zones:
         for itm in itm_dict:
             if itm != 'ror':
                 df_capitm_mod.loc[idx[reg, itm], :] = capacity_scenarios[reg][itm][cap_scenario]

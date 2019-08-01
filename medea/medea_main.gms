@@ -38,82 +38,85 @@ sets
          l                                       limits to feasible operating region
          prd                                     products
          props                                   technical properties of hydro storage plants
-         r                                       regions
          tec                                     power plant technologies
          tec_chp(tec)                            subset of CHP technologies
          tec_pth(tec)                            subset of power to heat technologies
          tec_strg                                 hydro storage technologies
          tec_itm                                 renewable generation technologies
          t                                       time - hours
+         z                                       market zones
          start_t(t)                              hour for initial values
          end_t(t)                                end time of iteration
 ;
 
-alias(r,rr);
+alias(z,zz);
 
 ********************************************************************************
 ********** parameter declaration
 ********************************************************************************
 parameters
-         ANCIL_SERVICE_LVL(r)                    generation level required for provision of ancillary services
-         CONSUMPTION(r,t,prd)                    hourly consumption of power and heat [GW]
+         ANCIL_SERVICE_LVL(z)                    generation level required for provision of ancillary services
+         CONSUMPTION(z,t,prd)                    hourly consumption of power and heat [GW]
          EFFICIENCY(tec,prd,f)                   electrical efficiency of power plant [%]
          EMISSION_INTENSITY(f)                   specific emission factor of each fuel [kt CO2 per GWh fuel]
          FEASIBLE_INPUT(tec,l,f)                 fuel requirement for feasible output generation []
          FEASIBLE_OUTPUT(tec,l,prd)              feasible combinations of outputs []
-         GEN_PROFILE(r,t,tec_itm)                generation profile of intermittent technologies
-         FLOW_EXPORT(r,t)                        exports to regions not modelled [GW]
-         FLOW_IMPORT(r,t)                        imports from regions not modelled [GW]
-         INSTALLED_CAP_ITM(r,tec_itm)            installed intermittent capacities [GW]
-         INSTALLED_CAP_THERM(r,tec)              installed thermal capacities [GW]
-         INVESTCOST_ITM(r,tec_itm)               annuity of investment in 1 GW intermittent technology
+         GEN_PROFILE(z,t,tec_itm)                generation profile of intermittent technologies
+         FLOW_EXPORT(z,t)                        exports to market zones not modelled [GW]
+         FLOW_IMPORT(z,t)                        imports from market zones not modelled [GW]
+         INSTALLED_CAP_ITM(z,tec_itm)            installed intermittent capacities [GW]
+         INSTALLED_CAP_THERM(z,tec)              installed thermal capacities [GW]
+         INVESTCOST_ITM(z,tec_itm)               annuity of investment in 1 GW intermittent technology
          INVESTCOST_THERMAL(tec)                 annuity of investment in 1 GW thermal generation technology
-         MAX_EMISSIONS(r)                        upper emission limit
-         ATC(r,rr)                               net transfer capacity from region r to region rr
-         NUM(r,tec)                              number of installed 100 MW capacity slices of each technology
+         MAX_EMISSIONS(z)                        upper emission limit
+         ATC(z,zz)                               net transfer capacity from market zone z to market zone zz
+         NUM(z,tec)                              number of installed 100 MW capacity slices of each technology
          OM_FIXED_COST(tec)                      quasifixed cost of operation & maintenance
          OM_VARIABLE_COST(tec)                   variable cost of operation & maintenance
-         PRICE_DA(t,r)                           observed electricity price on day-ahead market [k EUR per GWh]
-         PRICE_EUA(t,r)                          price of emission allowances [k EUR per kt CO2]
-         PRICE_FUEL(t,r,f)                       price of fuel [k EUR per GWh]
-         RESERVOIR_INFLOWS(r,t,tec_strg)         inflows to reservoirs of hydro storage plants [GW]
-         STORAGE_PROPERTIES(r,tec_strg,props)    technical properties of electricity storages
+         PRICE_DA(t,z)                           observed electricity price on day-ahead market [k EUR per GWh]
+         PRICE_CO2(t,z)                          price of emission allowances [k EUR per kt CO2]
+         PRICE_FUEL(t,z,f)                       price of fuel [k EUR per GWh]
+         RESERVOIR_INFLOWS(z,t,tec_strg)         inflows to reservoirs of hydro storage plants [GW]
+         STORAGE_PROPERTIES(z,tec_strg,props)    technical properties of electricity storages
+         VALUE_NSE(z)                            value of non-served energy
          SWITCH_INVEST_THERM                     switch for investment in thermal units
-         SWITCH_INVEST_ITM(r,tec_itm)            switch for investment in intermittents
-         SWITCH_INVEST_STORAGE(r, tec_strg)      switch for investment in storage technologies
-         SWITCH_INVEST_ATC(r,rr)                 switch for investment in interconnectors
+         SWITCH_INVEST_ITM(z,tec_itm)            switch for investment in intermittents
+         SWITCH_INVEST_STORAGE(z, tec_strg)      switch for investment in storage technologies
+         SWITCH_INVEST_ATC(z,zz)                 switch for investment in interconnectors
 ;
 * starting and ending values (mostly for intra-year iterations)
 parameters
-         FINAL_STORAGE(r,t,tec_strg)              final reservoir filling level
-         INIT_GEN(r,t,tec,prd)                    initial generation at iteration start
-         INIT_PUMP(r,t,tec_strg)                  initial pumping level
-         INIT_STORAGE(r,t,tec_strg)               initial reservoir filling level
-         INIT_TURB(r,t,tec_strg)                  initial generation of hydro storage plant at iteration start
+         FINAL_STORAGE(z,t,tec_strg)              final reservoir filling level
+         INIT_GEN(z,t,tec,prd)                    initial generation at iteration start
+         INIT_PUMP(z,t,tec_strg)                  initial pumping level
+         INIT_STORAGE(z,t,tec_strg)               initial reservoir filling level
+         INIT_TURB(z,t,tec_strg)                  initial generation of hydro storage plant at iteration start
 ;
 ********************************************************************************
 ********** data instantiation
 ********************************************************************************
 $if NOT exist MEDEA_%scenario%_data.gdx  $gdxin medea_main_data
 $if     exist MEDEA_%scenario%_data.gdx  $gdxin medea_%scenario%_data
-$load  f l t tec tec_chp tec_strg tec_itm tec_pth prd props r
+$load  f l t tec tec_chp tec_strg tec_itm tec_pth prd props z
 $load  ANCIL_SERVICE_LVL CONSUMPTION EMISSION_INTENSITY FLOW_EXPORT EFFICIENCY
 $load  FEASIBLE_INPUT FEASIBLE_OUTPUT GEN_PROFILE STORAGE_PROPERTIES FLOW_IMPORT
 $load  INSTALLED_CAP_ITM INSTALLED_CAP_THERM INVESTCOST_ITM INVESTCOST_THERMAL
-$load  ATC NUM OM_FIXED_COST OM_VARIABLE_COST PRICE_DA PRICE_EUA
+$load  ATC NUM OM_FIXED_COST OM_VARIABLE_COST PRICE_DA PRICE_CO2
 $load  PRICE_FUEL RESERVOIR_INFLOWS SWITCH_INVEST_THERM SWITCH_INVEST_ITM
 $load  SWITCH_INVEST_STORAGE SWITCH_INVEST_ATC
 $gdxin
+
+VALUE_NSE(z) = 12500;
 
 ********************************************************************************
 ********** helper parameters
 ********************************************************************************
 parameters
-PEAK_LOAD(r),
-PEAK_PROFILE(r,tec_itm);
+PEAK_LOAD(z),
+PEAK_PROFILE(z,tec_itm);
 
-PEAK_LOAD(r) = smax(t, CONSUMPTION(r,t,'power'));
-PEAK_PROFILE(r,tec_itm) = smax(t, GEN_PROFILE(r,t,tec_itm) );
+PEAK_LOAD(z) = smax(t, CONSUMPTION(z,t,'el'));
+PEAK_PROFILE(z,tec_itm) = smax(t, GEN_PROFILE(z,t,tec_itm) );
 
 display PEAK_LOAD, PEAK_PROFILE;
 
@@ -122,31 +125,32 @@ display PEAK_LOAD, PEAK_PROFILE;
 ********************************************************************************
 variables
          syscost                                 total system cost (to be minimized)
-         cost(r)                                 total cost per region
-         emissions(r)                            total emissions from power generation
-         flow(r,rr,t)                            electricity flow from r to rr (i.e. export if positive) [GW]
+         cost(z)                                 total cost per market zone
+         emissions(z)                            total emissions from power generation
+         flow(z,zz,t)                            electricity flow from z to zz (i.e. export if positive) [GW]
 ;
 positive variables
-         cc_weights(r,t,tec,l)                   weights of co-generation convex combination
-         cost_emission(r,t,tec)                  emission cost
-         cost_fuel(r,t,tec)                      fuel cost
-         cost_om(r,tec)                          operation & maintenance cost
-         cost_invgen(r)                          cost of investment in generators
-         cost_invstrg(r)                         cost of investment in storages
-         cost_gridexpansion(r)                   cost of transmission grid expansion
-         decommission(r,tec)                     plant decommissioning
-         invest_res(r,tec_itm)                   added capacity of intermittent technologies
-         invest_thermal(r,tec)                   thermal power plant investment
-         invest_storage_power(r,tec_strg)        invested storage power (charge - discharge)
-         invest_storage_energy(r,tec_strg)       invested storage energy
-         q_curtail(r,t)                          unused renewable generation
-         q_fueluse(r,t,tec,f)                    fuel consumed
-         q_gen(r,t,tec,prd)                      energy generation
-         q_nonserved(r,t,prd)                    consumption for which there is no supply
-         q_store_in(r,t,tec_strg)                 electricity stored
-         q_store_out(r,t,tec_strg)                electricity generated from storages
-         storage_level(r,t,tec_strg)              energy stored in storages
-         invest_atc(r,rr)                        investment in transmission capacity
+         cc_weights(z,t,tec,l)                   weights of co-generation convex combination
+         cost_emission(z,t,tec)                  emission cost
+         cost_fuel(z,t,tec)                      fuel cost
+         cost_om(z,tec)                          operation & maintenance cost
+         cost_invgen(z)                          cost of investment in generators
+         cost_invstrg(z)                         cost of investment in storages
+         cost_gridexpansion(z)                   cost of transmission grid expansion
+         decommission(z,tec)                     plant decommissioning
+         invest_res(z,tec_itm)                   added capacity of intermittent technologies
+         invest_thermal(z,tec)                   thermal power plant investment
+         invest_storage_power(z,tec_strg)        invested storage power (charge - discharge)
+         invest_storage_energy(z,tec_strg)       invested storage energy
+         q_curtail(z,t)                          unused renewable generation
+         q_fueluse(z,t,tec,f)                    fuel consumed
+         q_gen(z,t,tec,prd)                      energy generation of dispatchable units
+         q_itm(z,t,tec_itm)                      electricity generation from intermittent sources
+         q_nonserved(z,t,prd)                    consumption for which there is no supply
+         q_store_in(z,t,tec_strg)                electricity stored
+         q_store_out(z,t,tec_strg)               electricity generated from storages
+         storage_level(z,t,tec_strg)             energy stored in storages
+         invest_atc(z,zz)                        investment in transmission capacity
 ;
 
 ********************************************************************************
@@ -154,15 +158,16 @@ positive variables
 ********************************************************************************
 equations
          objective                               total system cost calculation
-         obj_costreg                             calculation of cost per region
+         obj_costreg                             calculation of cost per market zone
          obj_fuelcost                            total fuel cost
          obj_emissioncost                        total emission cost
          obj_omcost                              total O&M cost
          obj_invgencost                          total cost of investment in generators
-         obj_invstoragecost(r)                   total cost of storage investment
+         obj_invstoragecost(z)                   total cost of storage investment
          obj_gridcost                            total cost of transmission grid expansion
          SD_balance_el                           supply-demand balance electricity
          SD_balance_ht                           supply-demand balance heat
+         itm_generation                          generation from intermittent sources
          caplim_generation                       capacity limit on thermal generators
          nonchp_generation                       fuel requirement of non-CHPs
          pth_generation                          fuel requirement of power to heat units
@@ -191,214 +196,222 @@ equations
 * ------------------------------------------------------------------------------
 objective..                      syscost
                                  =E=
-                                 sum(r, cost(r))
+                                 sum(z, cost(z))
                                  ;
-obj_costreg(r)..                 cost(r)
+obj_costreg(z)..                 cost(z)
                                  =E=
-                                 sum((t,tec), cost_fuel(r,t,tec))
-                                 + sum((t,tec), cost_emission(r,t,tec))
-                                 + sum(tec, cost_om(r,tec))
-                                 + cost_invgen(r)
-                                 + cost_invstrg(r)
-                                 + 12500 * sum((t,prd), q_nonserved(r,t,prd))
-                                 + 2000 * cost_gridexpansion(r)
+                                 sum((t,tec), cost_fuel(z,t,tec))
+                                 + sum((t,tec), cost_emission(z,t,tec))
+                                 + sum(tec, cost_om(z,tec))
+                                 + cost_invgen(z)
+                                 + cost_invstrg(z)
+                                 + VALUE_NSE(z) * sum((t,prd), q_nonserved(z,t,prd))
+                                 + 2000 * cost_gridexpansion(z)
                                  ;
-obj_fuelcost(r,t,tec)..          cost_fuel(r,t,tec)
+obj_fuelcost(z,t,tec)..          cost_fuel(z,t,tec)
                                  =E=
-                                 sum(f, PRICE_FUEL(t,r,f) * q_fueluse(r,t,tec,f))
+                                 sum(f, PRICE_FUEL(t,z,f) * q_fueluse(z,t,tec,f))
                                  ;
-obj_emissioncost(r,t,tec)..      cost_emission(r,t,tec)
+obj_emissioncost(z,t,tec)..      cost_emission(z,t,tec)
                                  =E=
-                                 sum(f, PRICE_EUA(t,r) * EMISSION_INTENSITY(f) * q_fueluse(r,t,tec,f))
+                                 sum(f, PRICE_CO2(t,z) * EMISSION_INTENSITY(f) * q_fueluse(z,t,tec,f))
                                  ;
-obj_omcost(r,tec)..              cost_om(r,tec)
+obj_omcost(z,tec)..              cost_om(z,tec)
                                  =E=
-                                 OM_FIXED_COST(tec) * (NUM(r,tec) - decommission(r,tec) + invest_thermal(r,tec))
-                                 + sum((t,prd), OM_VARIABLE_COST(tec) * q_gen(r,t,tec,prd))
+                                 OM_FIXED_COST(tec) * (NUM(z,tec) - decommission(z,tec) + invest_thermal(z,tec))
+                                 + sum((t,prd), OM_VARIABLE_COST(tec) * q_gen(z,t,tec,prd))
                                  ;
-obj_invgencost(r)..              cost_invgen(r)
+obj_invgencost(z)..              cost_invgen(z)
                                  =E=
-                                 sum(tec, INVESTCOST_THERMAL(tec) * invest_thermal(r,tec))
-                                 + sum(tec_itm, INVESTCOST_ITM(r,tec_itm) * invest_res(r,tec_itm))
+                                 sum(tec, INVESTCOST_THERMAL(tec) * invest_thermal(z,tec))
+                                 + sum(tec_itm, INVESTCOST_ITM(z,tec_itm) * invest_res(z,tec_itm))
                                  ;
-obj_invstoragecost(r)..          cost_invstrg(r)
+obj_invstoragecost(z)..          cost_invstrg(z)
                                  =E=
                                  sum(tec_strg,
-                                 invest_storage_power(r,tec_strg) * STORAGE_PROPERTIES(r,tec_strg,'cost_power')
-                                 + invest_storage_energy(r,tec_strg) * STORAGE_PROPERTIES(r,tec_strg,'cost_energy')
+                                 invest_storage_power(z,tec_strg) * STORAGE_PROPERTIES(z,tec_strg,'cost_power')
+                                 + invest_storage_energy(z,tec_strg) * STORAGE_PROPERTIES(z,tec_strg,'cost_energy')
                                  );
-obj_gridcost(r)..                cost_gridexpansion(r)
+obj_gridcost(z)..                cost_gridexpansion(z)
                                  =E=
-                                 sum(rr, invest_atc(r,rr)) / 2
+                                 sum(zz, invest_atc(z,zz)) / 2
                                  ;
 * ------------------------------------------------------------------------------
 * SUPPLY-DEMAND BALANCES
 * ------------------------------------------------------------------------------
-SD_balance_el(r,t)..
-                                 sum(tec,q_gen(r,t,tec,'power'))
-                                 + sum(tec_strg, q_store_out(r,t,tec_strg))
-                                 + sum(tec_itm, GEN_PROFILE(r,t,tec_itm) * (INSTALLED_CAP_ITM(r,tec_itm) + invest_res(r,tec_itm)) )
-                                 + FLOW_IMPORT(r,t)
-                                 + q_nonserved(r,t,'power')
+SD_balance_el(z,t)..
+                                 sum(tec,q_gen(z,t,tec,'el'))
+                                 + sum(tec_strg, q_store_out(z,t,tec_strg))
+                                 + sum(tec_itm, q_itm(z,t,tec_itm) )
+                                 + FLOW_IMPORT(z,t)
+                                 + q_nonserved(z,t,'el')
                                  =E=
-                                 CONSUMPTION(r,t,'power')
-                                 + sum(tec, q_fueluse(r,t,tec,'Power'))
-                                 + sum(tec_strg, q_store_in(r,t,tec_strg))
-                                 + FLOW_EXPORT(r,t)
-                                 + sum(rr, flow(r,rr,t) )
-                                 + q_curtail(r,t)
+                                 CONSUMPTION(z,t,'el')
+                                 + sum(tec, q_fueluse(z,t,tec,'Power'))
+                                 + sum(tec_strg, q_store_in(z,t,tec_strg))
+                                 + FLOW_EXPORT(z,t)
+                                 + sum(zz, flow(z,zz,t) )
+                                 + q_curtail(z,t)
                                  ;
-SD_balance_ht(r,t)..
-                                 sum(tec,q_gen(r,t,tec,'heat'))
-                                 + q_nonserved(r,t,'heat')
+SD_balance_ht(z,t)..
+                                 sum(tec,q_gen(z,t,tec,'ht'))
+                                 + q_nonserved(z,t,'ht')
                                  =E=
-                                 CONSUMPTION(r,t,'heat')
+                                 CONSUMPTION(z,t,'ht')
+                                 ;
+* ------------------------------------------------------------------------------
+* INTERMITTENT GENERATION
+* ------------------------------------------------------------------------------
+itm_generation(z,t,tec_itm)..
+                                 q_itm(z,t,tec_itm)
+                                 =E=
+                                 GEN_PROFILE(z,t,tec_itm) * (INSTALLED_CAP_ITM(z,tec_itm) + invest_res(z,tec_itm))
                                  ;
 * ------------------------------------------------------------------------------
 * THERMAL GENERATION
 * ------------------------------------------------------------------------------
-caplim_generation(r,t,tec,prd)..
-                                 q_gen(r,t,tec,prd)
+caplim_generation(z,t,tec,prd)..
+                                 q_gen(z,t,tec,prd)
                                  =L=
-                                 SMAX(l, FEASIBLE_OUTPUT(tec,l,prd)) * (NUM(r,tec) - decommission(r,tec) + invest_thermal(r,tec) )
+                                 SMAX(l, FEASIBLE_OUTPUT(tec,l,prd)) * (NUM(z,tec) - decommission(z,tec) + invest_thermal(z,tec) )
                                  ;
-nonchp_generation(r,t,tec)$(NOT tec_chp(tec))..
-                                 sum(f, q_fueluse(r,t,tec,f) * EFFICIENCY(tec,'power',f) )
+nonchp_generation(z,t,tec)$(NOT tec_chp(tec))..
+                                 sum(f, q_fueluse(z,t,tec,f) * EFFICIENCY(tec,'el',f) )
                                  =E=
-                                 q_gen(r,t,tec,'power')
+                                 q_gen(z,t,tec,'el')
                                  ;
-pth_generation(r,t,tec)$(tec_pth(tec))..
-* replace sum(f,.) with q_fueluse(r,t,tec,'power') * EFFICIENCY(tec,'heat','power') ?
-                                 sum(f, q_fueluse(r,t,tec,f) * EFFICIENCY(tec,'heat',f) )
+pth_generation(z,t,tec)$(tec_pth(tec))..
+* replace sum(f,.) with q_fueluse(z,t,tec,'el') * EFFICIENCY(tec,'ht','el') ?
+                                 sum(f, q_fueluse(z,t,tec,f) * EFFICIENCY(tec,'ht',f) )
                                  =E=
-                                 q_gen(r,t,tec,'heat')
+                                 q_gen(z,t,tec,'ht')
                                  ;
-cc_a(r,t,tec)$tec_chp(tec)..
-                                 Sum(l, cc_weights(r,t,tec,l))
+cc_a(z,t,tec)$tec_chp(tec)..
+                                 Sum(l, cc_weights(z,t,tec,l))
                                  =E=
-                                 (NUM(r,tec) - decommission(r,tec) + invest_thermal(r,tec) )
+                                 (NUM(z,tec) - decommission(z,tec) + invest_thermal(z,tec) )
                                  ;
-cc_b(r,t,tec,prd)$tec_chp(tec)..
-                                 q_gen(r,t,tec,prd)
+cc_b(z,t,tec,prd)$tec_chp(tec)..
+                                 q_gen(z,t,tec,prd)
                                  =L=
-                                 Sum(l, cc_weights(r,t,tec,l) * FEASIBLE_OUTPUT(tec,l,prd))
+                                 Sum(l, cc_weights(z,t,tec,l) * FEASIBLE_OUTPUT(tec,l,prd))
                                  ;
-cc_c(r,t,tec,f)$tec_chp(tec)..
-                                 q_fueluse(r,t,tec,f)
+cc_c(z,t,tec,f)$tec_chp(tec)..
+                                 q_fueluse(z,t,tec,f)
                                  =G=
-                                 Sum(l, cc_weights(r,t,tec,l) * FEASIBLE_INPUT(tec,l,f) )
+                                 Sum(l, cc_weights(z,t,tec,l) * FEASIBLE_INPUT(tec,l,f) )
                                  ;
 
 * ------------------------------------------------------------------------------
 * ELECTRICITY STORAGES
 * ------------------------------------------------------------------------------
-storelim_out(r,t,tec_strg)..
-                                 q_store_out(r,t,tec_strg)
+storelim_out(z,t,tec_strg)..
+                                 q_store_out(z,t,tec_strg)
                                  =L=
-                                 STORAGE_PROPERTIES(r,tec_strg,'power_out')
-                                 + invest_storage_power(r,tec_strg)
+                                 STORAGE_PROPERTIES(z,tec_strg,'power_out')
+                                 + invest_storage_power(z,tec_strg)
                                  ;
-storelim_in(r,t,tec_strg)..
-                                 q_store_in(r,t,tec_strg)
+storelim_in(z,t,tec_strg)..
+                                 q_store_in(z,t,tec_strg)
                                  =L=
-                                 STORAGE_PROPERTIES(r,tec_strg,'power_in')
-                                 + invest_storage_power(r,tec_strg)
+                                 STORAGE_PROPERTIES(z,tec_strg,'power_in')
+                                 + invest_storage_power(z,tec_strg)
                                  ;
-storelim_storage(r,t,tec_strg)..
-                                 storage_level(r,t,tec_strg)
+storelim_storage(z,t,tec_strg)..
+                                 storage_level(z,t,tec_strg)
                                  =L=
-                                 STORAGE_PROPERTIES(r,tec_strg,'energy_max')
-                                 + invest_storage_energy(r,tec_strg)
+                                 STORAGE_PROPERTIES(z,tec_strg,'energy_max')
+                                 + invest_storage_energy(z,tec_strg)
                                  ;
-storage_balance(r,t,tec_strg)$(ord(t) > 1 AND STORAGE_PROPERTIES(r,tec_strg,'efficiency_out'))..
-                                 storage_level(r,t,tec_strg)
+storage_balance(z,t,tec_strg)$(ord(t) > 1 AND STORAGE_PROPERTIES(z,tec_strg,'efficiency_out'))..
+                                 storage_level(z,t,tec_strg)
                                  =E=
-                                 storage_level(r,t-1,tec_strg)
-                                 + RESERVOIR_INFLOWS(r,t,tec_strg)
-                                 + q_store_in(r,t,tec_strg) * STORAGE_PROPERTIES(r,tec_strg,'efficiency_in')
-                                 - q_store_out(r,t,tec_strg) / STORAGE_PROPERTIES(r,tec_strg,'efficiency_out')
+                                 storage_level(z,t-1,tec_strg)
+                                 + RESERVOIR_INFLOWS(z,t,tec_strg)
+                                 + q_store_in(z,t,tec_strg) * STORAGE_PROPERTIES(z,tec_strg,'efficiency_in')
+                                 - q_store_out(z,t,tec_strg) / STORAGE_PROPERTIES(z,tec_strg,'efficiency_out')
                                  ;
-storage_sizing(r,tec_strg)..
-                                 invest_storage_energy(r,tec_strg)
+storage_sizing(z,tec_strg)..
+                                 invest_storage_energy(z,tec_strg)
                                  =G=
-                                 invest_storage_power(r,tec_strg)
+                                 invest_storage_power(z,tec_strg)
                                  ;
 
 * ------------------------------------------------------------------------------
 * international commercial electricity exchange
 * ------------------------------------------------------------------------------
-flow_balance(r,rr,t)$ATC(r,rr)..
-                                 flow(r,rr,t)
+flow_balance(z,zz,t)$ATC(z,zz)..
+                                 flow(z,zz,t)
                                  =E=
-                                 -flow(rr,r,t)
+                                 -flow(zz,z,t)
                                  ;
-flow_constraint_a(r,rr,t)$ATC(r,rr)..
-                                 flow(r,rr,t)
+flow_constraint_a(z,zz,t)$ATC(z,zz)..
+                                 flow(z,zz,t)
                                  =L=
-                                 ATC(r,rr) + invest_atc(r,rr)
+                                 ATC(z,zz) + invest_atc(z,zz)
                                  ;
-flow_constraint_b(r,rr,t)$ATC(rr,r)..
-                                 flow(r,rr,t)
+flow_constraint_b(z,zz,t)$ATC(zz,z)..
+                                 flow(z,zz,t)
                                  =G=
-                                 - (ATC(rr,r) + invest_atc(rr,r))
+                                 - (ATC(zz,z) + invest_atc(zz,z))
                                  ;
-atc_invest_symmetry(r,rr)..      invest_atc(r,rr)
+atc_invest_symmetry(z,zz)..      invest_atc(z,zz)
                                  =E=
-                                 invest_atc(rr,r)
+                                 invest_atc(zz,z)
                                  ;
-* no flows from region to itself
-flow.FX(r,rr,t)$(not ATC(r,rr))   = 0;
-flow.FX(rr,r,t)$(not ATC(rr,r))   = 0;
+* no flows from market zone to itself
+flow.FX(z,zz,t)$(not ATC(z,zz))   = 0;
+flow.FX(zz,z,t)$(not ATC(zz,z))   = 0;
 * ------------------------------------------------------------------------------
 * emissions
 * ------------------------------------------------------------------------------
-emission_calculation(r)..
-                                 emissions(r)
+emission_calculation(z)..
+                                 emissions(z)
                                  =E=
-                                 sum((t,f), EMISSION_INTENSITY(f) * sum(tec,q_fueluse(r,t,tec,f)))
+                                 sum((t,f), EMISSION_INTENSITY(f) * sum(tec,q_fueluse(z,t,tec,f)))
                                  ;
 * ------------------------------------------------------------------------------
 * decommissioning
 * ------------------------------------------------------------------------------
-decommission_limit(r,tec)..
-                                 decommission(r,tec)
+decommission_limit(z,tec)..
+                                 decommission(z,tec)
                                  =L=
-                                 NUM(r,tec) + invest_thermal(r,tec)
+                                 NUM(z,tec) + invest_thermal(z,tec)
                                  ;
 * ------------------------------------------------------------------------------
 * ancillary services
 * ------------------------------------------------------------------------------
-ancillary_service(r,t)..
-                                 sum(tec$(NOT tec_chp(tec)), q_gen(r,t,tec,'power'))
-                                 + sum(tec_strg, q_store_out(r,t,tec_strg))
-                                 + sum(tec_strg, q_store_in(r,t,tec_strg))
+ancillary_service(z,t)..
+                                 sum(tec$(NOT tec_chp(tec)), q_gen(z,t,tec,'el'))
+                                 + sum(tec_strg, q_store_out(z,t,tec_strg))
+                                 + sum(tec_strg, q_store_in(z,t,tec_strg))
                                  =G=
-                                 0.175 * PEAK_LOAD(r)  # 0.125
+                                 0.175 * PEAK_LOAD(z)  # 0.125
                                  + 0.15 * sum(tec_itm$(NOT SAMEAS(tec_itm,'ror')),  # 0.075
-                                 PEAK_PROFILE(r,tec_itm) * (INSTALLED_CAP_ITM(r,tec_itm) + invest_res(r,tec_itm))
+                                 PEAK_PROFILE(z,tec_itm) * (INSTALLED_CAP_ITM(z,tec_itm) + invest_res(z,tec_itm))
                                  );
 * ------------------------------------------------------------------------------
 * curtail of intermittent generation only
 * ------------------------------------------------------------------------------
-curtail_limit(r,t)..             q_curtail(r,t)
+curtail_limit(z,t)..             q_curtail(z,t)
                                  =L=
                                  sum(tec_itm$(NOT SAMEAS(tec_itm,'ror')),
-                                     GEN_PROFILE(r,t,tec_itm) * (INSTALLED_CAP_ITM(r,tec_itm) + invest_res(r,tec_itm))
+                                     GEN_PROFILE(z,t,tec_itm) * (INSTALLED_CAP_ITM(z,tec_itm) + invest_res(z,tec_itm))
                                  );
 * ------------------------------------------------------------------------------
 * additional constraints
 * ------------------------------------------------------------------------------
 
 * restrict fuel use according to technology
-q_fueluse.UP(r,t,tec,f)$(NOT sum(prd,EFFICIENCY(tec,prd,f))) = 0;
+q_fueluse.UP(z,t,tec,f)$(NOT sum(prd,EFFICIENCY(tec,prd,f))) = 0;
 
 * bounds on investment -- long-term vs short-term model
-invest_thermal.UP(r,tec) =       SWITCH_INVEST_THERM;
-decommission.UP(r,tec) =         SWITCH_INVEST_THERM;
-invest_res.UP(r,tec_itm) =       SWITCH_INVEST_ITM(r, tec_itm);
-invest_storage_power.UP(r,tec_strg) = SWITCH_INVEST_STORAGE(r, tec_strg);
-invest_storage_energy.UP(r,tec_strg) = SWITCH_INVEST_STORAGE(r, tec_strg);
-invest_atc.UP(r,rr) =            SWITCH_INVEST_ATC(r,rr);
+invest_thermal.UP(z,tec) =       SWITCH_INVEST_THERM;
+decommission.UP(z,tec) =         SWITCH_INVEST_THERM;
+invest_res.UP(z,tec_itm) =       SWITCH_INVEST_ITM(z, tec_itm);
+invest_storage_power.UP(z,tec_strg) = SWITCH_INVEST_STORAGE(z, tec_strg);
+invest_storage_energy.UP(z,tec_strg) = SWITCH_INVEST_STORAGE(z, tec_strg);
+invest_atc.UP(z,zz) =            SWITCH_INVEST_ATC(z,zz);
 
 * ==============================================================================
 * include specific changes
@@ -412,11 +425,11 @@ model medea / all /;
 
 ********************************************************************************
 ******* set starting values
-*q_gen.FX(r,start_t,tec,prd)      $INIT_GEN(r,start_t,tec,prd)            = INIT_GEN(r,start_t,tec,prd);
-*q_store_in.FX(r,start_t,tec_strg)     $INIT_PUMP(r,start_t,tec_strg)           = INIT_PUMP(r,start_t,tec_strg);
-*q_store_out.FX(r,start_t,tec_strg)  $INIT_TURB(r,start_t,tec_strg)           = INIT_TURB(r,start_t,tec_strg);
-*res_level.FX(r,start_t,tec_strg)  $INIT_STORAGE(r,start_t,tec_strg)        = INIT_STORAGE(r,start_t,tec_strg);
-*res_level.FX(r,end_t,tec_strg)    $FINAL_STORAGE(r,end_t,tec_strg)         = FINAL_STORAGE(r,end_t,tec_strg);
+*q_gen.FX(z,start_t,tec,prd)      $INIT_GEN(z,start_t,tec,prd)            = INIT_GEN(z,start_t,tec,prd);
+*q_store_in.FX(z,start_t,tec_strg)     $INIT_PUMP(z,start_t,tec_strg)           = INIT_PUMP(z,start_t,tec_strg);
+*q_store_out.FX(z,start_t,tec_strg)  $INIT_TURB(z,start_t,tec_strg)           = INIT_TURB(z,start_t,tec_strg);
+*res_level.FX(z,start_t,tec_strg)  $INIT_STORAGE(z,start_t,tec_strg)        = INIT_STORAGE(z,start_t,tec_strg);
+*res_level.FX(z,end_t,tec_strg)    $FINAL_STORAGE(z,end_t,tec_strg)         = FINAL_STORAGE(z,end_t,tec_strg);
 
 options
 *LP = OSIGurobi,
@@ -447,111 +460,111 @@ solveStat = medea.solvestat;
 
 ****** exogenous parameters
 parameters
-ANNUAL_CONSUMPTION(r,prd),
-FULL_LOAD_HOURS(r,tec_itm),
-AVG_PRICE(r,f),
-AVG_PRICE_DA(r),
-AVG_PRICE_EUA(r);
+ANNUAL_CONSUMPTION(z,prd),
+FULL_LOAD_HOURS(z,tec_itm),
+AVG_PRICE(z,f),
+AVG_PRICE_DA(z),
+AVG_PRICE_EUA(z);
 
-ANNUAL_CONSUMPTION(r,prd) = sum(t, CONSUMPTION(r,t,prd));
-FULL_LOAD_HOURS(r,tec_itm) = sum(t, GEN_PROFILE(r,t,tec_itm));
-AVG_PRICE(r,f) = sum(t, PRICE_FUEL(t,r,f)) / card(t);
-AVG_PRICE_DA(r) = sum(t, PRICE_DA(t,r)) / card(t);
-AVG_PRICE_EUA(r) = sum(t, PRICE_EUA(t,r)) / card(t);
+ANNUAL_CONSUMPTION(z,prd) = sum(t, CONSUMPTION(z,t,prd));
+FULL_LOAD_HOURS(z,tec_itm) = sum(t, GEN_PROFILE(z,t,tec_itm));
+AVG_PRICE(z,f) = sum(t, PRICE_FUEL(t,z,f)) / card(t);
+AVG_PRICE_DA(z) = sum(t, PRICE_DA(t,z)) / card(t);
+AVG_PRICE_EUA(z) = sum(t, PRICE_CO2(t,z)) / card(t);
 
 display ANNUAL_CONSUMPTION, FULL_LOAD_HOURS, AVG_PRICE, AVG_PRICE_DA, AVG_PRICE_EUA
 
 ******* system operations
 parameter
-annual_generation(r,prd),
-annual_generation_by_tec(r,tec,prd),
-annual_pumping(r),
-annual_turbining(r),
-annual_netflow(r),
-annual_fueluse(r,f),
+annual_generation(z,prd),
+annual_generation_by_tec(z,tec,prd),
+annual_pumping(z),
+annual_turbining(z),
+annual_netflow(z),
+annual_fueluse(z,f),
 annual_fixedexports,
 annual_fixedimports,
-annual_curtail(r);
+annual_curtail(z);
 
-annual_generation(r,prd) = sum((t,tec), q_gen.L(r, t, tec, prd));
-annual_generation_by_tec(r,tec,prd) = sum(t, q_gen.L(r, t, tec, prd));
-annual_pumping(r) = sum((t,tec_strg), q_store_in.L(r,t,tec_strg));
-annual_turbining(r) = sum((t,tec_strg), q_store_out.L(r,t,tec_strg));
-annual_netflow(rr) = sum(t, flow.L('AT',rr,t));
-annual_fueluse(r,f) = sum((t,tec), q_fueluse.L(r,t,tec,f));
+annual_generation(z,prd) = sum((t,tec), q_gen.L(z, t, tec, prd));
+annual_generation_by_tec(z,tec,prd) = sum(t, q_gen.L(z, t, tec, prd));
+annual_pumping(z) = sum((t,tec_strg), q_store_in.L(z,t,tec_strg));
+annual_turbining(z) = sum((t,tec_strg), q_store_out.L(z,t,tec_strg));
+annual_netflow(zz) = sum(t, flow.L('AT',zz,t));
+annual_fueluse(z,f) = sum((t,tec), q_fueluse.L(z,t,tec,f));
 annual_fixedexports = sum(t, FLOW_EXPORT('AT',t));
 annual_fixedimports = sum(t, FLOW_IMPORT('AT',t));
-annual_curtail(r) = sum(t, q_curtail.L(r,t));
+annual_curtail(z) = sum(t, q_curtail.L(z,t));
 
 display annual_generation, annual_netflow, annual_fueluse, annual_fixedexports, annual_fixedimports, annual_curtail;
 
 ******* annual values
 parameters
-ann_value_generation(r,prd),
-ann_value_generation_by_tec(r,tec,prd),
-ann_value_pumping(r),
-ann_value_turbining(r),
-ann_value_flows(r,rr),
-ann_value_curtail(r);
+ann_value_generation(z,prd),
+ann_value_generation_by_tec(z,tec,prd),
+ann_value_pumping(z),
+ann_value_turbining(z),
+ann_value_flows(z,zz),
+ann_value_curtail(z);
 
-ann_value_generation(r,prd) = sum((t,tec), SD_balance_el.M(r,t) * q_gen.L(r, t, tec, prd));
-ann_value_generation_by_tec(r,tec,prd) = sum(t, SD_balance_el.M(r,t) * q_gen.L(r, t, tec, prd));
-ann_value_pumping(r) = sum((t,tec_strg), SD_balance_el.M(r,t) * q_store_in.L(r,t,tec_strg));
-ann_value_turbining(r) = sum((t,tec_strg), SD_balance_el.M(r,t) * q_store_out.L(r,t,tec_strg));
-ann_value_flows(r,rr) = sum(t, SD_balance_el.M(r,t) * flow.L(r,rr,t));
-ann_value_curtail(r) = sum(t, SD_balance_el.M(r,t) * q_curtail.L(r,t));
+ann_value_generation(z,prd) = sum((t,tec), SD_balance_el.M(z,t) * q_gen.L(z, t, tec, prd));
+ann_value_generation_by_tec(z,tec,prd) = sum(t, SD_balance_el.M(z,t) * q_gen.L(z, t, tec, prd));
+ann_value_pumping(z) = sum((t,tec_strg), SD_balance_el.M(z,t) * q_store_in.L(z,t,tec_strg));
+ann_value_turbining(z) = sum((t,tec_strg), SD_balance_el.M(z,t) * q_store_out.L(z,t,tec_strg));
+ann_value_flows(z,zz) = sum(t, SD_balance_el.M(z,t) * flow.L(z,zz,t));
+ann_value_curtail(z) = sum(t, SD_balance_el.M(z,t) * q_curtail.L(z,t));
 
 display ann_value_generation, ann_value_generation_by_tec, ann_value_pumping, ann_value_turbining, ann_value_flows, ann_value_curtail;
 
 ******* prices, cost, producer surplus
 parameter
-annual_price_el(r),
-annual_price_ht(r),
-annual_cost(r,tec),
-annual_revenue(r,tec),
-annual_surplus_therm(r,tec),
-annual_surplus_stor(r,tec_strg),
-producer_surplus(r);
+annual_price_el(z),
+annual_price_ht(z),
+annual_cost(z,tec),
+annual_revenue(z,tec),
+annual_surplus_therm(z,tec),
+annual_surplus_stor(z,tec_strg),
+producer_surplus(z);
 
-annual_price_el(r) = sum(t, SD_balance_el.M(r,t))/card(t);
-annual_price_ht(r) = sum(t, SD_balance_ht.M(r,t))/card(t);
-annual_cost(r,tec) = sum(t, cost_fuel.L(r,t,tec)
-                         + cost_emission.L(r,t,tec)
-                         + sum(prd, OM_VARIABLE_COST(tec) * q_gen.L(r,t,tec,prd)));
-annual_revenue(r,tec) = sum(t,
-                         SD_balance_el.M(r,t) * q_gen.L(r,t,tec,'power')
-                         + SD_balance_ht.M(r,t) * q_gen.L(r,t,tec,'heat'));
-annual_surplus_therm(r,tec) =   sum(t,
-                         SD_balance_el.M(r,t) * q_gen.L(r,t,tec,'power')
-                         + SD_balance_ht.M(r,t) * q_gen.L(r,t,tec,'heat')
-                         - cost_fuel.L(r,t,tec)
-                         - cost_emission.L(r,t,tec)
-                         - sum(prd, OM_VARIABLE_COST(tec) * q_gen.L(r,t,tec,prd))
+annual_price_el(z) = sum(t, SD_balance_el.M(z,t))/card(t);
+annual_price_ht(z) = sum(t, SD_balance_ht.M(z,t))/card(t);
+annual_cost(z,tec) = sum(t, cost_fuel.L(z,t,tec)
+                         + cost_emission.L(z,t,tec)
+                         + sum(prd, OM_VARIABLE_COST(tec) * q_gen.L(z,t,tec,prd)));
+annual_revenue(z,tec) = sum(t,
+                         SD_balance_el.M(z,t) * q_gen.L(z,t,tec,'el')
+                         + SD_balance_ht.M(z,t) * q_gen.L(z,t,tec,'ht'));
+annual_surplus_therm(z,tec) =   sum(t,
+                         SD_balance_el.M(z,t) * q_gen.L(z,t,tec,'el')
+                         + SD_balance_ht.M(z,t) * q_gen.L(z,t,tec,'ht')
+                         - cost_fuel.L(z,t,tec)
+                         - cost_emission.L(z,t,tec)
+                         - sum(prd, OM_VARIABLE_COST(tec) * q_gen.L(z,t,tec,prd))
                          );
-annual_surplus_stor(r,tec_strg) = sum(t,
-                         SD_balance_el.M(r,t) * q_store_out.L(r,t,tec_strg)
-                         - SD_balance_el.M(r,t) * q_store_in.L(r,t,tec_strg)
+annual_surplus_stor(z,tec_strg) = sum(t,
+                         SD_balance_el.M(z,t) * q_store_out.L(z,t,tec_strg)
+                         - SD_balance_el.M(z,t) * q_store_in.L(z,t,tec_strg)
                          );
-producer_surplus(r) =    sum(tec, annual_surplus_therm(r,tec))
-                         + sum(tec_strg, annual_surplus_stor(r,tec_strg))
+producer_surplus(z) =    sum(tec, annual_surplus_therm(z,tec))
+                         + sum(tec_strg, annual_surplus_stor(z,tec_strg))
                          ;
 
 display
 annual_price_el, annual_price_ht, annual_cost, annual_surplus_therm, annual_surplus_stor, producer_surplus;
 
-parameter AV_CAP(r, tec, prd);
-AV_CAP(r,tec,prd) = smax(l, FEASIBLE_OUTPUT(tec,l,prd)) * NUM(r,tec);
+parameter AV_CAP(z, tec, prd);
+AV_CAP(z,tec,prd) = smax(l, FEASIBLE_OUTPUT(tec,l,prd)) * NUM(z,tec);
 display NUM, av_cap;
 
 ******* marginals of equations
 parameter
-hourly_price_el(r,t),
-hourly_price_ht(r,t),
-hourly_price_ancillary(r,t),
-hourly_price_exports(r,rr,t)
+hourly_price_el(z,t),
+hourly_price_ht(z,t),
+hourly_price_ancillary(z,t),
+hourly_price_exports(z,zz,t)
 ;
 
-hourly_price_el(r,t) = SD_balance_el.M(r,t);
-hourly_price_ht(r,t) = SD_balance_ht.M(r,t);
-hourly_price_ancillary(r,t) = ancillary_service.M(r,t);
-hourly_price_exports(r,rr,t) = flow_balance.M(r,rr,t);
+hourly_price_el(z,t) = SD_balance_el.M(z,t);
+hourly_price_ht(z,t) = SD_balance_ht.M(z,t);
+hourly_price_ancillary(z,t) = ancillary_service.M(z,t);
+hourly_price_exports(z,zz,t) = flow_balance.M(z,zz,t);

@@ -1,12 +1,14 @@
 import os
-import numpy as np
-import pandas as pd
 
+import pandas as pd
+# import project settings, USER MUST REPLACE {project_name} BY CORRESPONDING PROJECT NAME
+from applications.
 from gams import *
+
 import config as cfg
 from medea.gams_io import gdx2df
-# import project settings, USER MUST REPLACE {project_name} BY CORRESPONDING PROJECT NAME
-from applications.{project_name}.settings_{project_name} import *
+
+{project_name}.settings_{project_name} import *
 
 
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -37,7 +39,7 @@ for price_co2 in range_co2price:
     # write data to disk
 
 
-    df_xxx = pd.DataFrame(columns=cfg.regions)
+    df_xxx = pd.DataFrame(columns=cfg.zones)
     for key, df in dict_results.items():
         if df.index.any() == 'Value':
             df.index = [key]

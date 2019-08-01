@@ -230,7 +230,7 @@ def solve(output_folder, output_name, scenario_iteration, gen_target):
         hgbf_list = []
         fubf_list = []
         emission_list = []
-        for reg in cfg.regions:
+        for reg in cfg.zones:
             # power generation by fuel
             df_pgbf = result_dict['q_gen'].xs('Power', level=2, axis=1).xs(reg, level=0, axis=1).groupby(by=df_fuelmap['f'], axis=1).sum()
             df_pgbf.columns = pd.MultiIndex.from_product([[reg], df_pgbf.columns])
@@ -250,7 +250,7 @@ def solve(output_folder, output_name, scenario_iteration, gen_target):
         htgen_by_fuel = pd.concat(hgbf_list, axis=1).reindex(cols, level=1, axis=1)
         burn_by_fuel = pd.concat(fubf_list, axis=1).reindex(cols, level=1, axis=1)
 
-        for reg in cfg.regions:
+        for reg in cfg.zones:
             df_emis = df_emf['Value'] * burn_by_fuel.xs(reg, axis=1)
             df_emis.columns = pd.MultiIndex.from_product([[reg], df_emis.columns])
             emission_list.append(df_emis)
