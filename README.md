@@ -39,6 +39,9 @@ the forked repository's url and `git clone` _medea_ to your local disk.
 For _medea_ to work properly, the variables `folder` and `gams_sysdir` in `medea/config.py` must point to the correct locations, i.e. `folder` must point 
 to the local medea repository (e.g. `D:\git_repos\medea`) and `gams_sysdir` must point to the folder of the local GAMS 
 installation that contains the GAMS executable. (On Windows this might be something like `C:\GAMS\win64\27.1`)
- 
+
+## Getting started ##
+For more information on how to use _medea_, please consult [_getting started_](https://github.com/inwe-boku/medea/blob/master/doc/getting_started.md).  
+
 ------- 
  For comments and bug reporting please contact [Sebastian Wehrle](mailto:sebastian.wehrle@boku.ac.at).
