@@ -12,21 +12,21 @@ from medea.gams_io import gdx2df
 ws = GamsWorkspace(system_directory=cfg.gams_sysdir)
 
 read_variables = {
-    'cost': ([], ['r']),
-    'emissions': ([], ['r']),
-    'invest_res': (['tec_itm'], ['r']),
-    'invest_thermal': (['tec'], ['r']),
-    'invest_storage_power': (['tec_strg'], ['r']),
-    'invest_storage_energy': (['tec_strg'], ['r']),
-    'invest_ntc': (['r'], ['r']),
-    'annual_price_el': ([], ['r']),
-    'annual_price_ht': ([], ['r']),
-    'annual_pumping': ([], ['r']),
-    'annual_turbining': ([], ['r']),
-    'annual_generation': (['prd'], ['r']),
-    'annual_curtail': ([], ['r']),
-    'annual_netflow': ([], ['r']),
-    'producer_surplus': ([], ['r']),
+    'cost': ([], ['z']),
+    'emissions': ([], ['z']),
+    'invest_res': (['tec_itm'], ['z']),
+    'invest_thermal': (['tec'], ['z']),
+    'invest_storage_power': (['tec_strg'], ['z']),
+    'invest_storage_energy': (['tec_strg'], ['z']),
+    'invest_atc': (['z'], ['z']),
+    'annual_price_el': ([], ['z']),
+    'annual_price_ht': ([], ['z']),
+    'annual_pumping': ([], ['z']),
+    'annual_turbining': ([], ['z']),
+    'annual_generation': (['prd'], ['z']),
+    'annual_curtail': ([], ['z']),
+    'annual_netflow': ([], ['z']),
+    'producer_surplus': ([], ['z']),
 }
 
 
@@ -80,4 +80,4 @@ for peua in eua_range:
     df_all = df_all.dropna(axis=1, how='all')
     df_all = df_all.sort_index(axis=1, level=1)
     df_all.to_csv(os.path.join(cfg.folder, 'applications', project, 'results',
-                               f'out_{scenario}_EUA_{peua}.csv'), sep=';', encoding='utf-8', decimal=',')
+                               f'out_costreal_{scenario}_EUA_{peua}.csv'), sep=';', encoding='utf-8', decimal=',')

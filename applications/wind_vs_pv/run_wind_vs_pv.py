@@ -34,13 +34,13 @@ prd_dict = {rec.keys[0] for rec in db_input['prd']}
 fuel_dict = {rec.keys[0] for rec in db_input['f']}
 
 # read parameters
-df_eua = gdx2df(db_input, 'PRICE_EUA', ['t'], [])
-df_capitm = gdx2df(db_input, 'INSTALLED_CAP_ITM', ['r', 'tec_itm'], [])
+df_eua = gdx2df(db_input, 'PRICE_CO2', ['t'], [])
+df_capitm = gdx2df(db_input, 'INSTALLED_CAP_ITM', ['z', 'tec_itm'], [])
 df_eff = gdx2df(db_input, 'EFFICIENCY', ['tec', 'prd', 'f'], [])
 df_feasgen = gdx2df(db_input, 'FEASIBLE_OUTPUT', ['tec', 'l', 'prd'], [])
-df_num = gdx2df(db_input, 'NUM', ['r', 'tec'], [])
+df_num = gdx2df(db_input, 'NUM', ['z', 'tec'], [])
 df_fuelreq = gdx2df(db_input, 'FEASIBLE_INPUT', ['tec', 'l', 'f'], [])
-df_load = gdx2df(db_input, 'CONSUMPTION', ['r', 't', 'prd'], [])
+df_load = gdx2df(db_input, 'CONSUMPTION', ['z', 't', 'prd'], [])
 tec2fuel_map = gdx2df(db_input, 'EFFICIENCY', ['tec', 'f'], ['prd']).reset_index()
 tec2fuel_map = tec2fuel_map.loc[tec2fuel_map['tec'].isin(df_feasgen.index.get_level_values(0)), :]
 
@@ -80,7 +80,7 @@ reset_parameter(db_input, 'INSTALLED_CAP_ITM', df_capitm_mod)
 
 # electric mobility in Austria increases electricity consumption
 df_load_mod = df_load
-df_load_mod.loc[idx['AT', :, 'Power'], :] = df_load_mod.loc[idx['AT', :, 'Power'], :] * \
+df_load_mod.loc[idx['AT', :, 'el'], :] = df_load_mod.loc[idx['AT', :, 'el'], :] * \
                                             scenario_2030['AT']['d_power'][0]
 reset_parameter(db_input, 'CONSUMPTION', df_load_mod)
 
