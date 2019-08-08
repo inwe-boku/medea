@@ -1,17 +1,14 @@
 import os
 import subprocess
+
 import pandas as pd
 from gams import *
 
 import config as cfg
 from medea.gams_io import reset_parameter, gdx2df, df2gdx
-# import project settings, user must replace {project_name} by corresponding project name
-from applications.{project_name}.settings_{project_name} import *
+from medea.templates.settings_template import *
 
-project_name = 'pass_through'  # 'project_name'
 # -------------------------------------------------------------------------------------------------------------------- #
-
-
 # %% initialize GAMS, GAMS workspace and load model data
 # -------------------------------------------------------------------------------------------------------------------- #
 # import base data from gdx

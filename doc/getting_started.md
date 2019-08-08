@@ -42,10 +42,10 @@ To start a new _medea_-project, call the function
 ```
 create_project('project_name', 'medea_dir')
 ```
-contained in `./medea/medea.py`. In the python console this can be done like this:
+contained in `./medea/projects.py`. In the python console this can be done like this:
 ```python
 import config as cfg
-from medea.medea import create_project
+from medea.projects import create_project
 
 create_project('new_project', cfg.folder)
 ```
@@ -106,11 +106,5 @@ power plant efficiencies or a range of CO2 prices to be investigated.
 *  `results_{project_name}.py`: reads and processes the model output for further use after `run_{project_name}.py` 
 has been executed. Results are stored in `./applications/results`.
 
-All scripts can (and have to) be modified to serve the purpose of the analysis. Upon project creation all files hold
-example code that requires slight adjustment to be executable. 
-In the files `run_{project_name}.py` and `results_{project_name}.py`, the last import statement (line 9)
-```
-from applications.{project_name}.settings_{project_name} import *
-```
-needs to be adjusted so that `{project_name}` is replaced by the actual project name.
-
+Upon project creation all files hold example code that should be executable.
+However, all scripts should be modified to serve the purpose of the intended analysis.  

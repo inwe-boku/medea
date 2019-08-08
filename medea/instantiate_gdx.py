@@ -6,7 +6,7 @@ from gams import *
 
 import config as cfg
 from medea.gams_io import df2gdx
-from medea.prepare import df_fuel, df_lim, df_prd, df_props, df_zones, df_tec_itm, df_tec_strg, \
+from medea.prepare_data import df_fuel, df_lim, df_prd, df_props, df_zones, df_tec_itm, df_tec_strg, \
     df_time, data_technology, data_atc, tec_props, df_efficiency, df_emission_intensity, df_itm_invest, df_itm_cap, \
     df_ancil, lim_invest_itm, lim_invest_thermal, lim_invest_atc, lim_invest_storage, df_feasops, storage_clusters, \
     ts_zonal, ts_price, ts_inflows

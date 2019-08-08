@@ -1,5 +1,6 @@
 # This file holds all scenario-specific settings and assumptions
 
+project_name = '_project_name_'
 # -------------------------------------------------------------------------------------------------------------------- #
 #example: CO2 price scenarios
 
