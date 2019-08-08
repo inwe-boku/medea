@@ -44,7 +44,7 @@ df_emission_intensity = pd.DataFrame(emission_intensity.values(), emission_inten
 
 efficiency_electric = {'nuc': 0.34, 'lig_stm': 0.33, 'lig_stm_chp': 0.33, 'lig_boa': 0.43, 'lig_boa_chp': 0.43,
                        'coal_sub': 0.35, 'coal_sub_chp': 0.35, 'coal_sc': 0.40, 'coal_sc_chp': 0.40, 'coal_usc': 0.44,
-                       'coal_usc_chp': 0.44, 'coal_igcc': 0.40, 'ng_stm': 0.40, 'ng_stm_chp': 0.40, 'ng_cbt_lo': 0.33,
+                       'coal_usc_chp': 0.44, 'coal_igcc': 0.55, 'ng_stm': 0.38, 'ng_stm_chp': 0.38, 'ng_cbt_lo': 0.33,
                        'ng_cbt_lo_chp': 0.33, 'ng_cbt_hi': 0.40, 'ng_cbt_hi_chp': 0.40, 'ng_cc_lo': 0.38,
                        'ng_cc_lo_chp': 0.38, 'ng_cc_hi': 0.55, 'ng_cc_hi_chp': 0.55, 'ng_mtr': 0.40, 'ng_mtr_chp': 0.40,
                        'ng_boiler_chp': 0.90, 'oil_stm': 0.31, 'oil_stm_chp': 0.31, 'oil_cbt': 0.35,

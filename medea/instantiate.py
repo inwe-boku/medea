@@ -1,11 +1,8 @@
 import logging
 import os
-import sys
 
 import pandas as pd
 from gams import *
-
-sys.path.append(["D:\\git_repos\\medea", "D:\\git_repos\\medea\\medea"])
 
 import config as cfg
 from medea.gams_io import df2gdx
