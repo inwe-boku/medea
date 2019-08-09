@@ -38,7 +38,7 @@ df_eua = gdx2df(db_input, 'PRICE_CO2', ['t'], [])
 df_capitm = gdx2df(db_input, 'INSTALLED_CAP_ITM', ['z', 'tec_itm'], [])
 df_eff = gdx2df(db_input, 'EFFICIENCY', ['tec', 'prd', 'f'], [])
 df_feasgen = gdx2df(db_input, 'FEASIBLE_OUTPUT', ['tec', 'l', 'prd'], [])
-df_num = gdx2df(db_input, 'NUM', ['z', 'tec'], [])
+df_cap_therm = gdx2df(db_input, 'INSTALLED_CAP_THERM', ['z', 'tec'], [])
 df_fuelreq = gdx2df(db_input, 'FEASIBLE_INPUT', ['tec', 'l', 'f'], [])
 df_load = gdx2df(db_input, 'CONSUMPTION', ['z', 't', 'prd'], [])
 tec2fuel_map = gdx2df(db_input, 'EFFICIENCY', ['tec', 'f'], ['prd']).reset_index()
@@ -63,19 +63,19 @@ for fl in fuels:
 reset_parameter(db_input, 'FEASIBLE_INPUT', df_fuelreq_mod)
 
 # conventional capacities
-df_num_mod = df_num
-for reg in cfg.zones:
-    for gen in df_num.loc[reg].index:
-        df_num_mod.loc[idx[reg, gen]] = (df_num.loc[idx[reg, gen]] *
-                                         scenario_2030[reg][gen.split('_')[0]][0]).round(0)
-reset_parameter(db_input, 'NUM', df_num_mod)
+df_cap_therm_mod = df_cap_therm
+for z in cfg.zones:
+    for gen in df_cap_therm.loc[z].index:
+        df_cap_therm_mod.loc[idx[z, gen]] = (df_cap_therm.loc[idx[z, gen]] *
+                                             scenario_2030[z][gen.split('_')[0]][0]).round(0)
+reset_parameter(db_input, 'INSTALLED_CAP_THERM', df_cap_therm_mod)
 
 # intermittent capacities
 df_capitm_mod = df_capitm
-for reg in cfg.zones:
+for z in cfg.zones:
     for itm in itm_dict:
         if itm != 'ror':
-            df_capitm_mod.loc[idx[reg, itm], :] = scenario_2030[reg][itm][0]
+            df_capitm_mod.loc[idx[z, itm], :] = scenario_2030[z][itm][0]
 reset_parameter(db_input, 'INSTALLED_CAP_ITM', df_capitm_mod)
 
 # electric mobility in Austria increases electricity consumption

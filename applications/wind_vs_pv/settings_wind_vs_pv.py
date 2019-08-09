@@ -53,7 +53,7 @@ scenario_2030 = {
 }
 
 # [CO2 emission prices]
-eua_range = range(10, 71, 10)
+eua_range = range(10, 81, 10)
 
 # [electricity exchange]
 electricity_exchange = {

@@ -70,7 +70,6 @@ parameters
          INVESTCOST_THERMAL(tec)                 annuity of investment in 1 GW thermal generation technology
          MAX_EMISSIONS(z)                        upper emission limit
          ATC(z,zz)                               net transfer capacity from market zone z to market zone zz
-         NUM(z,tec)                              number of installed 100 MW capacity slices of each technology
          OM_FIXED_COST(tec)                      quasifixed cost of operation & maintenance
          OM_VARIABLE_COST(tec)                   variable cost of operation & maintenance
          PRICE_DA(t,z)                           observed electricity price on day-ahead market [k EUR per GWh]
@@ -101,7 +100,7 @@ $load  f l t tec tec_chp tec_strg tec_itm tec_pth prd props z
 $load  ANCIL_SERVICE_LVL CONSUMPTION EMISSION_INTENSITY FLOW_EXPORT EFFICIENCY
 $load  FEASIBLE_INPUT FEASIBLE_OUTPUT GEN_PROFILE STORAGE_PROPERTIES FLOW_IMPORT
 $load  INSTALLED_CAP_ITM INSTALLED_CAP_THERM INVESTCOST_ITM INVESTCOST_THERMAL
-$load  ATC NUM OM_FIXED_COST OM_VARIABLE_COST PRICE_DA PRICE_CO2
+$load  ATC OM_FIXED_COST OM_VARIABLE_COST PRICE_DA PRICE_CO2
 $load  PRICE_FUEL RESERVOIR_INFLOWS SWITCH_INVEST_THERM SWITCH_INVEST_ITM
 $load  SWITCH_INVEST_STORAGE SWITCH_INVEST_ATC
 $gdxin
@@ -218,7 +217,7 @@ obj_emissioncost(z,t,tec)..      cost_emission(z,t,tec)
                                  ;
 obj_omcost(z,tec)..              cost_om(z,tec)
                                  =E=
-                                 OM_FIXED_COST(tec) * (NUM(z,tec) - decommission(z,tec) + invest_thermal(z,tec))
+                                 OM_FIXED_COST(tec) * (INSTALLED_CAP_THERM(z,tec) - decommission(z,tec) + invest_thermal(z,tec))
                                  + sum((t,prd), OM_VARIABLE_COST(tec) * q_gen(z,t,tec,prd))
                                  ;
 obj_invgencost(z)..              cost_invgen(z)
@@ -273,7 +272,7 @@ itm_generation(z,t,tec_itm)..
 caplim_generation(z,t,tec,prd)..
                                  q_gen(z,t,tec,prd)
                                  =L=
-                                 SMAX(l, FEASIBLE_OUTPUT(tec,l,prd)) * (NUM(z,tec) - decommission(z,tec) + invest_thermal(z,tec) )
+                                 INSTALLED_CAP_THERM(z,tec) - decommission(z,tec) + invest_thermal(z,tec)
                                  ;
 nonchp_generation(z,t,tec)$(NOT tec_chp(tec))..
                                  sum(f, q_fueluse(z,t,tec,f) * EFFICIENCY(tec,'el',f) )
@@ -289,7 +288,7 @@ pth_generation(z,t,tec)$(tec_pth(tec))..
 cc_a(z,t,tec)$tec_chp(tec)..
                                  Sum(l, cc_weights(z,t,tec,l))
                                  =E=
-                                 (NUM(z,tec) - decommission(z,tec) + invest_thermal(z,tec) )
+                                 INSTALLED_CAP_THERM(z,tec) - decommission(z,tec) + invest_thermal(z,tec)
                                  ;
 cc_b(z,t,tec,prd)$tec_chp(tec)..
                                  q_gen(z,t,tec,prd)
@@ -376,7 +375,7 @@ emission_calculation(z)..
 decommission_limit(z,tec)..
                                  decommission(z,tec)
                                  =L=
-                                 NUM(z,tec) + invest_thermal(z,tec)
+                                 INSTALLED_CAP_THERM(z,tec) + invest_thermal(z,tec)
                                  ;
 * ------------------------------------------------------------------------------
 * ancillary services
@@ -551,10 +550,6 @@ producer_surplus(z) =    sum(tec, annual_surplus_therm(z,tec))
 
 display
 annual_price_el, annual_price_ht, annual_cost, annual_surplus_therm, annual_surplus_stor, producer_surplus;
-
-parameter AV_CAP(z, tec, prd);
-AV_CAP(z,tec,prd) = smax(l, FEASIBLE_OUTPUT(tec,l,prd)) * NUM(z,tec);
-display NUM, av_cap;
 
 ******* marginals of equations
 parameter
