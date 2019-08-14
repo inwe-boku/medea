@@ -6,11 +6,27 @@ from gams import *
 
 import config as cfg
 from medea.gams_io import df2gdx
-from medea.prepare_data import df_fuel, df_lim, df_prd, df_props, df_zones, df_tec_itm, df_tec_strg, \
-    df_time, data_technology, data_atc, tec_props, df_efficiency, df_emission_intensity, df_itm_invest, df_itm_cap, \
-    df_ancil, lim_invest_itm, lim_invest_thermal, lim_invest_atc, lim_invest_storage, df_feasops, storage_clusters, \
-    ts_zonal, ts_price, ts_inflows
+from medea.prepare_data import dict_sets, dict_instantiate, data_technology, tec_props, \
+    df_itm_invest, df_ancil, lim_invest_itm, lim_invest_thermal, lim_invest_atc, lim_invest_storage, \
+    df_feasops, storage_clusters, ts_zonal, ts_price, ts_inflows
 
+"""
+data_technology, 
+data_atc, 
+tec_props,
+df_itm_invest, 
+df_itm_cap,
+df_ancil, 
+lim_invest_itm, 
+lim_invest_thermal, 
+lim_invest_atc, 
+lim_invest_storage, 
+df_feasops, 
+storage_clusters,
+ts_zonal, 
+ts_price, 
+ts_inflows
+"""
 # TODO: Add energy stored in hydro reservoirs - STORAGE_LEVEL
 
 idx = pd.IndexSlice
@@ -23,19 +39,21 @@ db = ws.add_database()
 # --------------------------------------------------------------------------- #
 # %% instantiate SETS
 # --------------------------------------------------------------------------- #
-f_set = df2gdx(db, df_fuel, 'f', 'set', [])
-l_set = df2gdx(db, df_lim, 'l', 'set', [])
-prd_set = df2gdx(db, df_prd, 'prd', 'set', [])
-prop_set = df2gdx(db, df_props, 'props', 'set', [])
-z_set = df2gdx(db, df_zones, 'z', 'set', [])
+f_set = df2gdx(db, dict_sets['f'], 'f', 'set', [])
+l_set = df2gdx(db, dict_sets['l'], 'l', 'set', [])
+prd_set = df2gdx(db, dict_sets['prd'], 'prd', 'set', [])
+prop_set = df2gdx(db, dict_sets['props'], 'props', 'set', [])
+z_set = df2gdx(db, dict_sets['z'], 'z', 'set', [])
+tec_strg_set = df2gdx(db, dict_sets['tec_strg'], 'tec_strg', 'set', [])
+tec_itm_set = df2gdx(db, dict_sets['tec_itm'], 'tec_itm', 'set', [])
+t_set = df2gdx(db, dict_sets['t'], 't', 'set', [])
+
 tec_set = df2gdx(db, data_technology['medea_type'], 'tec', 'set', [])
 tec_chp_set = df2gdx(db, pd.DataFrame.from_dict({x: True for x in [y for y in data_technology.index if 'chp' in y]},
                                                 orient='index'), 'tec_chp', 'set', [])
 tec_pth_set = df2gdx(db, pd.DataFrame.from_dict({x: True for x in [y for y in data_technology.index if 'pth' in y]},
                                                 orient='index'), 'tec_pth', 'set', [])
-tec_strg_set = df2gdx(db, df_tec_strg, 'tec_strg', 'set', [])
-tec_itm_set = df2gdx(db, df_tec_itm, 'tec_itm', 'set', [])
-t_set = df2gdx(db, df_time, 't', 'set', [])
+
 
 logging.info('medea sets instantiated')
 
@@ -43,9 +61,9 @@ logging.info('medea sets instantiated')
 # %% instantiate static PARAMETERS
 # --------------------------------------------------------------------------- #
 
-ATC = df2gdx(db, data_atc.stack(), 'ATC', 'par', [z_set, z_set], '[GW]')
-EFFICIENCY = df2gdx(db, df_efficiency['l1'], 'EFFICIENCY', 'par', [tec_set, prd_set, f_set], '[%]')
-EMISSION_INTENSITY = df2gdx(db, df_emission_intensity, 'EMISSION_INTENSITY', 'par', [f_set],
+ATC = df2gdx(db, dict_instantiate['atc'].stack(), 'ATC', 'par', [z_set, z_set], '[GW]')
+EFFICIENCY = df2gdx(db, dict_instantiate['efficiency']['l1'], 'EFFICIENCY', 'par', [tec_set, prd_set, f_set], '[%]')
+EMISSION_INTENSITY = df2gdx(db, dict_instantiate['emission_intenstiy'], 'EMISSION_INTENSITY', 'par', [f_set],
                             '[kt CO2 per GWh fuel input]')
 FIXED_OM_COST = df2gdx(db, data_technology['om_fix'], 'OM_FIXED_COST', 'par', [tec_set], '[kEUR per GW]')
 VARIABLE_OM_COST = df2gdx(db, data_technology['om_var'], 'OM_VARIABLE_COST', 'par', [tec_set], '[kEUR per GWh]')
@@ -53,7 +71,7 @@ INVESTCOST_ITM = df2gdx(db, df_itm_invest.stack().reorder_levels([1, 0]).round(4
                         [z_set, tec_itm_set], '[kEUR per GW]')
 INVESTCOST_THERMAL = df2gdx(db, data_technology['annuity'].round(4),
                             'INVESTCOST_THERMAL', 'par', [tec_set], '[kEUR per GW]')
-INSTALLED_CAP_ITM = df2gdx(db, df_itm_cap, 'INSTALLED_CAP_ITM', 'par', [z_set, tec_itm_set], '[GW]')
+INSTALLED_CAP_ITM = df2gdx(db, dict_instantiate['cap_itm'], 'INSTALLED_CAP_ITM', 'par', [z_set, tec_itm_set], '[GW]')
 INSTALLED_CAP_THERM = df2gdx(db, tec_props['cap'], 'INSTALLED_CAP_THERM', 'par', [z_set, tec_set], '[GW]')
 NUM = df2gdx(db, tec_props['num'], 'NUM', 'par', [z_set, tec_set], '[#]')
 TEC_COUNT = df2gdx(db, tec_props['count'], 'TEC_COUNT', 'par', [z_set, tec_set], '[]')

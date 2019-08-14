@@ -11,6 +11,13 @@ def is_leapyear(year):
     return flag
 
 
+def hours_in_year(year):
+    if is_leapyear(year):
+        return 8784
+    else:
+        return 8760
+
+
 def solve_gams(gams_dir, gms_model, gdx_out, scenario_name):
     subprocess.run(f'{gams_dir}\\gams {gms_model} {gdx_out} lo=3 --scenario={scenario_name}')
 
