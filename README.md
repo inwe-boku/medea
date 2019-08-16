@@ -1,4 +1,4 @@
-![MIT License](https://img.shields.io/github/license/inwe-boku/medea.svg)
+![MIT License](https://img.shields.io/badge/license-MIT-green)
 
 _medea_
 =======
