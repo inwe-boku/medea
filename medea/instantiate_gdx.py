@@ -57,6 +57,7 @@ logging.info('medea sets instantiated')
 # --------------------------------------------------------------------------- #
 
 ATC = df2gdx(db, dict_instantiate['atc'].stack(), 'ATC', 'par', [z_set, z_set], '[GW]')
+KM = df2gdx(db, dict_instantiate['km'].stack(), 'KM', 'par', [z_set, z_set], '[km]')
 EFFICIENCY = df2gdx(db, dict_instantiate['efficiency']['l1'], 'EFFICIENCY', 'par', [tec_set, prd_set, f_set], '[%]')
 EMISSION_INTENSITY = df2gdx(db, dict_instantiate['emission_intenstiy'], 'EMISSION_INTENSITY', 'par', [f_set],
                             '[kt CO2 per GWh fuel input]')
@@ -118,6 +119,6 @@ logging.info('medea`s timeseries instantiated')
 # --------------------------------------------------------------------------- #
 # %% data export to gdx
 # --------------------------------------------------------------------------- #
-export_location = os.path.join(cfg.folder, 'medea', 'data', 'medea_main_data_trial.gdx')
+export_location = os.path.join(cfg.folder, 'medea', 'data', 'medea_main_data.gdx')
 db.export(export_location)
 logging.info(f'medea gdx exported to {export_location}')

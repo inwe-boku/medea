@@ -56,6 +56,7 @@ alias(z,zz);
 ********************************************************************************
 parameters
          ANCIL_SERVICE_LVL(z)                    generation level required for provision of ancillary services
+         ATC(z,zz)                               net transfer capacity from market zone z to market zone zz
          CONSUMPTION(z,t,prd)                    hourly consumption of power and heat [GW]
          EFFICIENCY(tec,prd,f)                   electrical efficiency of power plant [%]
          EMISSION_INTENSITY(f)                   specific emission factor of each fuel [kt CO2 per GWh fuel]
@@ -68,8 +69,8 @@ parameters
          INSTALLED_CAP_THERM(z,tec)              installed thermal capacities [GW]
          INVESTCOST_ITM(z,tec_itm)               annuity of investment in 1 GW intermittent technology
          INVESTCOST_THERMAL(tec)                 annuity of investment in 1 GW thermal generation technology
+         KM(z,zz)                                distance between countries in km
          MAX_EMISSIONS(z)                        upper emission limit
-         ATC(z,zz)                               net transfer capacity from market zone z to market zone zz
          OM_FIXED_COST(tec)                      quasifixed cost of operation & maintenance
          OM_VARIABLE_COST(tec)                   variable cost of operation & maintenance
          PRICE_DA(t,z)                           observed electricity price on day-ahead market [k EUR per GWh]
@@ -100,7 +101,7 @@ $load  f l t tec tec_chp tec_strg tec_itm tec_pth prd props z
 $load  ANCIL_SERVICE_LVL CONSUMPTION EMISSION_INTENSITY FLOW_EXPORT EFFICIENCY
 $load  FEASIBLE_INPUT FEASIBLE_OUTPUT GEN_PROFILE STORAGE_PROPERTIES FLOW_IMPORT
 $load  INSTALLED_CAP_ITM INSTALLED_CAP_THERM INVESTCOST_ITM INVESTCOST_THERMAL
-$load  ATC OM_FIXED_COST OM_VARIABLE_COST PRICE_DA PRICE_CO2
+$load  ATC OM_FIXED_COST OM_VARIABLE_COST PRICE_DA PRICE_CO2 KM
 $load  PRICE_FUEL RESERVOIR_INFLOWS SWITCH_INVEST_THERM SWITCH_INVEST_ITM
 $load  SWITCH_INVEST_STORAGE SWITCH_INVEST_ATC
 $gdxin
@@ -205,7 +206,7 @@ obj_costreg(z)..                 cost(z)
                                  + cost_invgen(z)
                                  + cost_invstrg(z)
                                  + VALUE_NSE(z) * sum((t,prd), q_nonserved(z,t,prd))
-                                 + 2000 * cost_gridexpansion(z)
+                                 + 1250 * cost_gridexpansion(z)
                                  ;
 obj_fuelcost(z,t,tec)..          cost_fuel(z,t,tec)
                                  =E=
@@ -233,7 +234,7 @@ obj_invstoragecost(z)..          cost_invstrg(z)
                                  );
 obj_gridcost(z)..                cost_gridexpansion(z)
                                  =E=
-                                 sum(zz, invest_atc(z,zz)) / 2
+                                 sum(zz, invest_atc(z,zz) * KM(z,zz)) / 2
                                  ;
 * ------------------------------------------------------------------------------
 * SUPPLY-DEMAND BALANCES

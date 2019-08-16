@@ -24,10 +24,11 @@ static_data = {
     'invest_itm': pd.read_excel(STATIC_FNAME, 'invest_itm', header=[0, 1], index_col=[0]),
     'tec': pd.read_excel(STATIC_FNAME, 'param_thermal'),
     'feasops': pd.read_excel(STATIC_FNAME, 'feasgen_thermal'),
-    'atc': pd.read_excel(STATIC_FNAME, 'NTC', index_col=[0]),
+    'atc': pd.read_excel(STATIC_FNAME, 'ATC', index_col=[0]),
     'invest_storage': pd.read_excel(STATIC_FNAME, 'invest_storage', header=[0, 1], index_col=[0]),
     'cost_transport': pd.read_excel(STATIC_FNAME, 'cost_transport', header=[0], index_col=[0]),
-    'potentials': pd.read_excel(STATIC_FNAME, 'potentials', header=[0], index_col=[0])
+    'potentials': pd.read_excel(STATIC_FNAME, 'potentials', header=[0], index_col=[0]),
+    'km': pd.read_excel(STATIC_FNAME, 'km', index_col=[0])
 }
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -58,7 +59,7 @@ dict_sets = {
         'Power': [100],
         'Heat': [110]
     },
-    'l': {f'l{x}': [True] for x in range(1, 6)},
+    'l': {f'l{x}': [True] for x in range(1, 5)},
     'prd': {
         'el': True,
         'ht': True
@@ -196,6 +197,8 @@ dict_instantiate.update({'cap_itm': static_data['cap_itm'].loc[cfg.year, :]})
 dict_instantiate.update({'atc': static_data['atc'].loc[static_data['atc'].index.str.contains('|'.join(cfg.zones)),
                                                        static_data['atc'].columns.str.contains('|'.join(cfg.zones))] /
                                 1000})
+dict_instantiate.update({'km': static_data['km'].loc[static_data['km'].index.str.contains('|'.join(cfg.zones)),
+                                                     static_data['km'].columns.str.contains('|'.join(cfg.zones))]})
 
 # --------------------------------------------------------------------------- #
 # %% preprocessing plant data
