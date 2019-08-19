@@ -275,17 +275,19 @@ caplim_generation(z,t,tec,prd)..
                                  =L=
                                  INSTALLED_CAP_THERM(z,tec) - decommission(z,tec) + invest_thermal(z,tec)
                                  ;
-nonchp_generation(z,t,tec)$(NOT tec_chp(tec))..
-                                 sum(f, q_fueluse(z,t,tec,f) * EFFICIENCY(tec,'el',f) )
+nonchp_generation(z,t,tec,prd)$(NOT tec_chp(tec))..
+                                 sum(f, q_fueluse(z,t,tec,f) * EFFICIENCY(tec,prd,f) )
                                  =E=
-                                 q_gen(z,t,tec,'el')
+                                 q_gen(z,t,tec,prd)
                                  ;
+$ontext
 pth_generation(z,t,tec)$(tec_pth(tec))..
 * replace sum(f,.) with q_fueluse(z,t,tec,'el') * EFFICIENCY(tec,'ht','el') ?
                                  sum(f, q_fueluse(z,t,tec,f) * EFFICIENCY(tec,'ht',f) )
                                  =E=
                                  q_gen(z,t,tec,'ht')
                                  ;
+$offtext
 cc_a(z,t,tec)$tec_chp(tec)..
                                  Sum(l, cc_weights(z,t,tec,l))
                                  =E=
