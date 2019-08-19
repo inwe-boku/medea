@@ -17,7 +17,9 @@ $gdxin
 PRICE_CO2(t,z) = EUA_SCENARIO;
 
 invest_res.UP('AT','wind_on') = WIND_ON_LIMIT;
-invest_res.UP('AT','pv') = 32.5;
+invest_res.UP('AT','pv') = 33.5;
+invest_thermal.UP('AT','bio') = 0;
+invest_thermal.UP('AT','bio_chp') = 0;
 
 flow.UP(z,zz,t) = FLOW_LIMIT;
 flow.LO(z,zz,t) = -FLOW_LIMIT;
@@ -38,6 +40,8 @@ policy_100resbalance..
          sum((t,tec_itm),
                  GEN_PROFILE('AT',t,tec_itm) * (INSTALLED_CAP_ITM('AT',tec_itm)
                  + invest_res('AT',tec_itm)) )
+         + sum(t, q_gen('AT',t,'bio_chp','el'))
+         + sum(t, q_gen('AT',t,'bio','el'))
          + sum((t,tec_strg), q_store_out('AT',t,tec_strg))
          - sum((t,tec_strg), q_store_in('AT',t,tec_strg) * STORAGE_PROPERTIES('AT',tec_strg,'efficiency_in'))
          =G=

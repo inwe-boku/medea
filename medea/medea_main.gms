@@ -545,8 +545,12 @@ annual_surplus_stor(z,tec_strg) = sum(t,
                          SD_balance_el.M(z,t) * q_store_out.L(z,t,tec_strg)
                          - SD_balance_el.M(z,t) * q_store_in.L(z,t,tec_strg)
                          );
+annual_surplus_itm(z,tec_itm) = sum(t,
+                         SD_balance_el.M(z,t) * q_itm.L(z,t,tec_itm)
+                         );
 producer_surplus(z) =    sum(tec, annual_surplus_therm(z,tec))
                          + sum(tec_strg, annual_surplus_stor(z,tec_strg))
+                         + sum(tec_itm, annual_surplus_itm(z,tec_itm))
                          ;
 
 display
