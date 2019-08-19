@@ -170,7 +170,7 @@ equations
          itm_generation                          generation from intermittent sources
          caplim_generation                       capacity limit on thermal generators
          nonchp_generation                       fuel requirement of non-CHPs
-         pth_generation                          fuel requirement of power to heat units
+*         pth_generation                          fuel requirement of power to heat units
          cc_a                                    CHP fuel-output combination must be convex
          cc_b                                    feasible output combinations of CHPs
          cc_c                                    feasible fuel requirement of CHPs
@@ -526,6 +526,7 @@ annual_cost(z,tec),
 annual_revenue(z,tec),
 annual_surplus_therm(z,tec),
 annual_surplus_stor(z,tec_strg),
+annual_surplus_itm(z,tec_itm),
 producer_surplus(z);
 
 annual_price_el(z) = sum(t, SD_balance_el.M(z,t))/card(t);
