@@ -396,5 +396,5 @@ invest_limits.update({'storage': lim_invest_storage})
 lim_invest_atc = pd.DataFrame(data=0, index=cfg.zones, columns=cfg.zones)
 if cfg.invest_tc:
     for zone in cfg.zones:
-        lim_invest_atc.loc[zone, lim_invest_atc.index.difference([zone])] = float('inf')
+        lim_invest_atc.loc[zone, lim_invest_atc.index.difference([zone])] = 1
 invest_limits.update({'atc': lim_invest_atc})

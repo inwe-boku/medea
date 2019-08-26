@@ -413,7 +413,7 @@ decommission.UP(z,tec) =         SWITCH_INVEST_THERM;
 invest_res.UP(z,tec_itm) =       SWITCH_INVEST_ITM(z, tec_itm);
 invest_storage_power.UP(z,tec_strg) = SWITCH_INVEST_STORAGE(z, tec_strg);
 invest_storage_energy.UP(z,tec_strg) = SWITCH_INVEST_STORAGE(z, tec_strg);
-invest_atc.UP(z,zz) =            SWITCH_INVEST_ATC(z,zz);
+invest_atc.UP(z,zz) =            5 * SWITCH_INVEST_ATC(z,zz) * ATC(z,zz);
 
 * ==============================================================================
 * include specific changes
