@@ -11,9 +11,10 @@
 \usepackage[version=4]{mhchem}
 %\usepackage{courier} 
 \usepackage[inner=2.5cm,outer=2.5cm, bottom=3cm]{geometry}
+\usepackage{ctable}
+\usepackage{longtable}
 
 \title{Description of the power system model \emph{medea}}
-%\title{Mathematical description of the power system model \emph{medea}}
 \date{\today}
 \author{Sebastian Wehrle\thanks{Over recent years, \emph{medea} has grown into its current state thanks to inspiration and contributions from many friends and colleagues. 
 In particular, I'd like to thank Johannes Schmidt, who contributed substantial parts of the initial model code, for getting \emph{medea} started and for keeping us running; Dieter Mayr and Stefan Höltinger for early contributions; Peter Regener for inspiration and endurance with all things programming. Current work on \emph{medea} is funded through grateful support from the European Research Council ("reFUEL" ERC-2017-STG 758149)} \\University of Natural Resources and Life Sciences, Vienna}
@@ -31,169 +32,167 @@ A detailed description of the model is provided in the following. Section \ref{s
 \newpage
 
 \section{Sets} \label{sets}
-\begin{tabular}{l l l l}
+Sets are denoted by upper-case latin letters, while set elements are denoted by lower-case latin letters.
+
+\begin{longtable}{p{3.6cm} c c p{6cm}}
+%\caption{Sets} \\ 
+\hline
 \textbf{name} & \makecell[l]{\textbf{math} \\ \textbf{symbol}} & \makecell[l]{\textbf{GAMS} \\\textbf{symbol}} & \textbf{elements} \\
 \hline \hline
+
 market zones & $z \in Z$ & \texttt{z} & \texttt{AT, DE} \\ \hline
 
-\makecell[l]{time periods \\(hours)} & $t \in T$ & \texttt{t} & \texttt{t1, t2, \ldots, t8760} \\ \hline
+time periods (hours) & $t \in T$ & \texttt{t} & \texttt{t1, t2, \ldots, t8760} \\ \hline
 
-\makecell[l]{power \\generation \\technologies} & $i \in I$ & \texttt{tec} & 
+power generation technologies & $i \in I$ & \texttt{tec} & 
+\texttt{nuc, lig\_stm, lig\_stm\_chp, lig\_boa, lig\_boa\_chp,coal\_sub, coal\_sub\_chp, coal\_sc, coal\_sc\_chp, coal\_usc, coal\_usc\_chp, coal\_igcc, ng\_stm, 
+ng\_stm\_chp, ng\_ctb\_lo, ng\_ctb\_lo\_chp, ng\_ctb\_hi, ng\_ctb\_hi\_chp, ng\_cc\_lo, ng\_cc\_lo\_chp, ng\_cc\_hi, ng\_cc\_hi\_chp, ng\_mtr, ng\_mtr\_chp, 
+ng\_boiler\_chp, oil\_stm, oil\_stm\_chp, oil\_ctb, oil\_ctb\_chp, oil\_cc, oil\_cc\_chp, bio, bio\_chp, heatpump\_pth} \\ \hline
 
-\makecell[l]{ \texttt{nuc, lig\_stm, lig\_stm\_chp,}\\
-	\texttt{lig\_boa, lig\_boa\_chp,} \\
-	\texttt{coal\_sub, coal\_sub\_chp,} \\
-	\texttt{coal\_sc, coal\_sc\_chp,}\\
-	\texttt{coal\_usc, coal\_usc\_chp,} \\
-	\texttt{coal\_igcc,}\\
-	\texttt{ng\_stm, ng\_stm\_chp,} \\
-	\texttt{ng\_ctb\_lo, ng\_ctb\_lo\_chp,}\\ 
-	\texttt{ng\_ctb\_hi, ng\_ctb\_hi\_chp,}\\
-	\texttt{ng\_cc\_lo, ng\_cc\_lo\_chp,}\\
-	\texttt{ng\_cc\_hi, ng\_cc\_hi\_chp,}\\
-	\texttt{ng\_mtr, ng\_mtr\_chp,} \\
-	\texttt{ng\_boiler\_chp,} \\
-	\texttt{oil\_stm, oil\_stm\_chp,} \\ 
-	\texttt{oil\_ctb, oil\_ctb\_chp,} \\
-	\texttt{oil\_cc, oil\_cc\_chp,} \\
-	\texttt{bio, bio\_chp,}
-	\texttt{heatpump\_pth} 
-} \\ \hline
+CHP technologies & $j \in J \subset I$ & \texttt{tec\_chp} & \texttt{lig\_stm\_chp, lig\_boa\_chp, coal\_sub\_chp, coal\_sc\_chp, coal\_usc\_chp, ng\_stm\_chp, 
+ng\_ctb\_lo\_chp, ng\_ctb\_hi\_chp, ng\_cc\_lo\_chp, ng\_cc\_hi\_chp, ng\_mtr\_chp, ng\_boiler\_chp, oil\_stm\_chp, oil\_ctb\_chp, oil\_cc\_chp, bio\_chp} \\ \hline
 
-\makecell[l]{CHP \\technologies} & $j \in J \subset I$ & \texttt{tec\_chp} & \makecell[l]{
-	\texttt{lig\_stm\_chp, lig\_boa\_chp,}\\
-	\texttt{coal\_sub\_chp, coal\_sc\_chp,}\\
-	\texttt{coal\_usc\_chp, ng\_stm\_chp,}\\ 
-	\texttt{ng\_ctb\_lo\_chp, ng\_ctb\_hi\_chp,}\\
-	\texttt{ng\_cc\_lo\_chp, ng\_cc\_hi\_chp,}\\
-	\texttt{ng\_mtr\_chp, ng\_boiler\_chp,}\\
-	\texttt{oil\_stm\_chp, oil\_ctb\_chp,} \\ 
-	\texttt{oil\_cc\_chp, bio\_chp} } \\ \hline
+power to heat technologies & $h \in H \subset I$ & \texttt{tec\_pth} & \texttt{heatpump\_pth}  \\ \hline
 
-\makecell[l]{power to heat \\ technologies} & $h \in H \subset I$ & \texttt{tec\_pth} & \texttt{heatpump\_pth}  \\ \hline
+storage technologies & $k \in K$ & \texttt{tec\_strg} & \texttt{res\_day, res\_week, res\_season, psp\_day, psp\_week, psp\_season, battery} \\ \hline
 
-\makecell[l]{storage \\technologies} & $k \in K$ & \texttt{tec\_strg} & \makecell[l]{
-	\texttt{res\_day, res\_week, res\_season,} \\ 
-	\texttt{psp\_day, psp\_week, psp\_season,} \\
-	\texttt{battery}
-	} \\ \hline
+intermittent generators & $n \in N$ & \texttt{tec\_itm} & \texttt{wind\_on, wind\_off, pv, ror}\\ \hline
 
-\makecell[l]{intermittent \\generators} & $n \in N$ & \texttt{tec\_itm} & \texttt{wind\_on, wind\_off, pv, ror}\\ \hline
+fuels & $f \in F$ & \texttt{f} & \texttt{nuclear, lignite, coal, gas, oil, biomass, power} \\ \hline
 
-fuels & $f \in F$ & \texttt{f} & \makecell[l]{\texttt{nuclear, lignite, coal,} \\ \texttt{gas, oil, biomass, power}} \\ \hline
-
-\makecell[l]{feasible operation \\region limits}& $l \in L$ & \texttt{l} & \texttt{l1, l2, l3, l4} \\ \hline
+feasible operation region limits & $l \in L$ & \texttt{l} & \texttt{l1, l2, l3, l4} \\ \hline
 
 energy products & $m \in M$ & \texttt{prd} & \texttt{el, ht} \\ \hline \hline
-\end{tabular}
+\end{longtable}
 
 \section{Parameters} \label{parameters}
-\begin{tabular}{l l l l}
-\textbf{name} & \makecell[l]{\textbf{math} \\ \textbf{symbol}} & \makecell[l]{\textbf{GAMS} \\\textbf{symbol}} & \textbf{unit} \\
-\hline \hline
-\makecell[l]{minimal \\conventional \\generation} & $\sigma_{z}$ & \texttt{ANCIL\_SERVICE\_LVL(z)} & GW \\ \hline
-energy demand & $D_{z,t,p}$ & \texttt{CONSUMPTION(z,t,prd)} & GW \\ \hline
-\makecell[l]{power plant \\efficiency} & $\eta_{i,p,f}$ & \texttt{EFFICIENCY(tec,prd,f)} & MWh / MWh\\ \hline
-\makecell[l]{fuel emission \\intensity} & $\varepsilon_{f}$ & \texttt{EMISSION\_INTENSITY(f)} & $\text{t}_{\ce{CO2}}$ / MWh\\ \hline
-\makecell[l]{inputs of \\feasible operating \\region} & $\chi_{i,l,f}$ & \texttt{FEASIBLE\_INPUT(tec,l,f)} & $[0,1]$ \\ \hline
-\makecell[l]{output tuples of \\feasible operating \\region} & $\psi_{i,l,p}$ & \texttt{FEASIBLE\_OUTPUT(tec,l,prd)} & $[0,1]$ \\ \hline
-\makecell[l]{intermittent \\generation profile} & $\phi_{z,t,n}$ & \texttt{GEN\_PROFILE(z,t,tec\_itm)} & $[0,1]$ \\ \hline
-%\makecell[l]{exports to not \\modelled regions} & $X$ & \texttt{FLOW\_EXPORTS(z,t)} & GW \\ \hline
-%\makecell[l]{imports from not \\modelled regions} & $X$ & \texttt{FLOW\_IMPORTS(z,t)} & GW \\ \hline
-\makecell[l]{installed capacity \\of intermittent \\generators} & $\bar{r}^{0}_{z,n}$ & \texttt{INSTALLED\_CAP\_ITM(z,tec\_itm)} & GW \\ \hline
-\makecell[l]{installed capacity \\of thermal generators} & $\bar{g}^{0}_{z,i}$ & \texttt{INSTALLED\_CAP\_THERM(z,tec)} & GW \\ \hline
-\makecell[l]{capital cost of \\intermittent generators \\(specific, annuity)} & $\kappa_{z,n}$ & \texttt{INVESTCOST\_ITM(z,tec\_itm)} & k\EUR / GW \\ \hline
-\makecell[l]{capital cost of \\thermal generators \\(specific, annuity)} & $\kappa_{z,i}$ & \texttt{INVESTCOST\_THERMAL(z,tec)} & k\EUR / GW \\ \hline
-\makecell[l]{capital cost of \\storages - power \\(specific, annuity)} & $\kappa^{P}_{z,k}$ & \makecell[l]{\texttt{STORAGE\_PROPERTIES} \\ \texttt{(z,tec\_strg,'cost\_power')}} & k\EUR / GW \\ \hline
-\makecell[l]{capital cost of \\storages - energy \\(specific, annuity)} & $\kappa^{E}_{z,k}$ & \makecell[l]{\texttt{STORAGE\_PROPERTIES} \\ \texttt{(z,tec\_strg,'cost\_energy')}} & k\EUR / GW \\ \hline
-\makecell[l]{installed available \\transmission capacity} & $\bar{x}^{0}_{z,zz}$ & \texttt{ATC(z,zz)} & GW \\ \hline
-\makecell[l]{capital cost of \\transmission capacity} & $\kappa^{ic}_{z}$ & \texttt{INVESTCOST\_ATC} & k\EUR / GW \\ \hline
-\makecell[l]{distance between \\countries} & $\delta_{z,zz}$ & \texttt{KM(z,zz)} & km \\ \hline
-%\makecell[l]{count 100 MW slices \\of same technology} & $|i_{z}|$ & \texttt{NUM(z,tec)} & . \\ \hline
-quasi-fixed O\&M cost & $o^{q}_{i}$ & \texttt{OM\_FIXED\_COST(tec)} & k\EUR \\ \hline
-variable O\&M cost & $o^{v}_{i}$ & \texttt{OM\_VAR\_COST(tec)} & \EUR / MWh \\ \hline
-\hline
-\end{tabular}
+Parameters are denoted either by lower-case greek letters or by upper-case latin letters.
 
-\begin{tabular}{l l l l}
-\textbf{name} & \makecell[l]{\textbf{math} \\ \textbf{symbol}} & \makecell[l]{\textbf{GAMS} \\\textbf{symbol}} & \textbf{unit} \\
-\hline \hline
-% day-ahead price & $p_{el}$ & \texttt{PRICE\_DA(t,z)} & EUR / MWh \\ \hline
-\ce{CO2} price & $P^{e}_{t,z}$ & \texttt{PRICE\_EUA(t,z)} & \EUR / $\text{t}_{\ce{CO2}}$ \\ \hline
-fuel price & $P_{t,z,f}$ & \texttt{PRICE\_FUEL(t,z,f)} & \EUR / MWh \\ \hline
-reservoir inflows & $\rho_{z,t,k}$ & \makecell[l]{\texttt{RESERVOIR\_INFLOWS} \\ \texttt{(z,t,tec\_strg)}} & MW \\ \hline
-max power out & $\bar{s}^{out}_{z,k}$ & \makecell[l]{\texttt{STORAGE\_PROPERTIES} \\ \texttt{(z,tec\_strg,'power\_out')}} & GW \\ \hline
-max power in & $\bar{s}^{in}_{z,k}$ & \makecell[l]{\texttt{STORAGE\_PROPERTIES} \\ \texttt{(z,tec\_strg,'power\_in')}} & GW \\ \hline
-max energy stored & $\bar{v}^{0}_{z,k}$ & \makecell[l]{\texttt{STORAGE\_PROPERTIES} \\ \texttt{(z,tec\_strg,'energy\_max')}} & . \\ \hline
-efficiency power out & $\eta^{out}_{z,k}$ & \makecell[l]{\texttt{STORAGE\_PROPERTIES} \\ \texttt{(z,tec\_strg,'efficiency\_out')}} & . \\ \hline
-efficiency power in & $\eta^{in}_{z,k}$ & \makecell[l]{\texttt{STORAGE\_PROPERTIES} \\ \texttt{(z,tec\_strg,'efficiency\_in')}} & . \\ \hline
-value of lost load & $\mu$ & \texttt{VALUE\_NSE(z)} & \EUR / MWh \\ \hline
+\begin{longtable}{p{4.1cm} c l c}
 \hline
-\end{tabular}
+	\textbf{name} & \makecell[l]{\textbf{math} \\ \textbf{symbol}} & \makecell[l]{\textbf{GAMS} \\\textbf{symbol}} & \textbf{unit} \\ \hline \hline
+% LOWER-CASE GREEK LETTERS
+	distance between countries & $\delta_{z,zz}$ & \texttt{KM(z,zz)} & km \\ \hline
+	fuel emission intensity & $\varepsilon_{f}$ & \texttt{EMISSION\_INTENSITY(f)} & $\text{t}_{\ce{CO2}}$ / MWh \\ \hline
+	power plant efficiency & $\eta_{i,p,f}$ & \texttt{EFFICIENCY(tec,prd,f)} & MWh / MWh \\ \hline
+	efficiency power out & $\eta^{out}_{z,k}$ & \makecell[l]{\texttt{STORAGE\_PROPERTIES} \\ \texttt{(z,tec\_strg,'efficiency\_out')}} &  \\ \hline
+	efficiency power in & $\eta^{in}_{z,k}$ & \makecell[l]{\texttt{STORAGE\_PROPERTIES} \\ \texttt{(z,tec\_strg,'efficiency\_in')}} &  \\ \hline	
+	value of lost load & $\mu_{z}$ & \texttt{VALUE\_NSE(z)} & \EUR / MWh \\ \hline
+	reservoir inflows & $\rho_{z,t,k}$ & \makecell[l]{\texttt{RESERVOIR\_INFLOWS} \\ \texttt{(z,t,tec\_strg)}} & MW \\ \hline	
+	minimal conventional generation & $\sigma_{z}$ & \texttt{ANCIL\_SERVICE\_LVL(z)} & GW \\ \hline
+	intermittent generation profile & $\phi_{z,t,n}$ & \texttt{GEN\_PROFILE(z,t,tec\_itm)} & $[0,1]$ \\ \hline
+	inputs of feasible operating region & $\chi_{i,l,f}$ & \texttt{FEASIBLE\_INPUT(tec,l,f)} & $[0,1]$ \\ \hline
+	output tuples of feasible operating region & $\psi_{i,l,p}$ & \texttt{FEASIBLE\_OUTPUT(tec,l,prd)} & $[0,1]$ \\ \hline
+% UPPER-CASE LATIN LETTERS	
+	capital cost of intermittent generators (specific, annuity) & $C^{r}_{z,n}$ & \texttt{INVESTCOST\_ITM(z,tec\_itm)} & k\EUR / GW \\ \hline
+	capital cost of thermal generators (specific, annuity) & $C^{g}_{z,i}$ & \texttt{INVESTCOST\_THERMAL(z,tec)} & k\EUR / GW \\ \hline
+	capital cost of storages - power (specific, annuity) & $C^{s}_{z,k}$ & \makecell[l]{\texttt{STORAGE\_PROPERTIES} \\ \texttt{(z,tec\_strg,'cost\_power')}} & k\EUR / GW \\ \hline
+	capital cost of storages - energy (specific, annuity) & $C^{v}_{z,k}$ & \makecell[l]{\texttt{STORAGE\_PROPERTIES} \\ \texttt{(z,tec\_strg,'cost\_energy')}} & k\EUR / GW \\ \hline
+	capital cost of transmission capacity & $C^{x}_{z}$ & \texttt{INVESTCOST\_ATC} & k\EUR / GW \\ \hline
+	energy demand & $D_{z,t,p}$ & \texttt{CONSUMPTION(z,t,prd)} & GW \\ \hline
+	initial capacity of thermal generators & $\bar{G}_{z,i}$ & \texttt{INSTALLED\_CAP\_THERM(z,tec)} & GW \\ \hline
+	quasi-fixed O\&M cost & $O^{q}_{i}$ & \texttt{OM\_FIXED\_COST(tec)} & k\EUR / GW \\ \hline
+	variable O\&M cost & $O^{v}_{i}$ & \texttt{OM\_VAR\_COST(tec)} & \EUR / MWh \\ \hline
+	\ce{CO2} price & $P^{e}_{t,z}$ & \texttt{PRICE\_CO2(t,z)} & \EUR / $\text{t}_{\ce{CO2}}$ \\ \hline
+	fuel price & $P_{t,z,f}$ & \texttt{PRICE\_FUEL(t,z,f)} & \EUR / MWh \\ \hline
+	initial capacity of intermittent generators & $\bar{R}_{z,n}$ & \texttt{INSTALLED\_CAP\_ITM(z,tec\_itm)} & GW \\ \hline
+\pagebreak
+%\caption[Parameters]{(continued)}\\ 
+\hline
+	% UPPER-CASE LATIN LETTERS (CONTINUED)
+	\textbf{name} & \makecell[l]{\textbf{math} \\ \textbf{symbol}} & \makecell[l]{\textbf{GAMS} \\\textbf{symbol}} & \textbf{unit} \\ \hline \hline
+	max power out & $\bar{S}^{out}_{z,k}$ & \makecell[l]{\texttt{STORAGE\_PROPERTIES} \\ \texttt{(z,tec\_strg,'power\_out')}} & GW \\ \hline
+	max power in & $\bar{S}^{in}_{z,k}$ & \makecell[l]{\texttt{STORAGE\_PROPERTIES} \\ \texttt{(z,tec\_strg,'power\_in')}} & GW \\ \hline
+	max energy stored & $\bar{V}_{z,k}$ & \makecell[l]{\texttt{STORAGE\_PROPERTIES} \\ \texttt{(z,tec\_strg,'energy\_max')}} &  \\ \hline
+	installed available transmission capacity & $\bar{X}_{z,zz}$ & \texttt{ATC(z,zz)} & GW \\ \hline \hline	
+\end{longtable}
+
+\newpage
+
 
 \section{Variables} \label{variables}
-\begin{tabular}{l l l l}
-\textbf{name} & \makecell[l]{\textbf{math} \\ \textbf{symbol}} & \makecell[l]{\textbf{GAMS} \\\textbf{symbol}} & \textbf{Unit} \\
-\hline \hline
-%cost variables
-zonal system cost & $C_{z}$ & \texttt{cost(r)} & k\EUR \\ \hline
-emission cost & $C^{e}_{z,t,i}$ & \texttt{cost\_emission(z,t,tec)} & k\EUR \\ \hline
-fuel cost & $C^{f}_{z,t,i}$ & \texttt{cost\_fuel(z,t,tec)} & k\EUR \\ \hline
-total o\&m cost & $C^{om}_{z,i}$ & \texttt{cost\_om(z,tec)} & k\EUR \\ \hline
-\makecell[l]{capital cost of \\generators} & $C_{z}^{inv,i}$ & \texttt{cost\_invgen(z)} & k\EUR \\ \hline
-\makecell[l]{capital cost of \\storages} & $C_{z}^{inv,k}$ & \texttt{cost\_invstrg(z)} & k\EUR \\ \hline
-\makecell[l]{capital cost of \\interconnectors} & $C_{z}^{inv,ic}$ & \texttt{cost\_gridexpansion(z)} & k\EUR \\ \hline
-% investment and decommissioning variables
-\makecell[l]{added capacity of \\intermittents} & $\bar{r}^{+}_{z,n}$ & \texttt{invest\_res(z,tec\_itm)} & GW \\ \hline
-\makecell[l]{added capacity of \\conventionals} & $\bar{g}^{+}_{z,i}$ & \texttt{invest\_thermal(z,tec)} & GW \\ \hline
-\makecell[l]{added storage \\capacity (power)} & $\bar{s}^{+}_{z,k}$ & \texttt{invest\_storage\_power(z,tec\_strg)} & GW \\ \hline
-\makecell[l]{added storage \\capacity (energy)} & $\bar{v}^{+}_{z,k}$ & \texttt{invest\_storage\_energy(z,tec\_strg)} & GWh \\ \hline
-\makecell[l]{added transmission \\capacity} & $\bar{x}^{+}_{z,zz}$ & \texttt{invest\_atc(z,zz)} & GW \\ \hline
-\makecell[l]{decommissioned \\capacity of \\conventionals} & $\bar{g}^{-}_{z,i}$ & \texttt{decommission(z,tec)} & GW \\ \hline
-% dispatch variables
-\makecell[l]{energy generated by \\conventionals} & $g_{z,t,i,p}$ & \texttt{q\_gen(z,t,tec,prd)} & GW \\ \hline
-\makecell[l]{electricity generated \\by intermittents} & $r_{z,t,n}$ & \texttt{q\_itm(z,t,tec\_itm)} & GW \\ \hline
-\makecell[l]{operating region \\weight} & $w_{z,t,i,l}$ & \texttt{cc\_weights(z,t,tec,l)} & . \\ \hline
-\makecell[l]{fuel burn for energy \\generation} & $b_{z,t,i,f}$ & \texttt{q\_fueluse(z,t,tec,f)} & GW \\ \hline
+Variables are denoted by lower-case latin letters.
+
+\begin{longtable}{p{4.1cm} c l c}
+%\caption{Variables}\label{variables} \\ 
+\hline
+\textbf{name} & \makecell[l]{\textbf{math} \\ \textbf{symbol}} & \makecell[l]{\textbf{GAMS} \\\textbf{symbol}} & \textbf{Unit} \\ \hline \hline
+fuel burn for energy generation & $b_{z,t,i,f}$ & \texttt{q\_fueluse(z,t,tec,f)} & GW \\ \hline
+zonal system cost & $c_{z}$ & \texttt{cost(r)} & k\EUR \\ \hline
+fuel cost & $c^{b}_{z,t,i}$ & \texttt{cost\_fuel(z,t,tec)} & k\EUR \\ \hline
+emission cost & $c^{e}_{z,t,i}$ & \texttt{cost\_emission(z,t,tec)} & k\EUR \\ \hline
+total o\&m cost & $c^{om}_{z,i}$ & \texttt{cost\_om(z,tec)} & k\EUR \\ \hline
+capital cost of generators & $c^{g}_{z}$ & \texttt{cost\_invgen(z)} & k\EUR \\ \hline
+total cost of non-served load & $c^{q}_{z}$ & \texttt{cost\_nse(z)} & k\EUR \\ \hline
+capital cost of intermittent generators & $c^{r}_{z}$ & \texttt{cost\_invitm(z)} & k\EUR \\ \hline
+capital cost of storages & $c^{s,v}_{z}$ & \texttt{cost\_invstrg(z)} & k\EUR \\ \hline
+capital cost of interconnectors & $c^{x}_{z}$ & \texttt{cost\_gridexpansion(z)} & k\EUR \\ \hline
+\ce{CO2} emissions & $e_{z}$ & \texttt{emissions(z)} & t \ce{CO2} \\ \hline
+added capacity of conventionals & $\bar{g}^{+}_{z,i}$ & \texttt{invest\_thermal(z,tec)} & GW \\ \hline
+decommissioned capacity of conventionals & $\bar{g}^{-}_{z,i}$ & \texttt{decommission(z,tec)} & GW \\ \hline
+energy generated by conventionals & $g_{z,t,i,p}$ & \texttt{q\_gen(z,t,tec,prd)} & GW \\ \hline
+curtailed energy & $q^{+}_{z,t}$ & \texttt{q\_curtail(z,t)} & GW \\ \hline
+non-served energy & $q^{-}_{z,t,p}$ & \texttt{q\_nonserved(z,t,prd)} & GW \\ \hline
+added capacity of intermittents & $\bar{r}^{+}_{z,n}$ & \texttt{invest\_res(z,tec\_itm)} & GW \\ \hline
+electricity generated by intermittents & $r_{z,t,n}$ & \texttt{q\_itm(z,t,tec\_itm)} & GW \\ \hline
+added storage capacity (power) & $\bar{s}^{+}_{z,k}$ & \texttt{invest\_storage\_power(z,tec\_strg)} & GW \\ \hline
 energy stored in & $s^{in}_{z,t,k}$ & \texttt{q\_store\_in(z,t,tec\_strg)} & GW \\ \hline
 energy stored out & $s^{out}_{z,t,k}$ & \texttt{q\_store\_out(z,t,tec\_strg)} & GW \\ \hline
-\makecell[l]{storage energy \\content} & $v_{z,t,k}$ & \texttt{storage\_level(z,t,tec\_strg)} & GWh \\ \hline
-\makecell[l]{electricity net \\export} & $x_{z,zz,t}$ & \texttt{flow(z,zz,t)} & GW \\ \hline
-curtailed energy & $\Omega^{+}_{z,t}$ & \texttt{q\_curtail(z,t)} & GW \\ \hline
-non-served energy & $\Omega^{-}_{z,t,p}$ & \texttt{q\_nonserved(z,t,prd)} & GW \\ \hline
-% other variables
-\ce{CO2} emissions & $e_{z}$ & \texttt{emissions(z)} & t \ce{CO2} \\ \hline
-\hline
-\end{tabular}
+added storage capacity (energy) & $\bar{v}^{+}_{z,k}$ & \texttt{invest\_storage\_energy(z,tec\_strg)} & GWh \\ \hline
+storage energy content & $v_{z,t,k}$ & \texttt{storage\_level(z,t,tec\_strg)} & GWh \\ \hline
+operating region weight & $w_{z,t,i,l}$ & \texttt{cc\_weights(z,t,tec,l)} & . \\ \hline
+added transmission capacity & $\bar{x}^{+}_{z,zz}$ & \texttt{invest\_atc(z,zz)} & GW \\ \hline
+electricity net export & $x_{z,zz,t}$ & \texttt{flow(z,zz,t)} & GW \\ \hline \hline
+\end{longtable}
+
+\newpage
+
+
+\section{Naming system}
+\ctable[
+	maxwidth = 160mm,
+	pos = h]
+	{X p{2.0cm} p{2.0cm} p{2.0cm} p{2.0cm} p{2.0cm}}
+	{
+	\tnote[$\dagger$]{parameter} 
+	\tnote[$\ddagger$]{variable}
+	}
+	{\FL 
+	 &  initial capacity\tmark[$\dagger$] & added capacity\tmark[$\ddagger$] & \makecell[l]{decom-\\missioned \\capacity\tmark[$\ddagger$]} & \makecell[l]{specific \\investment \\cost\tmark[$\dagger$]} & dispatch\tmark[$\ddagger$] \ML
+	thermal units & $\bar{G}_{z,i}$ & $\bar{g}^{+}_{z,i}$ & $\bar{g}^{-}_{z,i}$ & $C^{g}_{z,i}$ & $g_{z,t,i,p}$ \ML
+	\makecell[l]{intermittent \\units} &  $\bar{R}_{z,n}$ & $\bar{r}^{+}_{z,n}$ & $\bar{r}^{-}_{z,n}$ & $C^{r}_{z,n}$ & $r_{z,t,n}$ \ML
+	\makecell[l]{storages \\(power)} & $\bar{S}_{z,k}$ & $\bar{s}^{+}_{z,k}$ & $\bar{s}^{-}_{z,k}$ & $C^{s}_{z,k}$ & $s_{z,t,k}$ \ML
+	\makecell[l]{storages \\(energy)} & $\bar{V}_{z,k}$ & $\bar{v}^{+}_{z,k}$ & $\bar{v}^{-}_{z,t,k}$ & $C^{v}_{z,k}$ & na \ML
+	transmission &  $\bar{X}_{z,zz}$ & $\bar{x}^{+}_{z,zz}$ & $\bar{x}^{-}_{z,zz}$ & $C^{x}_{z,zz}$ & $x_{z,zz,t}$ \LL
+}
 
 \newpage
 \section{Mathematical description} \label{mathmodel}
 
 \paragraph{Model objective}
-\emph{medea} minimizes total system cost $C$, i.e. the total cost of generating electricity and heat from technologies and capacities adequate to meet demand, over a large number  of decision variables, essentially representing investment and dispatch decisions in each market zone $z$ of the modelled energy systems.
+\emph{medea} minimizes total system cost $c$, i.e. the total cost of generating electricity and heat from technologies and capacities adequate to meet demand, over a large number  of decision variables, essentially representing investment and dispatch decisions in each market zone $z$ of the modelled energy systems.
 \begin{align}
-\min C = \sum_{z} (C_{z})
+\min c = \sum_{z} (c_{z})
 \end{align}
-Zonal system costs $C_{z}$ are the sum of fuel cost $C^{f}_{z,t,i}$, emission cost $C^{e}_{z,t,i}$, operation and maintenance cost $C^{om}_{z,i}$, capital costs of investment in conventional and intermittent generation ($C^{inv,i}_{z}$, $C^{inv,n}_{z}$), storage ($C^{inv,k}_{z}$) and transmission ($C^{inv,ic}_{z}$) equipment, and the cost of non-served load ($C^{nse}_{z}$) that accrues when demand is not met, e.g. when there is a power outage. 
+Zonal system costs $c_{z}$ are the sum of fuel cost $c^{b}_{z,t,i}$, emission cost $c^{e}_{z,t,i}$, operation and maintenance cost $c^{om}_{z,i}$, capital costs of investment in conventional and intermittent generation ($c^{g}_{z}$, $c^{r}_{z}$), storage ($c^{s,v}_{z}$) and transmission ($c^{x}_{z}$) equipment, and the cost of non-served load ($c^{q}_{z}$) that accrues when demand is not met, e.g. when there is a power outage. 
 \begin{align}
 %\begin{split}
-C_{z} = \sum_{t,i}  C^{f}_{z,t,i} + \sum_{t,i} C^{e}_{z,t,i} + \sum_{i} C^{om}_{z,i} + C^{inv,i}_{z} + 
- C^{inv,n}_{z} + C^{inv,k}_{z} + C^{inv,ic}_{z} + C^{nse}_{z} \qquad \qquad \forall z
+c_{z} = \sum_{t,i}  c^{b}_{z,t,i} + \sum_{t,i} c^{e}_{z,t,i} + \sum_{i} c^{om}_{z,i} + c^{g}_{z} + 
+ c^{r}_{z} + c^{s,v}_{z} + c^{x}_{z} + c^{q}_{z} \qquad \qquad \forall z
 %\end{split}
 \end{align}
 The components of zonal system costs are calculated as given in equations (\ref{fuel_cost}) to (\ref{lost_load_cost}).
-Upper-case $C$ represent total cost, while $\kappa$ denotes specific, annualized capital cost of technology investment. Prices for fuels and \ce{CO2} are denoted by uppercase $P$.
+Lower-case $c$ represent total cost, while upper-case $C$ denotes specific, annualized capital cost of technology investment. Prices for fuels and \ce{CO2} are denoted by $P$.
 \begin{align}
-&C^{f}_{z,t,i}& =&\ \sum_{f} \left( P_{t,z,f} \: b_{t,z,i,f} \right) \qquad \qquad &\forall z,t,i \label{fuel_cost} \\
-&C^{e}_{z,t,i}& =&\ \sum_{f} \left( P^{e}_{t,z} \: \varepsilon_{f} \: b_{t,z,i,f} \right) \qquad \qquad &\forall z,t,i\\
-&C^{om}_{z,i}& =&\ \left(\bar{g}^{0}_{z,i} - \bar{g}^{-}_{z,i} + \bar{g}^{+}_{z,i}\right) o^{q}_{i} + \sum_{t,m} \left(o^{v}_{i} \: g_{z,t,i,m}\right) \qquad \qquad &\forall z,i \\
-&C^{inv,i}_{z}& =&\ \kappa_{z,i} \: \bar{g}^{+}_{z,i} \qquad \qquad &\forall z\\
-&C^{inv,n}_{z}& =&\ \kappa_{z,n} \: \bar{r}^{+}_{z,n} \qquad \qquad &\forall z\\
-&C^{inv,k}_{z}& =&\ \kappa^{P}_{z,k} \: \bar{s}^{+}_{z,k} + \kappa^{E}_{z,k} \: v^{+}_{z,k} \qquad \qquad &\forall z\\
-&C^{inv,ic}_{z}& =&\ \sum_{zz} (\kappa^{ic}_{z} \: \delta_{z,zz} \: \bar{x}^{+}_{z,zz}) / \: 2 \qquad \qquad &\forall z \label{transmission_expansion_cost}\\
-&C^{nse}_{z}& =&\ \mu \sum_{t,m} \Omega^{-}_{z,t,m} \qquad \qquad &\forall z \label{lost_load_cost}
+&c^{b}_{z,t,i}& =&\ \sum_{f} \left( P_{t,z,f} \: b_{t,z,i,f} \right) \qquad \qquad &\forall z,t,i \label{fuel_cost} \\
+&c^{e}_{z,t,i}& =&\ \sum_{f} \left( P^{e}_{t,z} \: \varepsilon_{f} \: b_{t,z,i,f} \right) \qquad \qquad &\forall z,t,i\\
+&c^{om}_{z,i}& =&\ O^{q}_{i} \left(\bar{G}_{z,i} - \bar{g}^{-}_{z,i} + \bar{g}^{+}_{z,i}\right) + \sum_{t,m} \left(O^{v}_{i} \: g_{z,t,i,m}\right) \qquad \qquad &\forall z,i \\
+&c^{g}_{z}& =&\ C^{g}_{z,i} \: \bar{g}^{+}_{z,i} \qquad \qquad &\forall z\\
+&c^{r}_{z}& =&\ C^{r}_{z,n} \: \bar{r}^{+}_{z,n} \qquad \qquad &\forall z\\
+&c^{s,v}_{z}& =&\ C^{s}_{z,k} \: \bar{s}^{+}_{z,k} + C^{v}_{z,k} \: v^{+}_{z,k} \qquad \qquad &\forall z\\
+&c^{x}_{z}& =&\ \frac{1}{2} \: \sum_{zz} (C^{x}_{z} \: \delta_{z,zz} \: \bar{x}^{+}_{z,zz}) \qquad \qquad &\forall z \label{transmission_expansion_cost}\\
+&c^{q}_{z}& =&\ \mu \sum_{t,m} q^{-}_{z,t,m} \qquad \qquad &\forall z \label{lost_load_cost}
 \end{align}
-In line with \cite{citation}, we estimate the specific cost of non-served load $\mu$ at 12500 EUR per MWh.
 
 \paragraph{Market clearing}
 In each hour, the markets for electricity and heat have to clear.
@@ -202,15 +201,15 @@ Likewise, equation (\ref{market_clearing_ht}) clears the heat market by equating
 \begin{align}
 \sum_{i} g_{z,t,i,\text{el}} + \sum_{k} s^{out}_{z,t,k} + \sum_{n} r_{z,t,n} =
 D_{z,t,\text{el}} + \sum_{i} b_{z,t,i,\text{el}} + \sum_{k} s^{in}_{z,t,k} + \sum_{zz} x_{z,zz,t} 
-- \Omega^{-}_{z,t,\text{el}} + \Omega^{+}_{z,t} \qquad \forall z,t \label{market_clearing_el} \\
-\sum_{i} g_{z,t,i,\text{ht}} = D_{z,t,\text{ht}} - \Omega^{-}_{z,t,\text{ht}} \qquad \forall z,t \label{market_clearing_ht}
+- q^{-}_{z,t,\text{el}} + q^{+}_{z,t} \qquad \forall z,t \label{market_clearing_el} \\
+\sum_{i} g_{z,t,i,\text{ht}} = D_{z,t,\text{ht}} - q^{-}_{z,t,\text{ht}} \qquad \forall z,t \label{market_clearing_ht}
 \end{align}
 \emph{medea} can be thought of as representing energy-only electricity and heat markets without capacity payments. Then, the marginals of the market clearing equations (\ref{market_clearing_el}) and (\ref{market_clearing_ht}), $\partial C / \partial D_{z,t,m}$, can be interpreted as the zonal prices for electricity and heat, respectively.
 
 \paragraph{Thermal electricity generation}
 Energy generation is constrained by available installed capacity, which can be adjusted through investment and decommissioning.
 \begin{align}
-g_{z,t,i,m} \leq \argmax_{l}(\psi_{i,l,m}) \left( \bar{g}^{0}_{z,i} + \bar{g}^{+}_{z,i} - \bar{g}^{-}_{z,i} \right) \qquad \qquad \forall z,t,i,m
+g_{z,t,i,m} \leq \bar{G}_{z,i} + \bar{g}^{+}_{z,i} - \bar{g}^{-}_{z,i} \qquad \qquad \forall z,t,i,m
 \end{align}
 Generator efficiency $\eta$ determines the amount of fuel that needs to be burnt in order to generate a given amount of electricity.
 \begin{align}
@@ -230,27 +229,27 @@ The elements $l \in L$ span up a three-dimensional, convex feasible operating re
 The weights $w$ form a convex combination of the corners $l$, which are scaled to the available installed capacity of each co-generation technology.
 Heat and electricity output along with the corresponding fuel requirement is then set according to the chosen weights.
 \begin{align}
-\sum_{l} w_{z,t,i,l} = \bar{g}^{0}_{z,i} + \bar{g}^{+}_{z,i} - \bar{g}^{-}_{z,i} \qquad \qquad \forall z,t,i \in J \\
-g_{z,t,i,m} \leq \sum_{l} w_{z,t,i,l} \: \psi_{i,l,m} \qquad \qquad \forall z,t,i \in J, m \\
-b_{z,t,i,f} \geq \sum_{l} w_{z,t,i,l} \: \chi_{i,l,f} \qquad \qquad \forall z,t,i \in J, f
+\sum_{l} w_{z,t,i,l} = \bar{G}_{z,i} + \bar{g}^{+}_{z,i} - \bar{g}^{-}_{z,i} \qquad \qquad \forall z,t,i \in J \\
+g_{z,t,i,m} \leq \sum_{l} \psi_{i,l,m} \: w_{z,t,i,l} \qquad \qquad \forall z,t,i \in J, m \\
+b_{z,t,i,f} \geq \sum_{l} \chi_{i,l,f} \: w_{z,t,i,l} \qquad \qquad \forall z,t,i \in J, f
 \end{align}
 
 \paragraph{Intermittent electricity generation}
 Electricity generation from intermittent sources wind (on-shore and off-shore), solar irradiation, and river runoff follows generation profiles $\phi_{z,t,n} \in [0,1]$ and is scaled according to corresponding installed and added capacity.
 \begin{align}
-r_{z,t,n} = \phi_{z,t,n} \: \left( \bar{r}^{0}_{z,n} + \bar{r}^{+}_{z,n} \right) \qquad \qquad \forall z,t,n
+r_{z,t,n} = \phi_{z,t,n} \: \left( \bar{R}_{z,n} + \bar{r}^{+}_{z,n} \right) \qquad \qquad \forall z,t,n
 \end{align}
 
 \paragraph{Electricity storages}
 Charging and discharging of storages is constrained by the storages' power capacity $\bar{s}^{in}_{z,k}$ and $\bar{s}^{out}_{z,k}$, respectively. Similarly, the total energy that can be stored is constrained by the storage technology's energy capacity $\bar{v}_{z,k}$.
 \begin{align}
-s^{out}_{z,t,k} \leq \bar{s}^{out}_{z,k} + \bar{s}^{+}_{z,k} \qquad \qquad \forall z,t,k \\
-s^{in}_{z,t,k} \leq \bar{s}^{in}_{z,k} + \bar{s}^{+}_{z,k} \qquad \qquad \forall z,t,k \\
-v_{z,t,k} \leq \bar{v}^{0}_{z,k} + \bar{v}^{+}_{z,k} \qquad \qquad \forall z,t,k \\
+s^{out}_{z,t,k} \leq \bar{S}^{out}_{z,k} + \bar{s}^{+}_{z,k} \qquad \qquad \forall z,t,k \\
+s^{in}_{z,t,k} \leq \bar{S}^{in}_{z,k} + \bar{s}^{+}_{z,k} \qquad \qquad \forall z,t,k \\
+v_{z,t,k} \leq \bar{V}_{z,k} + \bar{v}^{+}_{z,k} \qquad \qquad \forall z,t,k \\
 \end{align}
 Storage operation is subject to a storage balance, such that the current energy content must be equal to the previous period's energy content plus all energy flowing into the storage less all energy flowing out of the storage.
 \begin{align}
-v_{z,t,k} = v_{z,t-1,k} + \rho_{z,t,k} + \eta^{in}_{z,k} \: s^{in}_{z,t,k} - (\eta^{out}_{z,k})^{-1} \: s^{out}_{z,t,k} \qquad \qquad \forall z,t,k
+v_{z,t,k} = \rho_{z,t,k} + \eta^{in}_{z,k} \: s^{in}_{z,t,k} - (\eta^{out}_{z,k})^{-1} \: s^{out}_{z,t,k} + v_{z,t-1,k} \qquad \qquad \forall z,t,k
 \end{align}
 Since the model can add storage power capacity and energy capacity independently, we require a storage to hold at least as much energy as it could store in (or out) in one hour.
 \begin{align}
@@ -263,8 +262,8 @@ However, electricity exchange between market zones is subject to several constra
 
 First, exchange between market zones is constrained by available transfer capacities. Transfer capacities can be expanded at constant, specific investment cost (see equation (\ref{transmission_expansion_cost})). This rules out economies of scale in transmission investment that might arise in interconnected, meshed grids.
 \begin{align}
-x_{z,zz,t} \leq \bar{x}^{0}_{z,zz} + \bar{x}^{+}_{z,zz} \qquad \qquad \forall z, zz, t \\
-x_{z,zz,t} \geq - \left( \bar{x}^{0}_{z,zz} + \bar{x}^{+}_{z,zz} \right) \qquad \qquad \forall z, zz, t
+x_{z,zz,t} \leq \bar{X}_{z,zz} + \bar{x}^{+}_{z,zz} \qquad \qquad \forall z, zz, t \\
+x_{z,zz,t} \geq - \left( \bar{X}_{z,zz} + \bar{x}^{+}_{z,zz} \right) \qquad \qquad \forall z, zz, t
 \end{align}
 By definition, electricity net exports $x_{z,zz,t}$ from $z$ to $zz$ must equal electricity net imports of $zz$ from $z$.
 \begin{align}
@@ -284,7 +283,7 @@ x_{zz,z,t} = 0 \qquad \qquad \forall z \notin NTC, zz \notin NTC, t
 Keeping a plant available for dispatch gives rise to quasi-fixed operation and maintenance costs. 
 Such cost can be avoided by decommissioning an energy generator. This is modelled as a reduction in generation capacity, which cannot exceed installed capacity.
 \begin{align}
-\bar{g}^{-}_{z,i} \leq \bar{g}^{0}_{z,i} + \bar{g}^{+}_{z,i} \qquad \qquad \forall z,i
+\bar{g}^{-}_{z,i} \leq \bar{G}_{z,i} + \bar{g}^{+}_{z,i} \qquad \qquad \forall z,i
 \end{align}
 
 \paragraph{Ancillary services}
@@ -297,7 +296,7 @@ g_{z,t,i,\text{el}} + r_{z,t,\text{ror}} + s^{out}_{z,t,k} + s^{in}_{z,t,k} \geq
 \paragraph{Curtailment}
 Electricity generated from intermittent sources can be curtailed (disposed of) without any further cost (apart from implicit opportunity cost). 
 \begin{align}
-\Omega^{+}_{z,t} \leq \sum_{n} r_{z,t,n} \qquad \qquad \forall z, t
+q^{+}_{z,t} \leq \sum_{n} r_{z,t,n} \qquad \qquad \forall z, t
 \end{align}
 
 \end{document}
