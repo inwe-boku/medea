@@ -20,15 +20,15 @@ idx = pd.IndexSlice
 # --------------------------------------------------------------------------- #
 
 static_data = {
-    'cap_itm': pd.read_excel(STATIC_FNAME, 'installed_itm', header=[0, 1], index_col=[0]),
-    'invest_itm': pd.read_excel(STATIC_FNAME, 'invest_itm', header=[0, 1], index_col=[0]),
+    'CAP_R': pd.read_excel(STATIC_FNAME, 'installed_itm', header=[0, 1], index_col=[0]),
+    'CAPCOST_R': pd.read_excel(STATIC_FNAME, 'invest_itm', header=[0, 1], index_col=[0]),
     'tec': pd.read_excel(STATIC_FNAME, 'param_thermal'),
     'feasops': pd.read_excel(STATIC_FNAME, 'feasgen_thermal'),
-    'atc': pd.read_excel(STATIC_FNAME, 'ATC', index_col=[0]),
-    'invest_storage': pd.read_excel(STATIC_FNAME, 'invest_storage', header=[0, 1], index_col=[0]),
+    'CAP_X': pd.read_excel(STATIC_FNAME, 'ATC', index_col=[0]),
+    'CAPCOST_K': pd.read_excel(STATIC_FNAME, 'invest_storage', header=[0, 1], index_col=[0]),
     'cost_transport': pd.read_excel(STATIC_FNAME, 'cost_transport', header=[0], index_col=[0]),
     'potentials': pd.read_excel(STATIC_FNAME, 'potentials', header=[0], index_col=[0]),
-    'km': pd.read_excel(STATIC_FNAME, 'km', index_col=[0])
+    'DISTANCE': pd.read_excel(STATIC_FNAME, 'km', index_col=[0])
 }
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -64,22 +64,13 @@ dict_sets = {
         'el': True,
         'ht': True
     },
-    'props': {
-        'power_out': [True],
-        'power_in': [True],
-        'energy_max': [True],
-        'efficiency_out': [True],
-        'efficiency_in': [True],
-        'cost_power': [True],
-        'cost_energy': [True]
-    },
-    'tec_itm': {
+    'n': {
         'pv': [True],
         'ror': [True],
         'wind_on': [True],
         'wind_off': [True]
     },
-    'tec_strg': {
+    'k': {
         'psp_day': [True],
         'psp_week': [True],
         'psp_season': [True],
@@ -99,7 +90,7 @@ for key, value in dict_sets.items():
 # %% prepare static data
 # --------------------------------------------------------------------------- #
 dict_static = {
-    'emission_intensity': {
+    'CO2_INTENSITY': {
         'Nuclear': [0],
         'Lignite': [0.45],
         'Coal': [0.333],
@@ -141,6 +132,14 @@ dict_static = {
         'oil': 'Oil',
         'bio': 'Biomass',
         'heatpump': 'Power'
+    },
+    'CAPCOST_X': {
+        'AT': [1250],
+        'DE': [1250]
+    },
+    'VALUE_NSE': {
+        'AT': [12500],
+        'DE': [12500]
     }
 }
 
@@ -173,13 +172,13 @@ dict_additions = {
         'energy_max': [0],
         'efficiency_in': [0.96],
         'efficiency_out': [0.96],
-        'cost_power': [static_data['invest_storage'].loc['battery', ('annuity-power', 'AT')].round(4)],
-        'cost_energy': [static_data['invest_storage'].loc['battery', ('annuity-energy', 'AT')].round(4)],
+        'cost_power': [static_data['CAPCOST_K'].loc['battery', ('annuity-power', 'AT')].round(4)],
+        'cost_energy': [static_data['CAPCOST_K'].loc['battery', ('annuity-energy', 'AT')].round(4)],
         'inflow_factor': [0]
     }
 }
 
-dict_instantiate = {'emission_intenstiy': pd.DataFrame.from_dict(dict_static['emission_intensity'],
+dict_instantiate = {'CO2_INTENSITY': pd.DataFrame.from_dict(dict_static['CO2_INTENSITY'],
                                                                  orient='index', columns=['Value'])}
 
 dict_instantiate.update({'efficiency': pd.DataFrame.from_dict(dict_static['eta'], orient='index', columns=['l1'])})
@@ -193,12 +192,15 @@ dict_instantiate['efficiency'].index.set_names(['medea_type', 'product', 'fuel_n
 for i in range(1, 6):
     dict_instantiate['efficiency'][f'l{i}'] = dict_instantiate['efficiency']['l1']
 
-dict_instantiate.update({'cap_itm': static_data['cap_itm'].loc[cfg.year, :]})
-dict_instantiate.update({'atc': static_data['atc'].loc[static_data['atc'].index.str.contains('|'.join(cfg.zones)),
-                                                       static_data['atc'].columns.str.contains('|'.join(cfg.zones))] /
+dict_instantiate.update({'CAP_R': static_data['CAP_R'].loc[cfg.year, :]})
+dict_instantiate.update({'CAP_X': static_data['CAP_X'].loc[static_data['CAP_X'].index.str.contains('|'.join(cfg.zones)),
+                                                       static_data['CAP_X'].columns.str.contains('|'.join(cfg.zones))] /
                                 1000})
-dict_instantiate.update({'km': static_data['km'].loc[static_data['km'].index.str.contains('|'.join(cfg.zones)),
-                                                     static_data['km'].columns.str.contains('|'.join(cfg.zones))]})
+dict_instantiate.update({'DISTANCE': static_data['DISTANCE'].loc[static_data['DISTANCE'].index.str.contains(
+    '|'.join(cfg.zones)), static_data['DISTANCE'].columns.str.contains('|'.join(cfg.zones))]})
+
+static_data.update({'CAPCOST_X': pd.DataFrame.from_dict(dict_static['CAPCOST_X'], orient='index', columns=['Value'])})
+static_data.update({'VALUE_NSE': pd.DataFrame.from_dict(dict_static['VALUE_NSE'], orient='index', columns=['Value'])})
 
 # --------------------------------------------------------------------------- #
 # %% preprocessing plant data
@@ -239,7 +241,7 @@ tec_props = tec_props.dropna()
 dict_instantiate.update({'tec_props': tec_props})
 
 # add 'tec'-set to dict_sets
-dict_sets.update({'tec': pd.DataFrame(data=True, index=tec_props.index.get_level_values(1).unique().values,
+dict_sets.update({'i': pd.DataFrame(data=True, index=tec_props.index.get_level_values(1).unique().values,
                                       columns=['Value'])})
 
 static_data['feasops']['fuel_name'] = (static_data['feasops']['medea_type'] / 10).apply(np.floor) * 10
@@ -261,12 +263,12 @@ for typ in static_data['feasops'].index.get_level_values(0).unique():
 
 # adjust static_data['tec'] to reflect modelled power plants
 static_data['tec'].set_index('set_element', inplace=True)
-static_data['tec'] = static_data['tec'].loc[static_data['tec'].index.isin(dict_sets['tec'].index), :]
+static_data['tec'] = static_data['tec'].loc[static_data['tec'].index.isin(dict_sets['i'].index), :]
 dict_instantiate['efficiency'] = \
     dict_instantiate['efficiency'].loc[
-    dict_instantiate['efficiency'].index.get_level_values(0).isin(dict_sets['tec'].index), :]
+    dict_instantiate['efficiency'].index.get_level_values(0).isin(dict_sets['i'].index), :]
 static_data['feasops'] = \
-    static_data['feasops'].loc[static_data['feasops'].index.get_level_values(0).isin(dict_sets['tec'].index), :]
+    static_data['feasops'].loc[static_data['feasops'].index.get_level_values(0).isin(dict_sets['i'].index), :]
 
 # --------------------------------------------------------------------------- #
 # hydro storage data
@@ -355,16 +357,20 @@ for zone in cfg.zones:
             ts_data['price'][(fuel, zone)] = ts_data['timeseries'][fuel]
 
 ts_inflows = pd.DataFrame(index=list(ts_data['zonal'].index),
-                          columns=pd.MultiIndex.from_product([cfg.zones, dict_sets['tec_strg'].index]))
+                          columns=pd.MultiIndex.from_product([cfg.zones, dict_sets['k'].index]))
 for zone in list(cfg.zones):
-    for strg in dict_sets['tec_strg'].index:
+    for strg in dict_sets['k'].index:
         if 'battery' not in strg:
             ts_inflows.loc[:, (zone, strg)] = ts_data['zonal'].loc[:, idx[zone, 'inflows', 'reservoir']] * \
                                               plant_data['storage_clusters'].loc[(strg, zone), 'inflow_factor']
 ts_data.update({'inflows': ts_inflows})
 
 dict_instantiate.update({'ancil': ts_data['zonal'].loc[:, idx[:, 'el', 'load']].max().unstack((1, 2)).squeeze() * 0.125
-                                  + dict_instantiate['cap_itm'].unstack(1).drop('ror', axis=1).sum(axis=1) * 0.075})
+                                  + dict_instantiate['CAP_R'].unstack(1).drop('ror', axis=1).sum(axis=1) * 0.075})
+dict_instantiate.update({'PEAK_LOAD': ts_data['zonal'].loc[:, idx[:, 'el', 'load']].max().unstack((1, 2)).squeeze()})
+dict_instantiate.update({'PEAK_PROFILE': ts_data['zonal'].loc[:, idx[:, :, 'profile']].max().unstack(2).drop(
+    'ror', axis=0, level=1)})
+
 
 # --------------------------------------------------------------------------- #
 # %% limits on investment - long-run vs short-run & # TODO: potentials
@@ -377,7 +383,7 @@ if cfg.invest_conventionals:
 invest_limits.update({'thermal': lim_invest_thermal})
 
 # dimension lim_invest_itm[r, tec_itm]
-lim_invest_itm = pd.DataFrame(data=0, index=cfg.zones, columns=dict_sets['tec_itm'].index)
+lim_invest_itm = pd.DataFrame(data=0, index=cfg.zones, columns=dict_sets['n'].index)
 if cfg.invest_renewables:
     for zone in cfg.zones:
         for itm in lim_invest_itm.columns:
@@ -385,7 +391,7 @@ if cfg.invest_renewables:
 invest_limits.update({'intermittent': lim_invest_itm})
 
 # dimension lim_invest_storage[r, tec_strg]
-lim_invest_storage = pd.DataFrame(data=0, index=cfg.zones, columns=dict_sets['tec_strg'].index)
+lim_invest_storage = pd.DataFrame(data=0, index=cfg.zones, columns=dict_sets['k'].index)
 if cfg.invest_storage:
     for zone in cfg.zones:
         for strg in lim_invest_storage.columns:
