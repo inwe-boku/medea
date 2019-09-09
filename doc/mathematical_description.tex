@@ -240,7 +240,7 @@ v_{z,t,k} \leq \widetilde{V}_{z,k} + \widetilde{v}^{+}_{z,k} \qquad \qquad \fora
 \end{align}
 Storage operation is subject to a storage balance, such that the current energy content must be equal to the previous period's energy content plus all energy flowing into the storage less all energy flowing out of the storage.
 \begin{align}
-v_{z,t,k} = \rho_{z,t,k} + \eta^{in}_{z,k} \: s^{in}_{z,t,k} - (\eta^{out}_{z,k})^{-1} \: s^{out}_{z,t,k} + v_{z,t-1,k} \qquad \qquad \forall z,t,k
+v_{z,t,k} = \rho_{z,t,k} + \eta^{in}_{z,k} \: s^{in}_{z,t,k} - (\eta^{out}_{z,k})^{-1} \: s^{out}_{z,t,k} + v_{z,t-1,k} \qquad \qquad \forall z,t,k: t>1, \: \eta^{out}_{z,k} > 0
 \end{align}
 Since the model can add storage power capacity and energy capacity independently, we require a storage to hold at least as much energy as it could store in (or out) in one hour.
 \begin{align}

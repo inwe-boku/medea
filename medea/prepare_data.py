@@ -60,7 +60,7 @@ dict_sets = {
         'Heat': [110]
     },
     'l': {f'l{x}': [True] for x in range(1, 5)},
-    'prd': {
+    'm': {
         'el': True,
         'ht': True
     },
@@ -140,7 +140,9 @@ dict_static = {
     'VALUE_NSE': {
         'AT': [12500],
         'DE': [12500]
-    }
+    },
+    'LAMBDA': [0.125],
+    'SIGMA': [0.175]
 }
 
 dict_additions = {
@@ -201,6 +203,8 @@ dict_instantiate.update({'DISTANCE': static_data['DISTANCE'].loc[static_data['DI
 
 static_data.update({'CAPCOST_X': pd.DataFrame.from_dict(dict_static['CAPCOST_X'], orient='index', columns=['Value'])})
 static_data.update({'VALUE_NSE': pd.DataFrame.from_dict(dict_static['VALUE_NSE'], orient='index', columns=['Value'])})
+static_data.update({'LAMBDA': pd.DataFrame(dict_static['LAMBDA'], columns=['Value'])})
+static_data.update({'SIGMA': pd.DataFrame(dict_static['SIGMA'], columns=['Value'])})
 
 # --------------------------------------------------------------------------- #
 # %% preprocessing plant data
@@ -371,6 +375,9 @@ dict_instantiate.update({'PEAK_LOAD': ts_data['zonal'].loc[:, idx[:, 'el', 'load
 dict_instantiate.update({'PEAK_PROFILE': ts_data['zonal'].loc[:, idx[:, :, 'profile']].max().unstack(2).drop(
     'ror', axis=0, level=1)})
 
+# drop rows with all zeros
+plant_data['storage_clusters'] = \
+    plant_data['storage_clusters'].loc[~(plant_data['storage_clusters'] == 0).all(axis=1), :].copy()
 
 # --------------------------------------------------------------------------- #
 # %% limits on investment - long-run vs short-run & # TODO: potentials

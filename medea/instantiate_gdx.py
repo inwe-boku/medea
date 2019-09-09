@@ -37,26 +37,26 @@ logging.info('medea sets instantiated')
 # --------------------------------------------------------------------------- #
 # %% instantiate static PARAMETERS
 # --------------------------------------------------------------------------- #
-CAPITALCOST_G = df2gdx(db, static_data['i']['annuity'].round(4),
+CAPITALCOST_G = df2gdx(db, static_data['tec']['annuity'].round(4),
                             'CAPITALCOST_G', 'par', [i_set], '[kEUR per GW]')
 CAPITALCOST_R = df2gdx(db, static_data['CAPCOST_R'].stack().reorder_levels([1, 0]).round(4), 'CAPITALCOST_R', 'par',
                        [z_set, n_set], '[kEUR per GW]')
-CAPITALCOST_S = df2gdx(db, plant_data['storage_clusters']['cost_power'].reorder_levels((1, 0)), 'par',
-                           [z_set, k_set], '[GW]')
-CAPITALCOST_V = df2gdx(db, plant_data['storage_clusters']['cost_energy'].reorder_levels((1, 0)), 'par',
-                           [z_set, k_set], '[GW]')
+CAPITALCOST_S = df2gdx(db, plant_data['storage_clusters']['cost_power'].reorder_levels((1, 0)), 'CAPITALCOST_S', 'par',
+                       [z_set, k_set], '[GW]')
+CAPITALCOST_V = df2gdx(db, plant_data['storage_clusters']['cost_energy'].reorder_levels((1, 0)), 'CAPITALCOST_V', 'par',
+                       [z_set, k_set], '[GW]')
 CAPITALCOST_X = df2gdx(db, static_data['CAPCOST_X'], 'CAPITALCOST_X', 'par', [z_set], 'kEUR per GW')
 CO2_INTENSITY = df2gdx(db, dict_instantiate['CO2_INTENSITY'], 'CO2_INTENSITY', 'par', [f_set],
                        '[kt CO2 per GWh fuel input]')
 DEMAND = df2gdx(db, ts_data['zonal'].loc[:, idx[:, :, 'load']].stack((0, 1)).reorder_levels((1, 0, 2)).round(4),
                 'DEMAND', 'par', [z_set, t_set, m_set])
-DISTANCE = df2gdx(db, dict_instantiate['km'].stack(), 'DISTANCE', 'par', [z_set, z_set], '[km]')
+DISTANCE = df2gdx(db, dict_instantiate['DISTANCE'].stack(), 'DISTANCE', 'par', [z_set, z_set], '[km]')
 EFFICIENCY_G = df2gdx(db, dict_instantiate['efficiency']['l1'], 'EFFICIENCY_G', 'par', [i_set, m_set, f_set], '[%]')
 
-EFFICIENCY_S_OUT = df2gdx(db, plant_data['storage_clusters']['efficiency_out'].reorder_levels((1, 0)), 'par',
-                           [k_set], '[GW]')
-EFFICIENCY_S_IN = df2gdx(db, plant_data['storage_clusters']['efficiency_in'].reorder_levels((1, 0)), 'par',
-                           [k_set], '[GW]')
+EFFICIENCY_S_OUT = df2gdx(db, plant_data['storage_clusters']['efficiency_out'].reorder_levels((1, 0)),
+                          'EFFICIENCY_S_OUT', 'par', [z_set, k_set], '[GW]')
+EFFICIENCY_S_IN = df2gdx(db, plant_data['storage_clusters']['efficiency_in'].reorder_levels((1, 0)), 'EFFICIENCY_S_IN',
+                         'par', [z_set, k_set], '[GW]')
 FEASIBLE_INPUT = df2gdx(db, static_data['feasops']['fuel_need'].round(4), 'FEASIBLE_INPUT', 'par',
                         [i_set, l_set, f_set], '[GW]')
 FEASIBLE_OUTPUT = df2gdx(db, static_data['feasops'][['el', 'ht']].droplevel('fuel_name').stack(), 'FEASIBLE_OUTPUT',
@@ -65,19 +65,19 @@ GEN_PROFILE = df2gdx(db, ts_data['zonal'].loc[:, idx[:, :, 'profile']].stack((0,
                      'GEN_PROFILE', 'par', [z_set, t_set, n_set])
 INFLOWS = df2gdx(db, ts_data['inflows'].stack((0, 1)).reorder_levels((1, 0, 2)).astype('float').round(4),
                  'INFLOWS', 'par', [z_set, t_set, k_set])
-INITIAL_CAP_G = df2gdx(db, dict_instantiate['tec_props']['cap'], 'INSTALLED_CAP_THERM', 'par',
+INITIAL_CAP_G = df2gdx(db, dict_instantiate['tec_props']['cap'], 'INITIAL_CAP_G', 'par',
                        [z_set, i_set], '[GW]')
 INITIAL_CAP_R = df2gdx(db, dict_instantiate['CAP_R'], 'INITIAL_CAP_R', 'par', [z_set, n_set], '[GW]')
-INITIAL_CAP_S_OUT = df2gdx(db, plant_data['storage_clusters']['power_out'].reorder_levels((1, 0)), 'par',
-                           [z_set, k_set], '[GW]')
-INITIAL_CAP_S_IN = df2gdx(db, plant_data['storage_clusters']['power_in'].reorder_levels((1, 0)), 'par',
-                           [z_set, k_set], '[GW]')
-INITIAL_CAP_V = df2gdx(db, plant_data['storage_clusters']['energy_max'].reorder_levels((1, 0)), 'par',
+INITIAL_CAP_S_OUT = df2gdx(db, plant_data['storage_clusters']['power_out'].reorder_levels((1, 0)), 'INITIAL_CAP_S_OUT',
+                           'par', [z_set, k_set], '[GW]')
+INITIAL_CAP_S_IN = df2gdx(db, plant_data['storage_clusters']['power_in'].reorder_levels((1, 0)), 'INITIAL_CAP_S_IN',
+                          'par', [z_set, k_set], '[GW]')
+INITIAL_CAP_V = df2gdx(db, plant_data['storage_clusters']['energy_max'].reorder_levels((1, 0)), 'INITIAL_CAP_V', 'par',
                            [z_set, k_set], '[GW]')
 INITIAL_CAP_X = df2gdx(db, dict_instantiate['CAP_X'].stack(), 'INITIAL_CAP_X', 'par', [z_set, z_set], '[GW]')
 
 # TODO: Estimate LAMBDA, i.e. the share of must-run capacity in conventional capacity (controlling for renewables capacity)
-LAMBDA(z)
+LAMBDA = df2gdx(db, static_data['LAMBDA'], 'LAMBDA', 'par', 0, '[]')
 
 OM_COST_QFIX = df2gdx(db, static_data['tec']['om_fix'], 'OM_COST_QFIX', 'par', [i_set], '[kEUR per GW]')
 OM_COST_VAR = df2gdx(db, static_data['tec']['om_var'], 'OM_COST_VAR', 'par', [i_set], '[kEUR per GWh]')
@@ -91,7 +91,7 @@ PRICE_FUEL = df2gdx(db, ts_data['price'].drop(['EUA', 'price_day_ahead'], axis=1
 # PRICE_DA is NOT required by model
 PRICE_DA = df2gdx(db, ts_data['price'].loc[:, idx['price_day_ahead', :]].stack(), 'PRICE_DA', 'par', [t_set, z_set])
 
-SIGMA(z)
+SIGMA = df2gdx(db, static_data['SIGMA'], 'SIGMA', 'par', 0, '[]')
 
 VALUE_NSE = df2gdx(db, static_data['VALUE_NSE'], 'VALUE_NSE', 'par', [z_set], 'EUR per MWh')
 
@@ -131,6 +131,6 @@ logging.info('medea`s timeseries instantiated')
 # --------------------------------------------------------------------------- #
 # %% data export to gdx
 # --------------------------------------------------------------------------- #
-export_location = os.path.join(cfg.folder, 'medea', 'data', 'medea_main_data.gdx')
+export_location = os.path.join(cfg.folder, 'medea', 'data', 'medea_main_data_consistent.gdx')
 db.export(export_location)
 logging.info(f'medea gdx exported to {export_location}')
