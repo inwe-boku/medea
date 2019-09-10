@@ -63,14 +63,14 @@ Parameters are denoted either by lower-case greek letters or by upper-case latin
 \hline
 	\textbf{name} & \makecell[l]{\textbf{math} \\ \textbf{symbol}} & \makecell[l]{\textbf{GAMS} \\\textbf{symbol}} & \textbf{unit} \\ \hline \hline
 % LOWER-CASE GREEK LETTERS
-	distance between countries & $\delta_{z,zz}$ & \texttt{DISTANCE(z,zz)} & km \\ \hline
+	distance between countries' center of gravity & $\delta_{z,zz}$ & \texttt{DISTANCE(z,zz)} & km \\ \hline
 	fuel emission intensity & $\varepsilon_{f}$ & \texttt{CO2\_INTENSITY(f)} & $\text{t}_{\ce{CO2}}$ / MWh \\ \hline
 	power plant efficiency & $\eta_{i,m,f}$ & \texttt{EFFICIENCY\_G(i,m,f)} & MWh / MWh \\ \hline
-	efficiency power out & $\eta^{out}_{z,k}$ & \makecell[l]{\texttt{EFFICIENCY\_S\_OUT(k)}} &  \\ \hline
-	efficiency power in & $\eta^{in}_{z,k}$ & \makecell[l]{\texttt{EFFICIENCY\_S\_IN(k)}} &  \\ \hline	
+	discharging efficiency & $\eta^{out}_{z,k}$ & \makecell[l]{\texttt{EFFICIENCY\_S\_OUT(k)}} &  \\ \hline
+	charging efficiency & $\eta^{in}_{z,k}$ & \makecell[l]{\texttt{EFFICIENCY\_S\_IN(k)}} &  \\ \hline	
 	scaling factor for peak load & $\lambda_{z}$ & \texttt{LAMBDA(z)} &  \\ \hline
 	value of lost load & $\mu_{z}$ & \texttt{VALUE\_NSE(z)} & \EUR / MWh \\ \hline
-	reservoir inflows & $\rho_{z,t,k}$ & \makecell[l]{\texttt{INFLOWS(z,t,k)}} & MW \\ \hline	
+	inflows to storage reservoirs & $\rho_{z,t,k}$ & \makecell[l]{\texttt{INFLOWS(z,t,k)}} & MW \\ \hline	
 	scaling factor for peak intermittent generation & $\sigma_{z}$ & \texttt{SIGMA(z)} &  \\ \hline
 	intermittent generation profile & $\phi_{z,t,n}$ & \texttt{GEN\_PROFILE(z,t,n)} & $[0,1]$ \\ \hline
 	peak intermittent generation profile & $\widehat{\phi}_{z,n}$ & \texttt{PEAK\_PROFILE(z,n)} & $[0,1]$ \\ \hline	
@@ -81,7 +81,7 @@ Parameters are denoted either by lower-case greek letters or by upper-case latin
 	capital cost of thermal generators (specific, annuity) & $C^{g}_{z,i}$ & \texttt{CAPITALCOST\_G(z,i)} & k\EUR / GW \\ \hline
 	capital cost of storages - power (specific, annuity) & $C^{s}_{z,k}$ & \makecell[l]{\texttt{CAPITALCOST\_S(z,k)}} & k\EUR / GW \\ \hline
 	capital cost of storages - energy (specific, annuity) & $C^{v}_{z,k}$ & \makecell[l]{\texttt{CAPITALCOST\_V(z,k)}} & k\EUR / GW \\ \hline
-	capital cost of transmission capacity & $C^{x}$ & \texttt{CAPITALCOST\_X} & k\EUR / GW \\ \hline
+	capital cost of transmission capacity (specific, annuity) & $C^{x}$ & \texttt{CAPITALCOST\_X} & k\EUR / GW \\ \hline
 	energy demand & $D_{z,t,m}$ & \texttt{DEMAND(z,t,m)} & GW \\ \hline
 	peak demand & $\widehat{D}_{z,m}$ & \texttt{PEAK\_LOAD(z,m)} & GW \\ \hline
 	initial capacity of dispatchable generators & $\widetilde{G}_{z,i}$ & \texttt{INITIAL\_CAP\_G(z,tec)} & GW \\ \hline
@@ -95,10 +95,10 @@ Parameters are denoted either by lower-case greek letters or by upper-case latin
 	\ce{CO2} price & $P^{e}_{t,z}$ & \texttt{PRICE\_CO2(t,z)} & \EUR / $\text{t}_{\ce{CO2}}$ \\ \hline
 	fuel price & $P_{t,z,f}$ & \texttt{PRICE\_FUEL(t,z,f)} & \EUR / MWh \\ \hline
 	initial capacity of intermittent generators & $\widetilde{R}_{z,n}$ & \texttt{INITIAL\_CAP\_R(z,n)} & GW \\ \hline
-	max power out & $\widetilde{S}^{out}_{z,k}$ & \makecell[l]{\texttt{INITIAL\_CAP\_S\_OUT(z,k)}} & GW \\ \hline
-	max power in & $\widetilde{S}^{in}_{z,k}$ & \makecell[l]{\texttt{INITIAL\_CAP\_S\_IN(z,k)}} & GW \\ \hline
-	max energy stored & $\widetilde{V}_{z,k}$ & \makecell[l]{\texttt{INITIAL\_CAP\_V(z,k)}} &  \\ \hline
-	installed available transmission capacity & $\widetilde{X}_{z,zz}$ & \texttt{INITIAL\_CAP\_X(z,zz)} & GW \\ \hline \hline	
+	initial discharging capacity of storages & $\widetilde{S}^{out}_{z,k}$ & \makecell[l]{\texttt{INITIAL\_CAP\_S\_OUT(z,k)}} & GW \\ \hline
+	initial charging capacity of storages & $\widetilde{S}^{in}_{z,k}$ & \makecell[l]{\texttt{INITIAL\_CAP\_S\_IN(z,k)}} & GW \\ \hline
+	initial energy storage capacity & $\widetilde{V}_{z,k}$ & \makecell[l]{\texttt{INITIAL\_CAP\_V(z,k)}} &  \\ \hline
+	initial transmission capacity & $\widetilde{X}_{z,zz}$ & \texttt{INITIAL\_CAP\_X(z,zz)} & GW \\ \hline \hline	
 \end{longtable}
 
 \newpage
@@ -205,19 +205,19 @@ Likewise, equation (\ref{market_clearing_ht}) clears the heat market by equating
 \emph{medea} can be thought of as representing energy-only electricity and heat markets without capacity payments. Then, the marginals of the market clearing equations (\ref{market_clearing_el}) and (\ref{market_clearing_ht}), $\partial C / \partial D_{z,t,m}$, can be interpreted as the zonal prices for electricity and heat, respectively.
 
 \paragraph{Energy generation}
-Energy generation is constrained by available installed capacity, which can be adjusted through investment and decommissioning.
+Energy generation $g_{z,t,i,m} \geq 0$ is constrained by available installed capacity, which can be adjusted through investment ($\widetilde{g}^{+}_{z,i} \geq 0$) and decommissioning $\widetilde{g}^{-}_{z,i} \geq 0$.
 \begin{align}
 g_{z,t,i,m} \leq \widetilde{G}_{z,i} + \widetilde{g}^{+}_{z,i} - \widetilde{g}^{-}_{z,i} \qquad \qquad \forall z,t,i,m
 \end{align}
-Generator efficiency $\eta$ determines the amount of fuel that needs to be spent in order to generate a given amount of energy.
+Generator efficiency $\eta$ determines the amount of fuel $b_{z,t,i,f} \geq 0$ that needs to be spent in order to generate a given amount of energy.
 \begin{align}
-g_{z,t,i,m} = \sum_{f} \eta_{i,m,f} \: b_{z,t,i,f} \qquad \qquad \forall z,t,i \notin J
+g_{z,t,i,m} \leq \sum_{f} \eta_{i,m,f} \: b_{z,t,i,f} \qquad \qquad \forall z,t,i \notin J
 \end{align}
 
 \paragraph{Thermal co-generation}
 Co-generation units jointly generate heat and electricity. All feasible combinations of heat and electricity generation along with the corresponding fuel requirement are reflected in so-called `feasible operating regions'. 
 The elements $l \in L$ span up a three-dimensional, convex feasible operating region for each co-generation technology. 
-The weights $w$ form a convex combination of the corners $l$, which are scaled to the available installed capacity of each co-generation technology.
+The weights $w_{z,t,i,l} \geq 0$ form a convex combination of the corners $l$, which are scaled to the available installed capacity of each co-generation technology.
 Heat and electricity output along with the corresponding fuel requirement is then set according to the chosen weights.
 \begin{align}
 \sum_{l} w_{z,t,i,l} = \widetilde{G}_{z,i} + \widetilde{g}^{+}_{z,i} - \widetilde{g}^{-}_{z,i} \qquad \qquad \forall z,t,i \in J \\
@@ -226,13 +226,13 @@ b_{z,t,i,f} \geq \sum_{l} \chi_{i,l,f} \: w_{z,t,i,l} \qquad \qquad \forall z,t,
 \end{align}
 
 \paragraph{Intermittent electricity generation}
-Electricity generation from intermittent sources wind (on-shore and off-shore), solar irradiation, and river runoff follows generation profiles $\phi_{z,t,n} \in [0,1]$ and is scaled according to corresponding installed and added capacity.
+Electricity generation from intermittent sources wind (on-shore and off-shore), solar irradiation, and river runoff follows generation profiles $\phi_{z,t,n} \in [0,1]$ and is scaled according to corresponding installed ($ \widetilde{R}_{z,n}$) and added ($\widetilde{r}^{+}_{z,n} \geq 0$) capacity.
 \begin{align}
 r_{z,t,n} = \phi_{z,t,n} \: \left( \widetilde{R}_{z,n} + \widetilde{r}^{+}_{z,n} \right) \qquad \qquad \forall z,t,n
 \end{align}
 
 \paragraph{Electricity storages}
-Charging and discharging of storages is constrained by the storages' power capacity $\widetilde{s}^{in}_{z,k}$ and $\widetilde{s}^{out}_{z,k}$, respectively. Similarly, the total energy that can be stored is constrained by the storage technology's energy capacity $\widetilde{v}_{z,k}$.
+Charging ($s^{in}_{z,t,k} \geq 0$) and discharging ($s^{out}_{z,t,k} \geq 0$) of storages is constrained by the storages' installed ($\widetilde{S}^{in}_{z,k}, \widetilde{S}^{out}_{z,k}$) and added ($\widetilde{s}^{+}_{z,k} \geq 0$) charging and discharging power, respectively. Similarly, the total energy that can be stored is constrained by the storage technology's initial ($\widetilde{V}_{z,k}$) and added ($\widetilde{v}^{+}_{z,k} \geq 0$) energy capacity.
 \begin{align}
 s^{out}_{z,t,k} \leq \widetilde{S}^{out}_{z,k} + \widetilde{s}^{+}_{z,k} \qquad \qquad \forall z,t,k \\
 s^{in}_{z,t,k} \leq \widetilde{S}^{in}_{z,k} + \widetilde{s}^{+}_{z,k} \qquad \qquad \forall z,t,k \\

@@ -20,6 +20,8 @@ invest_res.UP('AT','wind_on') = WIND_ON_LIMIT;
 invest_res.UP('AT','pv') = 33.5;
 invest_thermal.UP('AT','bio') = 0;
 invest_thermal.UP('AT','bio_chp') = 0;
+invest_thermal.UP('DE','bio') = 1;
+invest_thermal.UP('DE','bio_chp') = 1;
 
 flow.UP(z,zz,t) = FLOW_LIMIT;
 flow.LO(z,zz,t) = -FLOW_LIMIT;

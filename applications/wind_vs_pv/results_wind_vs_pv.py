@@ -80,4 +80,4 @@ for peua in eua_range:
     df_all = df_all.dropna(axis=1, how='all')
     df_all = df_all.sort_index(axis=1, level=1)
     df_all.to_csv(os.path.join(cfg.folder, 'applications', project, 'results',
-                               f'out_costreal_{scenario}_EUA_{peua}.csv'), sep=';', encoding='utf-8', decimal=',')
+                               f'out_costopus_{scenario}_EUA_{peua}.csv'), sep=';', encoding='utf-8', decimal=',')

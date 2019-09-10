@@ -16,8 +16,8 @@ ws = GamsWorkspace(system_directory=cfg.gams_sysdir)
 # specify GAMS symbols to be read from output .gdx-file along with the dimensions of the corresponding output DataFrame
 # example: generate pandas DataFrame holding system cost and co2 emissions for each CO2 price scenario
 symbols_to_read = {
-    'cost': ([], ['r']),
-    'emissions': ([], ['r'])
+    'cost_system': ([], ['z']),
+    'emission_co2': ([], ['z'])
 }
 
 # iterate over all output .gdx-files

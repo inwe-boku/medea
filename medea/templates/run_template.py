@@ -23,18 +23,18 @@ db_input = ws.add_database_from_gdx(os.path.join(cfg.folder, 'applications', pro
 # dict_set = {rec.keys[0] for rec in db_input['set_name']}
 # ---
 # read sets for calibration of power plant efficiencies
-dict_prd = {rec.keys[0] for rec in db_input['prd']}
+dict_prd = {rec.keys[0] for rec in db_input['m']}
 dict_fuel = {rec.keys[0] for rec in db_input['f']}
-dict_tec = {rec.keys[0] for rec in db_input['tec']}
+dict_tec = {rec.keys[0] for rec in db_input['i']}
 
 # *** read in all parameters to be adjusted ***
 # general example for reading parameter 'PARAMETER_NAME' defined over 'set_name' to pandas DataFrame df
 # df = gdx2df(db_input, 'PARAMETER_NAME', ['set_name'], [])
 # ---
 # read power plant efficiency data
-df_eff = gdx2df(db_input, 'EFFICIENCY', ['tec', 'prd', 'f'], [])
+df_eff = gdx2df(db_input, 'EFFICIENCY_G', ['i', 'm', 'f'], [])
 # read fuel requirement of CHP plants-data
-df_fuelreq = gdx2df(db_input, 'FEASIBLE_INPUT', ['tec', 'l', 'f'], [])
+df_fuelreq = gdx2df(db_input, 'FEASIBLE_INPUT', ['i', 'l', 'f'], [])
 
 
 # %% generate 'static' parameter variations (modifications that remain the same across all scenarios)
@@ -49,7 +49,7 @@ df_eff_mod = df_eff.copy()
 for fl in fuel_thermal:
     df_eff_mod.loc[idx[:, :, fl], :] = \
         df_eff.loc[idx[:, :, fl], :] * efficiency[f'e_{fl}'][0]
-reset_parameter(db_input, 'EFFICIENCY', df_eff_mod)
+reset_parameter(db_input, 'EFFICIENCY_G', df_eff_mod)
 
 # modify fuel requirement of co-generation plants
 df_fuelreq_mod = df_fuelreq.copy()
@@ -65,7 +65,7 @@ os.chdir(os.path.join(cfg.folder, 'applications', project_name, 'opt'))
 
 # create empty scenario parameter in GAMS database so that it can be modified subsequently
 # example: changing CO2 price
-scenario_co2 = df2gdx(db_input, pd.DataFrame(data=[0]), 'EUA_SCENARIO', 'par', 0, 'CO2 price scenario')
+scenario_co2 = df2gdx(db_input, pd.DataFrame(data=[0]), 'CO2_SCENARIO', 'par', 0, 'CO2 price scenario')
 
 # modify scenario parameter and solve medea for each scenario (i.e. for each parameter modification)
 for price_co2 in range_co2price:
@@ -74,7 +74,7 @@ for price_co2 in range_co2price:
 
     # modify scenario parameter in GAMS database
     # example: change CO2 price
-    reset_parameter(db_input, 'EUA_SCENARIO', pd.DataFrame(data=[price_co2]))
+    reset_parameter(db_input, 'CO2_SCENARIO', pd.DataFrame(data=[price_co2]))
 
     # export modified GAMS database to a .gdx-file that is then being read by the GAMS model
     export_location = os.path.join(cfg.folder, 'applications', project_name, 'opt', f'medea_{identifier}_data.gdx')

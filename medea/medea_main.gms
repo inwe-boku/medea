@@ -22,12 +22,12 @@ alias(z,zz);
 
 ********************************************************************************
 Parameters
-         CAPITALCOST_G(i)        specific capital cost of dispatchable generators [EUR per MW]
-         CAPITALCOST_R(z,n)      specific capital cost of intermittent generators [EUR per MW]
-         CAPITALCOST_S(z,k)      specific capital cost of storage power (in and out) [EUR per MW]
-         CAPITALCOST_V(z,k)      specific capital cost of storage volume [EUR per MWh]
-         CAPITALCOST_X(z)        specific capital cost of electricity transmission [EUR per MW]
-         CO2_INTENSITY(f)        CO2 intensitiy of fuels burned [t per MWh_th]
+         CAPITALCOST_G(i)        specific annualized capital cost of dispatchable generators [EUR per MW]
+         CAPITALCOST_R(z,n)      specific annualized capital cost of intermittent generators [EUR per MW]
+         CAPITALCOST_S(z,k)      specific annualized capital cost of storage power (in and out) [EUR per MW]
+         CAPITALCOST_V(z,k)      specific annualized capital cost of storage volume [EUR per MWh]
+         CAPITALCOST_X(z)        specific annualized capital cost of electricity transmission [EUR per MW]
+         CO2_INTENSITY(f)        CO2 intensitiy of fuels burned [t CO2 per MWh_th]
          DEMAND(z,t,m)           energy demand [GW]
          DISTANCE(z,zz)          distance between centers of gravity of market areas [km]
          EFFICIENCY_G(i,m,f)     generation efficiency of dispatchable power plants [MWh_el per MWh_th]

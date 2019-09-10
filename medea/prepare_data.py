@@ -239,7 +239,11 @@ for zone in cfg.zones:
     tec_props.loc[:, 'eta'].update(pd.DataFrame.from_dict(dict_static['eta'], orient='index', columns=[zone]),
                                    overwrite=False)
 # index by plant element names instead of medea_type-numbers
-tec_props.index = static_data['tec'].loc[static_data['tec']['medea_type'].isin(tec_props.index), 'set_element'].values
+# TODO: massive error when matching medea-numbers to plant names
+type_plant_match = static_data['tec'][['medea_type', 'set_element']].copy()
+type_plant_match.set_index('medea_type', inplace=True)
+tec_props['set_elements'] = type_plant_match.loc[tec_props.index, :].values
+tec_props.set_index('set_elements', inplace=True)
 tec_props = tec_props.stack(-1).swaplevel(axis=0)
 tec_props = tec_props.dropna()
 dict_instantiate.update({'tec_props': tec_props})
