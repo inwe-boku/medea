@@ -44,11 +44,11 @@ if not is_64bit:
     print('System appears to be 32-bit. 64-bit system recommended.')
 else:
     if sys_id == 'win32 WINP1218':
-        folder = r'Y:\git_repos\medea'
-        gams_sysdir = os.path.join(r'C:\GAMS\win64', version[0:4])
+        MEDEA_ROOT_DIR = r'Y:\git_repos\medea'
+        GMS_SYS_DIR = os.path.join(r'C:\GAMS\win64', version[0:4])
     elif sys_id == 'darwin Sebastians-MacBook-Pro.local':
-        folder = '/Users/seb/git_repos/medea'
-        gams_sysdir = os.path.join(f'/Applications/GAMS{version[0:4]}', 'sysdir')
+        MEDEA_ROOT_DIR = '/Users/seb/git_repos/medea'
+        GMS_SYS_DIR = os.path.join(f'/Applications/GAMS{version[0:4]}', 'sysdir')
     else:
-        folder = r'D:\git_repos\medea'
-        gams_sysdir = os.path.join(r'C:\GAMS\win64', version[0:4])
+        MEDEA_ROOT_DIR = r'D:\git_repos\medea'
+        GMS_SYS_DIR = os.path.join(r'C:\GAMS\win64', version[0:4])

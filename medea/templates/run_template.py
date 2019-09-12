@@ -5,15 +5,16 @@ import pandas as pd
 from gams import *
 
 import config as cfg
-from medea.gams_io import reset_parameter, gdx2df, df2gdx
+from medea.gams_io import reset_symbol, gdx2df, df2gdx
 from medea.templates.settings_template import *
 
 # -------------------------------------------------------------------------------------------------------------------- #
 # %% initialize GAMS, GAMS workspace and load model data
 # -------------------------------------------------------------------------------------------------------------------- #
 # import base data from gdx
-ws = GamsWorkspace(system_directory=cfg.gams_sysdir)
-db_input = ws.add_database_from_gdx(os.path.join(cfg.folder, 'applications', project_name, 'opt', 'medea_main_data.gdx'))
+ws = GamsWorkspace(system_directory=cfg.GMS_SYS_DIR)
+db_input = ws.add_database_from_gdx(
+    os.path.join(cfg.MEDEA_ROOT_DIR, 'applications', project_name, 'opt', 'medea_main_data.gdx'))
 
 
 # %% read parameters that change in scenarios (and corresponding sets)
@@ -49,19 +50,19 @@ df_eff_mod = df_eff.copy()
 for fl in fuel_thermal:
     df_eff_mod.loc[idx[:, :, fl], :] = \
         df_eff.loc[idx[:, :, fl], :] * efficiency[f'e_{fl}'][0]
-reset_parameter(db_input, 'EFFICIENCY_G', df_eff_mod)
+reset_symbol(db_input, 'EFFICIENCY_G', df_eff_mod)
 
 # modify fuel requirement of co-generation plants
 df_fuelreq_mod = df_fuelreq.copy()
 for fl in fuel_thermal:
     df_fuelreq_mod.loc[idx[:, :, fl], :] = \
         df_fuelreq.loc[idx[:, :, fl], :] / efficiency[f'e_{fl}'][0]
-reset_parameter(db_input, 'FEASIBLE_INPUT', df_fuelreq_mod)
+reset_symbol(db_input, 'FEASIBLE_INPUT', df_fuelreq_mod)
 
 # %% generate 'dynamic' parameter variations (modifications that constitute the scenarios, i.e. that change each run)
 # -------------------------------------------------------------------------------------------------------------------- #
 # ensure that we are in the correct model directory
-os.chdir(os.path.join(cfg.folder, 'applications', project_name, 'opt'))
+os.chdir(os.path.join(cfg.MEDEA_ROOT_DIR, 'applications', project_name, 'opt'))
 
 # create empty scenario parameter in GAMS database so that it can be modified subsequently
 # example: changing CO2 price
@@ -74,21 +75,22 @@ for price_co2 in range_co2price:
 
     # modify scenario parameter in GAMS database
     # example: change CO2 price
-    reset_parameter(db_input, 'CO2_SCENARIO', pd.DataFrame(data=[price_co2]))
+    reset_symbol(db_input, 'CO2_SCENARIO', pd.DataFrame(data=[price_co2]))
 
     # export modified GAMS database to a .gdx-file that is then being read by the GAMS model
-    export_location = os.path.join(cfg.folder, 'applications', project_name, 'opt', f'medea_{identifier}_data.gdx')
+    export_location = os.path.join(cfg.MEDEA_ROOT_DIR, 'applications', project_name, 'opt',
+                                   f'medea_{identifier}_data.gdx')
     db_input.export(export_location)
 
     # generate path to medea model
-    gms_model = os.path.join(cfg.folder, 'applications', project_name, 'opt', 'medea_main.gms')
+    gms_model = os.path.join(cfg.MEDEA_ROOT_DIR, 'applications', project_name, 'opt', 'medea_main.gms')
 
     # generate identifier of scenario output
     gdx_out = f'gdx=medea_out_{identifier}.gdx'
 
     # call GAMS to solve model / scenario
     subprocess.run(
-        f'{cfg.gams_sysdir}\\gams {gms_model} {gdx_out} lo=3 --project={project_name} --scenario={identifier}')
+        f'{cfg.GMS_SYS_DIR}\\gams {gms_model} {gdx_out} lo=3 --project={project_name} --scenario={identifier}')
 
     # clean up after each run and delete input data (which is also included in output, so no information lost)
     if os.path.isfile(export_location):

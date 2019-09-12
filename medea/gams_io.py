@@ -1,24 +1,29 @@
+import os
+import subprocess
+
 import matplotlib.pyplot as plt
 import pandas as pd
 from gams import *
 
+import config as cfg
 
-def reset_parameter(db_gams, parameter_name, df):
+
+def reset_symbol(db_gams, symbol_name, df):
     """
-    writes values in df to the already existing parameter "parameter name" in GAMS-database gams_db
+    writes values in df to the already existing symbol "symbol name" in GAMS-database gams_db
     :param db_gams: a GAMS database object
-    :param parameter_name: a string with the parameter name
+    :param symbol_name: a string with the symbol name
     :param df: a pandas dataframe with one line per value and all correspondong dimensions in the index
     :return: modifies gams database, does not return anything
     """
-    gams_parameter = db_gams.get_parameter(parameter_name)
-    gams_parameter.clear()
-    if gams_parameter.get_dimension() > 0:
+    gams_symbol = db_gams.get_symbol(symbol_name)
+    gams_symbol.clear()
+    if gams_symbol.get_dimension() > 0:
         for row in df.itertuples():
-            gams_parameter.add_record(row[0]).value = row[1]
-    elif gams_parameter.get_dimension() == 0:
+            gams_symbol.add_record(row[0]).value = row[1]
+    elif gams_symbol.get_dimension() == 0:
         for row in df.itertuples():
-            gams_parameter.add_record().value = row[1]
+            gams_symbol.add_record().value = row[1]
     else:
         raise ValueError('dimension_list must be list or integer')
 
@@ -133,3 +138,63 @@ def gdx2plot(db_gams, symbol, index_list, column_list, base_year, slicer=None, s
     fig.tight_layout()
     plt.show()
     return df
+
+
+def run_medea(gms_exe_dir, gms_model, medea_project, project_scenario, export_location):
+    """
+    flexible run of power system model medea
+    :param gms_exe_dir: string of path to GAMS executable
+    :param gms_model: string of path to GAMS model to solve
+    :param medea_project: string of medea-project name
+    :param project_scenario: string of project-scenario (typically one iteration)
+    :param export_location: string of path where to save results
+    :return:
+    """
+    # generate identifier of scenario output
+    gdx_out = f'gdx=medea_out_{project_scenario}.gdx'
+    # call GAMS to solve model / scenario
+    subprocess.run(
+        f'{gms_exe_dir}\\gams {gms_model} {gdx_out} lo=3 --project={medea_project} --scenario={project_scenario}')
+    # clean up after each run and delete input data (which is also included in output, so no information lost)
+    if os.path.isfile(export_location):
+        os.remove(export_location)
+
+
+def run_medea_project(project_name, scenario_id):
+    """
+    runs / solves a project of power system model medea with strict project directory conventions
+    :param project_name: string of medea-project name
+    :param scenario_id: string of project-scenario (typically one iteration)
+    :return:
+    """
+    # generate file names
+    gms_model_fname = os.path.join(cfg.MEDEA_ROOT_DIR, 'applications', project_name, 'opt', 'medea_main.gms')
+    gdx_out_fname = f'gdx=medea_out_{scenario_id}.gdx'
+    input_fname = os.path.join(cfg.MEDEA_ROOT_DIR, 'applications', project_name, 'opt', f'medea_{scenario_id}_data.gdx')
+
+    # call GAMS to solve model / scenario
+    subprocess.run(
+        f'{cfg.GMS_SYS_DIR}\\gams {gms_model_fname} {gdx_out_fname} lo=3 --project={project_name} --scenario={scenario_id}')
+    # clean up after each run and delete input data (which is also included in output, so no information lost)
+    if os.path.isfile(input_fname):
+        os.remove(input_fname)
+
+
+def run_medea_test(test_data_name):
+    """
+    runs / solves a project of power system model medea with strict project directory conventions
+    :param test_name: string of medea-project name
+    :param scenario_id: string of project-scenario (typically one iteration)
+    :return:
+    """
+    # generate file names
+    gms_model_fname = os.path.join(cfg.MEDEA_ROOT_DIR, 'tests', 'opt', 'medea_main.gms')
+    gdx_out_fname = f'gdx=medea_out_{test_data_name}.gdx'
+    input_fname = os.path.join(cfg.MEDEA_ROOT_DIR, 'tests', 'opt', f'medea_{test_data_name}_data.gdx')
+
+    # call GAMS to solve model / scenario
+    subprocess.run(
+        f'{cfg.GMS_SYS_DIR}\\gams {gms_model_fname} {gdx_out_fname} lo=3 --project=test --scenario={test_data_name}')
+    # clean up after each run and delete input data (which is also included in output, so no information lost)
+    if os.path.isfile(input_fname):
+        os.remove(input_fname)

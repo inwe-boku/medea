@@ -31,7 +31,7 @@ def create_project(project_name, medea_dir):
                      os.path.join(medea_dir, 'applications', project_name, 'opt', f'medea_{project_name}.gms'))
         # fetch main gams data, if required
         if not os.path.isfile(os.path.join(medea_dir, 'applications', project_name, 'opt', 'medea_main_data.gdx')):
-            copyfile(os.path.join(medea_dir, 'medea', 'data', 'input', 'medea_main_data.gdx'),
+            copyfile(os.path.join(medea_dir, 'medea', 'data', 'medea_main_data.gdx'),
                      os.path.join(medea_dir, 'applications', project_name, 'opt', 'medea_main_data.gdx'))
 
         # fetch **settings** template, if required

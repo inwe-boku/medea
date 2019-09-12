@@ -1,10 +1,31 @@
+$title medea
 
+* ==============================================================================
+* COMMAND LINE OPTIONS
+* ------------------------------------------------------------------------------
+* command-line option --PROJECT
+* includes .gms-file medea_%PROJECT%.gms right before model-statement, allowing
+* for custom modifications to medea
+* '--PROJECT=test' is not admissible as it is reserved for unit testing
+* ------------------------------------------------------------------------------
+* command-line option --SCENARIO
+* tries to read data from .gdx-file 'MEDEA_%scenario%_data.gdx'
+* if this does not exit, fall back to default 'medea_main_data.gdx'
+* ------------------------------------------------------------------------------
+* command-line option --NORAGUROBI
+* NORAGUROBI no: use default solver on local machine (recommended)
+* NORAGUROBI yes: use gurobi solver on nora (only in boku lan)
+* ==============================================================================
+$if not set NORAGUROBI $set NORAGUROBI no
+* ==============================================================================
+
+* enable end.of.line-comments with '#'
 $onEoLCom
 $EoLCom #
 
-
-***** DECLARATIONS
-********************************************************************************
+* ==============================================================================
+* SYMBOL DECLARATIONS
+* ------------------------------------------------------------------------------
 Sets
          f                       fuels
          i                       dispatchable energy generation technologies
@@ -17,10 +38,8 @@ Sets
          t                       time periods (hours)
          z                       market zones
 ;
-
 alias(z,zz);
-
-********************************************************************************
+* ------------------------------------------------------------------------------
 Parameters
          CAPITALCOST_G(i)        specific annualized capital cost of dispatchable generators [EUR per MW]
          CAPITALCOST_R(z,n)      specific annualized capital cost of intermittent generators [EUR per MW]
@@ -58,10 +77,16 @@ Parameters
          SWITCH_INVEST_ATC       cdf
 ;
 
-********************************************************************************
-$if NOT exist MEDEA_%scenario%_data.gdx  $gdxin medea_main_data_consistent
+* ------------------------------------------------------------------------------
+* load data
+$if %PROJECT% == test $gdxin medea_testing_period
+$if %PROJECT% == test $load t
+$if %PROJECT% == test $gdxin
+
+$if NOT exist MEDEA_%scenario%_data.gdx  $gdxin medea_main_data
 $if     exist MEDEA_%scenario%_data.gdx  $gdxin medea_%scenario%_data
-$load    f i h j k l m n t z
+$if NOT %PROJECT% == test $load t
+$load    f i h j k l m n z
 $load    CAPITALCOST_R CAPITALCOST_G CAPITALCOST_S CAPITALCOST_V CAPITALCOST_X
 $load    CO2_INTENSITY DEMAND DISTANCE EFFICIENCY_G EFFICIENCY_S_OUT
 $load    EFFICIENCY_S_IN FEASIBLE_INPUT FEASIBLE_OUTPUT GEN_PROFILE INFLOWS
@@ -72,7 +97,7 @@ $load    SWITCH_INVEST_THERM SWITCH_INVEST_ITM SWITCH_INVEST_STORAGE
 $load    SWITCH_INVEST_ATC
 $gdxin
 
-********************************************************************************
+* ------------------------------------------------------------------------------
 Variables
          cost_system             total system cost [kEUR]
          x(z,zz,t)               (net) commercial electricity exchange between market zones [GW]  # exports are positive - imports negative
@@ -109,27 +134,32 @@ Positive Variables
          q_nse(z,t,m)            non-served energy [GW]
          w(z,t,i,l)              feasible operating region weight
 ;
+* ==============================================================================
 
-********************************************************************************
+* ==============================================================================
+* EQUATION DECLARATION
+* ------------------------------------------------------------------------------
 Equations
 objective, bal_zone,
 bal_fuel, bal_co2, bal_om, bal_inv_g, bal_inv_r, bal_inv_sv, bal_inv_x, bal_nse,
 mkt_clear_el, mkt_clear_ht,
-aaa, bbb,
-ccc, ddd, eee,
+uplim_g, lolim_b,
+w_chp, uplim_g_chp, lolim_b_chp,
 gen_itm,
 capcon_store_in, capcon_store_out, capcon_store_vol, bal_store, logi_store,
 capcon_export, capcon_import, logi_flow, logi_symmetry,
-fff,
-ggg,
+uplim_deco,
+lolim_ancservices,
 limit_curtail
 ;
+* ==============================================================================
 
-********************************************************************************
-******* model
+
+* ==============================================================================
+* MODEL FORMULATION
 * ------------------------------------------------------------------------------
-* OBJECTIVE and COST BALANCES
-* ------------------------------------------------------------------------------
+* SYSTEM COST and COST BALANCES
+
 objective..
                  cost_system
                  =E=
@@ -191,7 +221,7 @@ bal_nse(z)..
                  ;
 * ------------------------------------------------------------------------------
 * MARKET CLEARING
-* ------------------------------------------------------------------------------
+
 mkt_clear_el(z,t)..
                  DEMAND(z,t,'el')
                  + sum(i, b(z,t,i,'Power') )
@@ -211,14 +241,14 @@ mkt_clear_ht(z,t)..
                  sum(i, g(z,t,i,'ht') )
                  ;
 * ------------------------------------------------------------------------------
-* ENERGY GENERATION
-* ------------------------------------------------------------------------------
-aaa(z,t,i,m)..
+* CONVENTIONAL ELECTRICITY GENERATION
+
+uplim_g(z,t,i,m)..
                  g(z,t,i,m)
                  =L=
                  INITIAL_CAP_G(z,i) + add_g(z,i) - deco_g(z,i)
                  ;
-bbb(z,t,i,m)$(NOT j(i))..
+lolim_b(z,t,i,m)$(NOT j(i))..
                  g(z,t,i,m)
                  =L=
                  sum(f, EFFICIENCY_G(i,m,f) * b(z,t,i,f) )
@@ -227,34 +257,34 @@ bbb(z,t,i,m)$(NOT j(i))..
 b.UP(z,t,i,f)$(NOT sum(m,EFFICIENCY_G(i,m,f))) = 0;   # is this neccessary? does it speed up solution?
 
 * ------------------------------------------------------------------------------
-* CO-GENERATION OF ENERGY
-* ------------------------------------------------------------------------------
-ccc(z,t,i)$(j(i))..
+* CO-GENERATION OF HEAT AND ELECTRICITY
+
+w_chp(z,t,i)$(j(i))..
                  sum(l, w(z,t,i,l))
                  =E=
                  INITIAL_CAP_G(z,i) + add_g(z,i) - deco_g(z,i)
                  ;
-ddd(z,t,i,m)$(j(i))..
+uplim_g_chp(z,t,i,m)$(j(i))..
                  g(z,t,i,m)
                  =L=
                  sum(l, FEASIBLE_OUTPUT(i,l,m) * w(z,t,i,l) )
                  ;
-eee(z,t,i,f)$(j(i))..
+lolim_b_chp(z,t,i,f)$(j(i))..
                  b(z,t,i,f)
                  =G=
                  sum(l, FEASIBLE_INPUT(i,l,f) * w(z,t,i,l) )
                  ;
 * ------------------------------------------------------------------------------
 * INTERMITTENT ELECTRICITY GENERATION
-* ------------------------------------------------------------------------------
+
 gen_itm(z,t,n)..
                  r(z,t,n)
                  =E=
                  GEN_PROFILE(z,t,n) * (INITIAL_CAP_R(z,n) + add_r(z,n) )
                  ;
 * ------------------------------------------------------------------------------
-* ENERGY STORAGE
-* ------------------------------------------------------------------------------
+* ELECTRICITY STORAGE
+
 capcon_store_in(z,t,k)..
                  s_out(z,t,k)
                  =L=
@@ -285,7 +315,7 @@ logi_store(z,k)..
                  ;
 * ------------------------------------------------------------------------------
 * INTERZONAL ELECTRICITY EXCHANGE
-* ------------------------------------------------------------------------------
+
 capcon_export(z,zz,t)..
                  x(z,zz,t)
                  =L=
@@ -310,16 +340,16 @@ x.FX(z,zz,t)$(not INITIAL_CAP_X(z,zz))   = 0;
 x.FX(zz,z,t)$(not INITIAL_CAP_X(zz,z))   = 0;
 * ------------------------------------------------------------------------------
 * DECOMMISSIONING
-* ------------------------------------------------------------------------------
-fff(z,i)..
+
+uplim_deco(z,i)..
                  deco_g(z,i)
                  =L=
                  INITIAL_CAP_G(z,i) + add_g(z,i)
                  ;
 * ------------------------------------------------------------------------------
 * ANCILLARY SERVICES
-* ------------------------------------------------------------------------------
-ggg(z,t)..
+
+lolim_ancservices(z,t)..
                  sum(i, g(z,t,i,'el') )
                  + r(z,t,'ror')
                  + sum(k, s_out(z,t,k) + s_in(z,t,k) )
@@ -329,7 +359,7 @@ ggg(z,t)..
                  ;
 * ------------------------------------------------------------------------------
 * CURTAILMENT
-* ------------------------------------------------------------------------------
+
 limit_curtail(z,t)..
                  q_curtail(z,t)
                  =L=
@@ -337,111 +367,100 @@ limit_curtail(z,t)..
                  ;
 * ------------------------------------------------------------------------------
 * INVESTMENT SWITCHES FOR THE LONG AND THE SHORT RUN
-* ------------------------------------------------------------------------------
+
 add_g.UP(z,i) =  SWITCH_INVEST_THERM;
 deco_g.UP(z,i) = SWITCH_INVEST_THERM;
 add_r.UP(z,n) =  SWITCH_INVEST_ITM(z, n);
 add_s.UP(z,k) =  SWITCH_INVEST_STORAGE(z, k);
 add_v.UP(z,k) =  SWITCH_INVEST_STORAGE(z, k);
 add_x.UP(z,zz) = 5 * SWITCH_INVEST_ATC(z,zz) * INITIAL_CAP_X(z,zz);
+* ==============================================================================
+
 
 * ==============================================================================
-* include application's model adjustments
+* project control
+* ------------------------------------------------------------------------------
+$if set PROJECT $include medea_%PROJECT%.gms
 * ==============================================================================
-$if not set project $goto next
-$include medea_%project%.gms
-* ==============================================================================
-$label next
 
 model medea / all /;
 
 options
-*LP = OSIGurobi,
 reslim = 54000,
 threads = 8,
 optCR = 0.01,
 BRatio = 1
 ;
 
-$onecho > osigurobi.opt
-workerPool nora.boku.ac.at:9797
-workerPassword keepulbooleatias
-ConcurrentJobs 2
-method 1
-$offecho
-
-*medea.OptFile = 1;
+* ==============================================================================
+* solve-settings control
+* ------------------------------------------------------------------------------
+$if %NORAGUROBI% == yes $include solve_with_noragurobi.gms
+* ==============================================================================
 
 solve medea using LP minimizing cost_system;
 
 
-********************************************************************************
-******* reporting
+* ==============================================================================
+* REPORTING
 
-******* solution details
+* ------------------------------------------------------------------------------
+* solve details
 scalars modelStat, solveStat;
 modelStat = medea.modelstat;
 solveStat = medea.solvestat;
 
-****** exogenous parameters
+* ------------------------------------------------------------------------------
+* summary of exogenous parameters
 parameters
 ANNUAL_CONSUMPTION(z,m),
 FULL_LOAD_HOURS(z,n),
 AVG_PRICE(z,f),
-*AVG_PRICE_DA(z),
 AVG_PRICE_CO2(z);
 
 ANNUAL_CONSUMPTION(z,m) = sum(t, DEMAND(z,t,m));
 FULL_LOAD_HOURS(z,n) = sum(t, GEN_PROFILE(z,t,n));
 AVG_PRICE(z,f) = sum(t, PRICE_FUEL(z,t,f)) / card(t);
-*AVG_PRICE_DA(z) = sum(t, PRICE_DA(t,z)) / card(t);
 AVG_PRICE_CO2(z) = sum(t, PRICE_CO2(z,t)) / card(t);
 
-display ANNUAL_CONSUMPTION, FULL_LOAD_HOURS, AVG_PRICE, AVG_PRICE_CO2
-
-******* system operations
+* ------------------------------------------------------------------------------
+* annual system operation
 parameter
-annual_generation(z,m),
-annual_generation_by_tec(z,i,m),
-annual_pumping(z),
-annual_turbining(z),
-annual_netflow(z),
-annual_fueluse(z,f),
-*annual_fixedexports,
-*annual_fixedimports,
+annual_g(z,m),
+annual_g_by_tec(z,i,m),
+annual_s_in(z),
+annual_s_out(z),
+annual_x(z),
+annual_b(z,f),
 annual_curtail(z);
 
-annual_generation(z,m) = sum((t,i), g.L(z, t, i, m));
-annual_generation_by_tec(z,i,m) = sum(t, g.L(z, t, i, m));
-annual_pumping(z) = sum((t,k), s_in.L(z,t,k));
-annual_turbining(z) = sum((t,k), s_out.L(z,t,k));
-annual_netflow(zz) = sum(t, x.L('AT',zz,t));
-annual_fueluse(z,f) = sum((t,i), b.L(z,t,i,f));
-*annual_fixedexports = sum(t, FLOW_EXPORT('AT',t));
-*annual_fixedimports = sum(t, FLOW_IMPORT('AT',t));
+annual_g(z,m) = sum((t,i), g.L(z, t, i, m));
+annual_g_by_tec(z,i,m) = sum(t, g.L(z, t, i, m));
+annual_s_in(z) = sum((t,k), s_in.L(z,t,k));
+annual_s_out(z) = sum((t,k), s_out.L(z,t,k));
+annual_x(zz) = sum(t, x.L('AT',zz,t));
+annual_b(z,f) = sum((t,i), b.L(z,t,i,f));
 annual_curtail(z) = sum(t, q_curtail.L(z,t));
 
-display annual_generation, annual_netflow, annual_fueluse, annual_curtail;
-
-******* annual values
+* ------------------------------------------------------------------------------
+* annual monetary values
 parameters
-ann_value_generation(z,m),
-ann_value_generation_by_tec(z,i,m),
-ann_value_pumping(z),
-ann_value_turbining(z),
-ann_value_flows(z,zz),
-ann_value_curtail(z);
+annual_value_g(z,m),
+annual_value_g_by_tec(z,i,m),
+annual_value_s_in(z),
+annual_value_s_out(z),
+annual_value_x(z,zz),
+annual_value_curtail(z);
 
-ann_value_generation(z,m) = sum((t,i), mkt_clear_el.M(z,t) * g.L(z,t,i,m));
-ann_value_generation_by_tec(z,i,m) = sum(t, mkt_clear_el.M(z,t) * g.L(z,t,i,m));
-ann_value_pumping(z) = sum((t,k), mkt_clear_el.M(z,t) * s_in.L(z,t,k));
-ann_value_turbining(z) = sum((t,k), mkt_clear_el.M(z,t) * s_out.L(z,t,k));
-ann_value_flows(z,zz) = sum(t, mkt_clear_el.M(z,t) * x.L(z,zz,t));
-ann_value_curtail(z) = sum(t, mkt_clear_el.M(z,t) * q_curtail.L(z,t));
+annual_value_g(z,m) = sum((t,i), mkt_clear_el.M(z,t) * g.L(z,t,i,m));
+annual_value_g_by_tec(z,i,m) = sum(t, mkt_clear_el.M(z,t) * g.L(z,t,i,m));
+annual_value_s_in(z) = sum((t,k), mkt_clear_el.M(z,t) * s_in.L(z,t,k));
+annual_value_s_out(z) = sum((t,k), mkt_clear_el.M(z,t) * s_out.L(z,t,k));
+annual_value_x(z,zz) = sum(t, mkt_clear_el.M(z,t) * x.L(z,zz,t));
+annual_value_curtail(z) = sum(t, mkt_clear_el.M(z,t) * q_curtail.L(z,t));
 
-display ann_value_generation, ann_value_generation_by_tec, ann_value_pumping, ann_value_turbining, ann_value_flows, ann_value_curtail;
-
-******* prices, cost, producer surplus
+* ------------------------------------------------------------------------------
+* annual prices, cost, producer surplus
 parameter
 annual_price_el(z),
 annual_price_ht(z),
@@ -479,18 +498,21 @@ producer_surplus(z) =    sum(i, annual_surplus_therm(z,i))
                          + sum(n, annual_surplus_itm(z,n))
                          ;
 
-display
-annual_price_el, annual_price_ht, annual_cost, annual_surplus_therm, annual_surplus_stor, producer_surplus;
-
-******* marginals of equations
+* ------------------------------------------------------------------------------
+* hourly prices
 parameter
 hourly_price_el(z,t),
 hourly_price_ht(z,t),
-hourly_price_ancillary(z,t),
-hourly_price_exports(z,zz,t)
+hourly_price_system_services(z,t)
 ;
 
 hourly_price_el(z,t) = mkt_clear_el.M(z,t);
 hourly_price_ht(z,t) = mkt_clear_ht.M(z,t);
-hourly_price_ancillary(z,t) = ggg.M(z,t);
-*hourly_price_exports(z,zz,t) = flow_balance.M(z,zz,t);
+hourly_price_system_services(z,t) = lolim_ancservices.M(z,t);
+* ==============================================================================
+
+
+* ==============================================================================
+* THE END
+* ==============================================================================
+* this line intentionally left blank

@@ -14,7 +14,7 @@ idx = pd.IndexSlice
 # --------------------------------------------------------------------------- #
 # %% create workspace and database
 # --------------------------------------------------------------------------- #
-ws = GamsWorkspace(system_directory=cfg.gams_sysdir)
+ws = GamsWorkspace(system_directory=cfg.GMS_SYS_DIR)
 db = ws.add_database()
 
 # --------------------------------------------------------------------------- #
@@ -131,6 +131,6 @@ logging.info('medea`s timeseries instantiated')
 # --------------------------------------------------------------------------- #
 # %% data export to gdx
 # --------------------------------------------------------------------------- #
-export_location = os.path.join(cfg.folder, 'medea', 'data', 'medea_main_data_consistent.gdx')
+export_location = os.path.join(cfg.MEDEA_ROOT_DIR, 'medea', 'data', 'medea_main_data_consistent.gdx')
 db.export(export_location)
 logging.info(f'medea gdx exported to {export_location}')

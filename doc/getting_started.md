@@ -47,7 +47,7 @@ contained in `./medea/projects.py`. In the python console this can be done like 
 import config as cfg
 from medea.projects import create_project
 
-create_project('new_project', cfg.folder)
+create_project('new_project', cfg.MEDEA_ROOT_DIR)
 ```
 This creates a standard folder structure for custom projects in `./applications` and copies several templates to these 
 folders. 

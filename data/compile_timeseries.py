@@ -12,7 +12,7 @@ take files from helpers data repository, join data and write to model data folde
 # TODO: move input files from model data to helpers data
 
 # read opsd data
-ts_opsd = pd.read_csv(os.path.join(cfg.folder, 'data', 'raw', 'time_series_60min_singleindex.csv'))
+ts_opsd = pd.read_csv(os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'raw', 'time_series_60min_singleindex.csv'))
 # create MEDEA time series dataframe
 ts_medea = ts_opsd[
     ['utc_timestamp', 'cet_cest_timestamp', 'AT_load_entsoe_transparency', 'AT_solar_generation_actual',
@@ -43,7 +43,8 @@ ts_medea['AT-pv-generation'] = ts_medea['AT-pv-generation'] / 1000
 ts_medea['AT-wind_on-generation'] = ts_medea['AT-wind_on-generation'] / 1000
 
 # intermittent capacities
-itm_capacities = pd.read_excel(os.path.join(cfg.folder, 'data', 'processed', 'plant_props.xlsx'), 'itm_installed',
+itm_capacities = pd.read_excel(os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'processed', 'plant_props.xlsx'),
+                               'itm_installed',
                                header=[0, 1], index_col=[0])
 itm_capacities['year'] = itm_capacities.index
 itm_capacities['date'] = pd.to_datetime(itm_capacities['year'] + 1, format='%Y', utc='true') - pd.Timedelta(days=184)
@@ -57,14 +58,14 @@ ts_medea['AT-wind_off-profile'] = 0
 ts_medea['AT-pv-profile'] = ts_medea['AT-pv-generation'] / ts_medea['AT-pv-capacity']
 
 # heat consumption data
-ts_load_ht = pd.read_csv(os.path.join(cfg.folder, 'data', 'processed', 'heat_hourly_consumption.csv'),
+ts_load_ht = pd.read_csv(os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'processed', 'heat_hourly_consumption.csv'),
                          index_col=[0], header=[0, 1])
 ts_load_ht.index = pd.DatetimeIndex(ts_load_ht.index).tz_localize('utc')
 for reg in cfg.zones:
     ts_medea[f'{reg}-heat-load'] = ts_load_ht.loc[:, reg].sum(axis=1)
 
 # read hydro data
-ts_hydro_ror = pd.read_csv(os.path.join(cfg.folder, 'data', 'processed', 'generation_hydro.csv'), index_col=[0])
+ts_hydro_ror = pd.read_csv(os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'processed', 'generation_hydro.csv'), index_col=[0])
 ts_hydro_ror.index = pd.DatetimeIndex(ts_hydro_ror.index).tz_localize('utc')
 for reg in cfg.zones:
     ts_medea[f'{reg}-ror-capacity'] = itm_capacities[(reg, 'ror')]
@@ -72,14 +73,15 @@ for reg in cfg.zones:
     ts_medea[f'{reg}-ror-profile'] = ts_hydro_ror[f'ror_{reg}'] / 1000 / ts_medea[f'{reg}-ror-capacity']
 
 # commercial flows
-ts_flows = pd.read_csv(os.path.join(cfg.folder, 'data', 'processed', 'commercial_flows.csv'), index_col=[0])
+ts_flows = pd.read_csv(os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'processed', 'commercial_flows.csv'), index_col=[0])
 ts_flows.index = pd.DatetimeIndex(ts_flows.index).tz_localize('utc')
 for reg in cfg.zones:
     ts_medea[f'{reg}-imports-flow'] = ts_flows.loc[:, f'imp_{reg}'] / 1000
     ts_medea[f'{reg}-exports-flow'] = ts_flows.loc[:, f'exp_{reg}'] / 1000
 
 # filling rates of hydro reservoirs
-df_hydro_fill = pd.read_csv(os.path.join(cfg.folder, 'data', 'processed', 'FillingRateReservoirs.csv'), index_col=[0])
+df_hydro_fill = pd.read_csv(os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'processed', 'FillingRateReservoirs.csv'),
+                            index_col=[0])
 df_hydro_fill.index = pd.DatetimeIndex(df_hydro_fill.index).tz_localize('utc')
 ts_hydro_fill = pd.DataFrame(
     index=pd.date_range(pd.datetime(df_hydro_fill.head(1).index.year[0], 1, 1, 0, 0),
@@ -105,14 +107,14 @@ for reg in cfg.zones:
     ts_medea.loc[ts_medea[f'{reg}-inflows-reservoir'] < 0, f'{reg}-inflows-reservoir'] = 0
 
 # fuel price data
-df_fuels = pd.read_excel(os.path.join(cfg.folder, 'data', 'raw', 'monthly_fuel_prices.xlsx'), 'fuels_monthly',
+df_fuels = pd.read_excel(os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'raw', 'monthly_fuel_prices.xlsx'), 'fuels_monthly',
                          skiprows=[1, 2])  # , parse_dates=True)
 df_fuels.set_index('Date', inplace=True)
 ts_prices = df_fuels[['Ngas_Border_MWh', 'Brent_MWh', 'Coal_SA_MWh']]
 ts_prices = ts_prices.resample('H').interpolate('pchip')
 ts_prices.rename({'Ngas_Border_MWh': 'Gas', 'Coal_SA_MWh': 'Coal', 'Brent_MWh': 'Oil'}, axis=1, inplace=True)
 ts_prices.index = ts_prices.index.tz_localize('utc')
-df_eua =  pd.read_excel(os.path.join(cfg.folder, 'data', 'raw', 'monthly_fuel_prices.xlsx'), 'EUA_daily')
+df_eua = pd.read_excel(os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'raw', 'monthly_fuel_prices.xlsx'), 'EUA_daily')
 df_eua.set_index('Date', inplace=True)
 df_eua.index = df_eua.index.tz_localize('utc')
 ts_prices['EUA'] = df_eua.resample('H').interpolate('pchip')
@@ -125,7 +127,7 @@ ts_medea = pd.merge(ts_medea, ts_prices, how='outer', left_index=True, right_ind
 # Write only one date, call that column DateTime
 ts_medea.index.name = 'DateTime'
 ts_medea.drop(['cet_cest_timestamp'], axis=1, inplace=True)
-ts_medea.to_csv(os.path.join(cfg.folder, 'data', 'processed', 'medea_regional_timeseries.csv'))
+ts_medea.to_csv(os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'processed', 'medea_regional_timeseries.csv'))
 
 """
 ### need to adjust data

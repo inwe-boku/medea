@@ -4,7 +4,7 @@ import pandas as pd
 
 import config as cfg
 
-df_fuels = pd.read_excel(os.path.join(cfg.folder, 'data', 'raw', 'monthly_fuel_prices.xlsx'), 'fuels_monthly',
+df_fuels = pd.read_excel(os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'raw', 'monthly_fuel_prices.xlsx'), 'fuels_monthly',
                          skiprows=[1, 2])  # , parse_dates=True)
 df_fuels.set_index('Date', inplace=True)
 

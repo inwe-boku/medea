@@ -12,7 +12,7 @@ from medea.helpers import hours_in_year
 # --------------------------------------------------------------------------- #
 # %% settings and initializing
 # --------------------------------------------------------------------------- #
-STATIC_FNAME = os.path.join(cfg.folder, 'data', 'processed', 'data_static.xlsx')
+STATIC_FNAME = os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'processed', 'data_static.xlsx')
 idx = pd.IndexSlice
 
 # --------------------------------------------------------------------------- #
@@ -34,12 +34,13 @@ static_data = {
 # --------------------------------------------------------------------------------------------------------------------
 
 plant_data = {
-    'hydro': pd.read_excel(os.path.join(cfg.folder, 'data', 'processed', 'plant-list_hydro.xlsx'), 'opsd_hydro'),
-    'conventional': pd.read_excel(os.path.join(cfg.folder, 'data', 'processed', 'power_plant_db.xlsx'))
+    'hydro': pd.read_excel(os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'processed', 'plant-list_hydro.xlsx'),
+                           'opsd_hydro'),
+    'conventional': pd.read_excel(os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'processed', 'power_plant_db.xlsx'))
 }
 
 ts_data = {
-    'timeseries': pd.read_csv(os.path.join(cfg.folder, 'data', 'processed', 'medea_regional_timeseries.csv'))
+    'timeseries': pd.read_csv(os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'processed', 'medea_regional_timeseries.csv'))
 }
 
 # --------------------------------------------------------------------------- #
