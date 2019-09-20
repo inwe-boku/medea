@@ -39,8 +39,8 @@ logging.info('medea sets instantiated')
 # --------------------------------------------------------------------------- #
 CAPITALCOST_G = df2gdx(db, static_data['tec']['annuity'].round(4),
                             'CAPITALCOST_G', 'par', [i_set], '[kEUR per GW]')
-CAPITALCOST_R = df2gdx(db, static_data['CAPCOST_R'].stack().reorder_levels([1, 0]).round(4), 'CAPITALCOST_R', 'par',
-                       [z_set, n_set], '[kEUR per GW]')
+CAPITALCOST_R = df2gdx(db, static_data['CAPCOST_R'].stack().reorder_levels([1, 0]).round(4).loc[:, 'annuity'],
+                       'CAPITALCOST_R', 'par', [z_set, n_set], '[kEUR per GW]')
 CAPITALCOST_S = df2gdx(db, plant_data['storage_clusters']['cost_power'].reorder_levels((1, 0)), 'CAPITALCOST_S', 'par',
                        [z_set, k_set], '[GW]')
 CAPITALCOST_V = df2gdx(db, plant_data['storage_clusters']['cost_energy'].reorder_levels((1, 0)), 'CAPITALCOST_V', 'par',
@@ -79,8 +79,13 @@ INITIAL_CAP_X = df2gdx(db, dict_instantiate['CAP_X'].stack(), 'INITIAL_CAP_X', '
 # TODO: Estimate LAMBDA, i.e. the share of must-run capacity in conventional capacity (controlling for renewables capacity)
 LAMBDA = df2gdx(db, static_data['LAMBDA'], 'LAMBDA', 'par', 0, '[]')
 
-OM_COST_QFIX = df2gdx(db, static_data['tec']['om_fix'], 'OM_COST_QFIX', 'par', [i_set], '[kEUR per GW]')
-OM_COST_VAR = df2gdx(db, static_data['tec']['om_var'], 'OM_COST_VAR', 'par', [i_set], '[kEUR per GWh]')
+OM_COST_G_QFIX = df2gdx(db, static_data['tec']['om_fix'], 'OM_COST_G_QFIX', 'par', [i_set], '[kEUR per GW]')
+OM_COST_G_VAR = df2gdx(db, static_data['tec']['om_var'], 'OM_COST_G_VAR', 'par', [i_set], '[kEUR per GWh]')
+
+OM_COST_R_QFIX = df2gdx(db, static_data['CAPCOST_R'].stack().reorder_levels([1, 0]).loc[:, 'om_qfix'],
+                        'OM_COST_R_QFIX', 'par', [z_set, n_set], '[kEUR per GW]')
+OM_COST_R_VAR = df2gdx(db, static_data['CAPCOST_R'].stack().reorder_levels([1, 0]).loc[:, 'om_var'],
+                       'OM_COST_R_VAR', 'par', [z_set, n_set], '[kEUR per GWh]')
 
 PEAK_LOAD = df2gdx(db, dict_instantiate['PEAK_LOAD'], 'PEAK_LOAD', 'par', [z_set], '[GW]')
 PEAK_PROFILE = df2gdx(db, dict_instantiate['PEAK_PROFILE'], 'PEAK_PROFILE', 'par', [z_set, n_set], '[]')
@@ -131,6 +136,6 @@ logging.info('medea`s timeseries instantiated')
 # --------------------------------------------------------------------------- #
 # %% data export to gdx
 # --------------------------------------------------------------------------- #
-export_location = os.path.join(cfg.MEDEA_ROOT_DIR, 'medea', 'data', 'medea_main_data_consistent.gdx')
+export_location = os.path.join(cfg.MEDEA_ROOT_DIR, 'medea', 'data', 'medea_main_data.gdx')
 db.export(export_location)
 logging.info(f'medea gdx exported to {export_location}')

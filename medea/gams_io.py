@@ -168,9 +168,9 @@ def run_medea_project(project_name, scenario_id):
     :return:
     """
     # generate file names
-    gms_model_fname = os.path.join(cfg.MEDEA_ROOT_DIR, 'applications', project_name, 'opt', 'medea_main.gms')
+    gms_model_fname = os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', project_name, 'opt', 'medea_main.gms')
     gdx_out_fname = f'gdx=medea_out_{scenario_id}.gdx'
-    input_fname = os.path.join(cfg.MEDEA_ROOT_DIR, 'applications', project_name, 'opt', f'medea_{scenario_id}_data.gdx')
+    input_fname = os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', project_name, 'opt', f'medea_{scenario_id}_data.gdx')
 
     # call GAMS to solve model / scenario
     subprocess.run(

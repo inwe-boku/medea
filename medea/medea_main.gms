@@ -63,8 +63,10 @@ Parameters
          INITIAL_CAP_V(z,k)      initial installed storage volume [GWh]
          INITIAL_CAP_X(z,zz)     initial installed transmission capacity [GW]
          LAMBDA                  load scaling factor for system service requirement
-         OM_COST_QFIX(i)         quasi-fixed operation and maintenance cost [EUR per MW]
-         OM_COST_VAR(i)          variable operation and maintenance cost [EUR per MWh]
+         OM_COST_G_QFIX(i)       quasi-fixed operation and maintenance cost [EUR per MW]
+         OM_COST_G_VAR(i)        variable operation and maintenance cost [EUR per MWh]
+         OM_COST_R_QFIX(z,n)     quasi-fixed operation and maintenance cost [EUR per MW]
+         OM_COST_R_VAR(z,n)      variable operation and maintenance cost [EUR per MWh]
          PEAK_LOAD(z)            maximum electricity demand [GW]
          PEAK_PROFILE(z,n)       maximum relative generation from intermittent sources
          PRICE_CO2(z,t)          CO2 price [EUR per t CO2]
@@ -91,7 +93,8 @@ $load    CAPITALCOST_R CAPITALCOST_G CAPITALCOST_S CAPITALCOST_V CAPITALCOST_X
 $load    CO2_INTENSITY DEMAND DISTANCE EFFICIENCY_G EFFICIENCY_S_OUT
 $load    EFFICIENCY_S_IN FEASIBLE_INPUT FEASIBLE_OUTPUT GEN_PROFILE INFLOWS
 $load    INITIAL_CAP_G INITIAL_CAP_R INITIAL_CAP_S_OUT INITIAL_CAP_S_IN
-$load    INITIAL_CAP_V INITIAL_CAP_X LAMBDA OM_COST_QFIX OM_COST_VAR PRICE_CO2
+$load    INITIAL_CAP_V INITIAL_CAP_X LAMBDA OM_COST_G_QFIX OM_COST_G_VAR
+$load    OM_COST_R_QFIX OM_COST_R_VAR PRICE_CO2
 $load    PEAK_LOAD PEAK_PROFILE PRICE_FUEL SIGMA VALUE_NSE
 $load    SWITCH_INVEST_THERM SWITCH_INVEST_ITM SWITCH_INVEST_STORAGE
 $load    SWITCH_INVEST_ATC
@@ -106,14 +109,15 @@ Variables
 Positive Variables
          cost_fuel(z,t,i)        total cost of fuel used for energy generation [kEUR]
          cost_co2(z,t,i)         total cost of CO2 emissions [kEUR]
-         cost_om(z,i)            total operation and maintenance cost [kEUR]
+         cost_om_g(z,i)          total operation and maintenance cost of dispatchables [kEUR]
+         cost_om_r(z,n)          total operation and maintenance cost of intermittents[kEUR]
          cost_zonal(z)           total zonal system cost [kEUR]
          cost_nse(z)             total cost of non-served energy [kEUR]
          cost_invest_g(z)        total investment cost for dispatchable generators [kEUR]
          cost_invest_r(z)        total investment cost for intermittent generators [kEUR]
          cost_invest_sv(z)       total investment cost for storages [kEUR]
          cost_invest_x(z)        total investment cost for transmission capacity [kEUR]
-         emission_co2(z)         total co2 emissions [kt] # or rather [t]?
+         emission_co2(z,t,i)     bookkeeping of total co2 emissions [kt] # or rather [t]?
          b(z,t,i,f)              fuel used for energy generation [GWh]
          add_g(z,i)              dispatchable generation capacity added [GW]
          add_r(z,n)              intermittent generation capacity added [GW]
@@ -121,12 +125,12 @@ Positive Variables
          add_v(z,k)              storage volume added [GWh]
          add_x(z,zz)             transmission capacity added [GW]
          deco_g(z,i)             dispatchable generation capacity decommissioned [GW]
-*         deco_r(z,n)             intermittent generation capacity decommissioned [GW]
+         deco_r(z,n)             intermittent generation capacity decommissioned [GW]
 *         deco_s(z,k)             storage capacity (in and out) decommissioned [GW]
 *         deco_v(z,k)             storage volume decommissioned [GWh]
 *         deco_x(z,zz)            transmission capacity decommissioned [GW]
          g(z,t,i,m)              energy generation by dispatchable generators [GW]
-         r(z,t,n)                electricity generation by intermittent generators [GW]
+         r(z,t,n)                bookkeeping of electricity generation by intermittent generators [GW]
          s_in(z,t,k)             energy stored-in (flow) [GW]
          s_out(z,t,k)            energy stored-out (flow) [GW]
          v(z,t,k)                energy storage level (stock) [GWh]
@@ -138,19 +142,25 @@ Positive Variables
 
 * ==============================================================================
 * EQUATION DECLARATION
+* equation naming:
+* bal: balance - equality constraint, decision variables on both sides
+* acn: accounting - equality constraint, decision variable on one side, bookkeeping variable on other
+* uplim: upper limit - inequality constraint (less than)
+* lolim: lower limit - inequality constraint (greater than)
 * ------------------------------------------------------------------------------
 Equations
 objective, bal_zone,
-bal_fuel, bal_co2, bal_om, bal_inv_g, bal_inv_r, bal_inv_sv, bal_inv_x, bal_nse,
-mkt_clear_el, mkt_clear_ht,
+bal_fuel, bal_co2, bal_om_g, bal_om_r, bal_inv_g, bal_inv_r, bal_inv_sv, bal_inv_x, bal_nse,
+bal_el, bal_ht,
 uplim_g, lolim_b,
-w_chp, uplim_g_chp, lolim_b_chp,
-gen_itm,
-capcon_store_in, capcon_store_out, capcon_store_vol, bal_store, logi_store,
-capcon_export, capcon_import, logi_flow, logi_symmetry,
-uplim_deco,
+bal_w_chp, uplim_g_chp, lolim_b_chp,
+acn_itm,
+uplim_store_in, uplim_store_out, uplim_store_vol, bal_store, lolim_add_v,
+acn_co2,
+uplim_transmission, lolim_transmission, bal_transmission, bal_add_x,
+uplim_deco_g, uplim_deco_r,
 lolim_ancservices,
-limit_curtail
+uplim_curtail
 ;
 * ==============================================================================
 
@@ -170,7 +180,8 @@ bal_zone(z)..
                  =E=
                  sum((t,i), cost_fuel(z,t,i))
                  + sum((t,i), cost_co2(z,t,i))
-                 + sum(i, cost_om(z,i))
+                 + sum(i, cost_om_g(z,i))
+                 + sum(n, cost_om_r(z,n))
                  + cost_invest_g(z)
                  + cost_invest_r(z)
                  + cost_invest_sv(z)
@@ -185,13 +196,19 @@ bal_fuel(z,t,i)..
 bal_co2(z,t,i)..
                  cost_co2(z,t,i)
                  =E=
-                 sum(f, PRICE_CO2(z,t) * CO2_INTENSITY(f) * b(z,t,i,f) )
+                 PRICE_CO2(z,t) * emission_co2(z,t,i)
                  ;
-bal_om(z,i)..
-                 cost_om(z,i)
+bal_om_g(z,i)..
+                 cost_om_g(z,i)
                  =E=
-                 OM_COST_QFIX(i) * (INITIAL_CAP_G(z,i) + add_g(z,i) - deco_g(z,i) )
-                 + sum((t,m), OM_COST_VAR(i) * g(z,t,i,m) )
+                 OM_COST_G_QFIX(i) * (INITIAL_CAP_G(z,i) + add_g(z,i) - deco_g(z,i) )
+                 + sum((t,m), OM_COST_G_VAR(i) * g(z,t,i,m) )
+                 ;
+bal_om_r(z,n)..
+                 cost_om_r(z,n)
+                 =E=
+                 OM_COST_R_QFIX(z,n) * (INITIAL_CAP_R(z,n) + add_r(z,n) - deco_r(z,n) )
+                 + sum((t,m), OM_COST_R_VAR(z,n) * r(z,t,n) )
                  ;
 bal_inv_g(z)..
                  cost_invest_g(z)
@@ -222,7 +239,7 @@ bal_nse(z)..
 * ------------------------------------------------------------------------------
 * MARKET CLEARING
 
-mkt_clear_el(z,t)..
+bal_el(z,t)..
                  DEMAND(z,t,'el')
                  + sum(i, b(z,t,i,'Power') )
                  + sum(k, s_in(z,t,k) )
@@ -234,7 +251,7 @@ mkt_clear_el(z,t)..
                  + sum(k, s_out(z,t,k) )
                  - q_curtail(z,t)
                  ;
-mkt_clear_ht(z,t)..
+bal_ht(z,t)..
                  DEMAND(z,t,'ht')
                  - q_nse(z,t,'ht')
                  =E=
@@ -259,7 +276,7 @@ b.UP(z,t,i,f)$(NOT sum(m,EFFICIENCY_G(i,m,f))) = 0;   # is this neccessary? does
 * ------------------------------------------------------------------------------
 * CO-GENERATION OF HEAT AND ELECTRICITY
 
-w_chp(z,t,i)$(j(i))..
+bal_w_chp(z,t,i)$(j(i))..
                  sum(l, w(z,t,i,l))
                  =E=
                  INITIAL_CAP_G(z,i) + add_g(z,i) - deco_g(z,i)
@@ -277,7 +294,7 @@ lolim_b_chp(z,t,i,f)$(j(i))..
 * ------------------------------------------------------------------------------
 * INTERMITTENT ELECTRICITY GENERATION
 
-gen_itm(z,t,n)..
+acn_itm(z,t,n)..
                  r(z,t,n)
                  =E=
                  GEN_PROFILE(z,t,n) * (INITIAL_CAP_R(z,n) + add_r(z,n) )
@@ -285,17 +302,17 @@ gen_itm(z,t,n)..
 * ------------------------------------------------------------------------------
 * ELECTRICITY STORAGE
 
-capcon_store_in(z,t,k)..
+uplim_store_in(z,t,k)..
                  s_out(z,t,k)
                  =L=
                  INITIAL_CAP_S_OUT(z,k) + add_s(z,k)
                  ;
-capcon_store_out(z,t,k)..
+uplim_store_out(z,t,k)..
                  s_in(z,t,k)
                  =L=
                  INITIAL_CAP_S_IN(z,k) + add_s(z,k)
                  ;
-capcon_store_vol(z,t,k)..
+uplim_store_vol(z,t,k)..
                  v(z,t,k)
                  =L=
                  INITIAL_CAP_V(z,k) + add_v(z,k)
@@ -308,30 +325,38 @@ bal_store(z,t,k)$(ord(t) > 1 AND EFFICIENCY_S_OUT(z,k))..
                  - (1 / EFFICIENCY_S_OUT(z,k))  * s_out(z,t,k)
                  + v(z,t-1,k)
                  ;
-logi_store(z,k)..
+lolim_add_v(z,k)..
                  add_v(z,k)
                  =G=
                  add_s(z,k)
                  ;
 * ------------------------------------------------------------------------------
+* CO2 ACCOUNTING
+
+acn_co2(z,t,i)..
+                 emission_co2(z,t,i)
+                 =E=
+                 sum(f, CO2_INTENSITY(f) * b(z,t,i,f) )
+                 ;
+* ------------------------------------------------------------------------------
 * INTERZONAL ELECTRICITY EXCHANGE
 
-capcon_export(z,zz,t)..
+uplim_transmission(z,zz,t)..
                  x(z,zz,t)
                  =L=
                  INITIAL_CAP_X(z,zz) + add_x(z,zz)
                  ;
-capcon_import(z,zz,t)..
+lolim_transmission(z,zz,t)..
                  x(z,zz,t)
                  =G=
                  - (INITIAL_CAP_X(z,zz) + add_x(z,zz) )
                  ;
-logi_flow(z,zz,t)..
+bal_transmission(z,zz,t)..
                  x(z,zz,t)
                  =E=
                  - x(zz,z,t)
                  ;
-logi_symmetry(z,zz)..
+bal_add_x(z,zz)..
                  add_x(z,zz)
                  =E=
                  add_x(zz,z)
@@ -341,10 +366,15 @@ x.FX(zz,z,t)$(not INITIAL_CAP_X(zz,z))   = 0;
 * ------------------------------------------------------------------------------
 * DECOMMISSIONING
 
-uplim_deco(z,i)..
+uplim_deco_g(z,i)..
                  deco_g(z,i)
                  =L=
                  INITIAL_CAP_G(z,i) + add_g(z,i)
+                 ;
+uplim_deco_r(z,n)..
+                 deco_r(z,n)
+                 =L=
+                 INITIAL_CAP_R(z,n) + add_r(z,n)
                  ;
 * ------------------------------------------------------------------------------
 * ANCILLARY SERVICES
@@ -360,7 +390,7 @@ lolim_ancservices(z,t)..
 * ------------------------------------------------------------------------------
 * CURTAILMENT
 
-limit_curtail(z,t)..
+uplim_curtail(z,t)..
                  q_curtail(z,t)
                  =L=
                  sum(n$(NOT SAMEAS(n,'ror')), r(z,t,n) )
@@ -432,6 +462,7 @@ annual_s_in(z),
 annual_s_out(z),
 annual_x(z),
 annual_b(z,f),
+annual_co2(z),
 annual_curtail(z);
 
 annual_g(z,m) = sum((t,i), g.L(z, t, i, m));
@@ -440,6 +471,7 @@ annual_s_in(z) = sum((t,k), s_in.L(z,t,k));
 annual_s_out(z) = sum((t,k), s_out.L(z,t,k));
 annual_x(zz) = sum(t, x.L('AT',zz,t));
 annual_b(z,f) = sum((t,i), b.L(z,t,i,f));
+annual_co2(z) = sum((t,i), emission_co2.L(z,t,i));
 annual_curtail(z) = sum(t, q_curtail.L(z,t));
 
 * ------------------------------------------------------------------------------
@@ -452,50 +484,54 @@ annual_value_s_out(z),
 annual_value_x(z,zz),
 annual_value_curtail(z);
 
-annual_value_g(z,m) = sum((t,i), mkt_clear_el.M(z,t) * g.L(z,t,i,m));
-annual_value_g_by_tec(z,i,m) = sum(t, mkt_clear_el.M(z,t) * g.L(z,t,i,m));
-annual_value_s_in(z) = sum((t,k), mkt_clear_el.M(z,t) * s_in.L(z,t,k));
-annual_value_s_out(z) = sum((t,k), mkt_clear_el.M(z,t) * s_out.L(z,t,k));
-annual_value_x(z,zz) = sum(t, mkt_clear_el.M(z,t) * x.L(z,zz,t));
-annual_value_curtail(z) = sum(t, mkt_clear_el.M(z,t) * q_curtail.L(z,t));
+annual_value_g(z,m) = sum((t,i), bal_el.M(z,t) * g.L(z,t,i,m));
+annual_value_g_by_tec(z,i,m) = sum(t, bal_el.M(z,t) * g.L(z,t,i,m));
+annual_value_s_in(z) = sum((t,k), bal_el.M(z,t) * s_in.L(z,t,k));
+annual_value_s_out(z) = sum((t,k), bal_el.M(z,t) * s_out.L(z,t,k));
+annual_value_x(z,zz) = sum(t, bal_el.M(z,t) * x.L(z,zz,t));
+annual_value_curtail(z) = sum(t, bal_el.M(z,t) * q_curtail.L(z,t));
 
 * ------------------------------------------------------------------------------
 * annual prices, cost, producer surplus
 parameter
 annual_price_el(z),
 annual_price_ht(z),
-annual_cost(z,i),
-annual_revenue(z,i),
-annual_surplus_therm(z,i),
-annual_surplus_stor(z,k),
-annual_surplus_itm(z,n),
+annual_cost_g(z,i),
+annual_revenue_g(z,i),
+annual_profit_g(z,i),
+annual_surplus_g(z,i),
+annual_profit_s(z,k),
+annual_profit_r(z,n),
+annual_surplus_s(z,k),
+annual_surplus_r(z,n),
 producer_surplus(z);
 
-annual_price_el(z) = sum(t, mkt_clear_el.M(z,t))/card(t);
-annual_price_ht(z) = sum(t, mkt_clear_ht.M(z,t))/card(t);
-annual_cost(z,i) = sum(t, cost_fuel.L(z,t,i)
-                         + cost_co2.L(z,t,i)
-                         + sum(m, OM_COST_VAR(i) * g.L(z,t,i,m)));
-annual_revenue(z,i) = sum(t,
-                         mkt_clear_el.M(z,t) * g.L(z,t,i,'el')
-                         + mkt_clear_ht.M(z,t) * g.L(z,t,i,'ht'));
-annual_surplus_therm(z,i) =   sum(t,
-                         mkt_clear_el.M(z,t) * g.L(z,t,i,'el')
-                         + mkt_clear_ht.M(z,t) * g.L(z,t,i,'ht')
-                         - cost_fuel.L(z,t,i)
-                         - cost_co2.L(z,t,i)
-                         - sum(m, OM_COST_VAR(i) * g.L(z,t,i,m))
+annual_price_el(z) = sum(t, bal_el.M(z,t))/card(t);
+annual_price_ht(z) = sum(t, bal_ht.M(z,t))/card(t);
+
+annual_cost_g(z,i) = sum(t, cost_fuel.L(z,t,i) + cost_co2.L(z,t,i) )
+                     + cost_om_g.L(z,i);
+
+annual_revenue_g(z,i) = sum(t, bal_el.M(z,t) * g.L(z,t,i,'el')
+                             + bal_ht.M(z,t) * g.L(z,t,i,'ht') );
+annual_profit_g(z,i) = annual_revenue_g(z,i) - annual_cost_g(z,i);
+annual_surplus_g(z,i) = annual_revenue_g(z,i)
+                         - sum(t, cost_fuel.L(z,t,i) + cost_co2.L(z,t,i) )
+                         - sum((t,m), OM_COST_G_VAR(i) * g.L(z,t,i,m) );
+
+annual_profit_s(z,k) = sum(t,
+                         bal_el.M(z,t) * s_out.L(z,t,k)
+                         - bal_el.M(z,t) * s_in.L(z,t,k)
                          );
-annual_surplus_stor(z,k) = sum(t,
-                         mkt_clear_el.M(z,t) * s_out.L(z,t,k)
-                         - mkt_clear_el.M(z,t) * s_in.L(z,t,k)
-                         );
-annual_surplus_itm(z,n) = sum(t,
-                         mkt_clear_el.M(z,t) * r.L(z,t,n)
-                         );
-producer_surplus(z) =    sum(i, annual_surplus_therm(z,i))
-                         + sum(k, annual_surplus_stor(z,k))
-                         + sum(n, annual_surplus_itm(z,n))
+
+annual_profit_r(z,n) = sum(t, bal_el.M(z,t) * r.L(z,t,n) )
+                         - OM_COST_R_QFIX(z,n) * (INITIAL_CAP_R(z,n) + add_r.L(z,n) - deco_r.L(z,n) )
+                         - sum(t, OM_COST_R_VAR(z,n) * r.L(z,t,n) );
+
+producer_surplus(z) =    sum(i, annual_surplus_g(z,i))
+                         + sum(k, annual_profit_s(z,k))
+                         + sum((t,n), bal_el.M(z,t) * r.L(z,t,n))
+                         - sum((t,n), OM_COST_R_VAR(z,n) * r.L(z,t,n) )
                          ;
 
 * ------------------------------------------------------------------------------
@@ -506,8 +542,8 @@ hourly_price_ht(z,t),
 hourly_price_system_services(z,t)
 ;
 
-hourly_price_el(z,t) = mkt_clear_el.M(z,t);
-hourly_price_ht(z,t) = mkt_clear_ht.M(z,t);
+hourly_price_el(z,t) = bal_el.M(z,t);
+hourly_price_ht(z,t) = bal_ht.M(z,t);
 hourly_price_system_services(z,t) = lolim_ancservices.M(z,t);
 * ==============================================================================
 
