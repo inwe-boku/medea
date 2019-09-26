@@ -8,9 +8,9 @@ from legacy.gams_wrappers import gdx2df
 
 output_folder = 'PolicyBurden'
 campaign_string = 'PoBu_EUA40_curt_htpmp'
-directory = os.path.join(cfg.folder, 'medea', 'opt')
+directory = os.path.join(cfg.MEDEA_ROOT_DIR, 'medea', 'opt')
 
-ws = GamsWorkspace(system_directory=cfg.gams_sysdir)
+ws = GamsWorkspace(system_directory=cfg.GMS_SYS_DIR)
 # for file in os.listdir(directory):
 #     filename = os.fsdecode(file)
 #     if campaign_string in filename:
@@ -18,7 +18,7 @@ ws = GamsWorkspace(system_directory=cfg.gams_sysdir)
 df_all = pd.DataFrame()
 for num in range(0, 16):
     filename = f'medea_out_{campaign_string}_{num}.gdx'
-    db_output = ws.add_database_from_gdx(os.path.join(cfg.folder, 'medea', 'opt', filename))
+    db_output = ws.add_database_from_gdx(os.path.join(cfg.MEDEA_ROOT_DIR, 'medea', 'opt', filename))
 
     read_variables = {
         'cost': ([], ['r']),
@@ -48,5 +48,5 @@ for num in range(0, 16):
     df_all = pd.concat([df_all, df], axis=1)
 
 df_all = df_all.sort_index(axis=1, level=1)
-df_all.to_csv(os.path.join(cfg.folder, 'medea', 'output', output_folder, f'results_{campaign_string}.csv'),
+df_all.to_csv(os.path.join(cfg.MEDEA_ROOT_DIR, 'medea', 'output', output_folder, f'results_{campaign_string}.csv'),
               sep=';', encoding='utf-8')

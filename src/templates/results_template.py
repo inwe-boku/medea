@@ -5,8 +5,8 @@ import pandas as pd
 from gams import *
 
 import config as cfg
-from medea.gams_io import gdx2df
-from medea.templates.settings_template import *
+from src.templates.settings_template import *
+from src.tools.gams_io import gdx2df
 
 # -------------------------------------------------------------------------------------------------------------------- #
 # prepare GAMS workspace

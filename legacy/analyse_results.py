@@ -8,9 +8,9 @@ from legacy.gams_wrappers import gdx2df
 # df = pd.read_csv(os.path.join(cfg.folder, 'medea', 'opt'))
 run_string = 'PoBu_EUA20_curt_htpmp_1'
 
-ws = GamsWorkspace(system_directory=cfg.gams_sysdir)
+ws = GamsWorkspace(system_directory=cfg.GMS_SYS_DIR)
 filename = f'medea_out_{run_string}.gdx'
-db_output = ws.add_database_from_gdx(os.path.join(cfg.folder, 'medea', 'opt', filename))
+db_output = ws.add_database_from_gdx(os.path.join(cfg.MEDEA_ROOT_DIR, 'medea', 'opt', filename))
 
 read_variables = {
    'q_curtail': (['t'], ['r', 'prd']),

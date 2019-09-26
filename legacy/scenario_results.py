@@ -99,9 +99,9 @@ scenario_AT2030 = {
 # --------------------------------------------------------------------------- #
 # %% initialize GAMS workspace and load model data
 # --------------------------------------------------------------------------- #
-ws = GamsWorkspace(system_directory=cfg.gams_sysdir)
+ws = GamsWorkspace(system_directory=cfg.GMS_SYS_DIR)
 
-db_input = ws.add_database_from_gdx(os.path.join(cfg.folder, 'medea', 'opt', 'medea_data.gdx'))
+db_input = ws.add_database_from_gdx(os.path.join(cfg.MEDEA_ROOT_DIR, 'medea', 'opt', 'medea_data.gdx'))
 data_yr = db_input['year'].first_record().value
 
 # read sets for clusters, hydro storage plants and products from db_input
@@ -187,7 +187,7 @@ WONLIM = df2gdx(db_input, df_wonlim, 'WON_LIMIT', 'par', 0, 'upper limit on onsh
 df_euafixed = pd.DataFrame(data=[0])
 EUA_SCENARIO = df2gdx(db_input, df_euafixed, 'EUA_SCENARIO', 'par', 0, 'EUA price - scenario')
 
-os.chdir(os.path.join(cfg.folder, 'medea', 'opt'))
+os.chdir(os.path.join(cfg.MEDEA_ROOT_DIR, 'medea', 'opt'))
 
 for eua in range(50, 61, 10):
     reset_parameter(db_input, 'EUA_SCENARIO', pd.DataFrame(data=[eua]))
@@ -196,13 +196,13 @@ for eua in range(50, 61, 10):
         # modify wind_on limit
         reset_parameter(db_input, 'WON_LIMIT', pd.DataFrame(data=[it]))
         # export gdx
-        export_location = os.path.join(cfg.folder, 'medea', 'opt', f'MEDEA_{scenario_name}_data.gdx')
+        export_location = os.path.join(cfg.MEDEA_ROOT_DIR, 'medea', 'opt', f'MEDEA_{scenario_name}_data.gdx')
         db_input.export(export_location)
         # --------------------------------------------------------------------------- #
         # call GAMS
-        gms_model = os.path.join(cfg.folder, 'medea', 'opt', 'medea_austria_htpmp.gms')
+        gms_model = os.path.join(cfg.MEDEA_ROOT_DIR, 'medea', 'opt', 'medea_austria_htpmp.gms')
         gdx_out = f'gdx=medea_out_{scenario_name}.gdx'
-        subprocess.run(f'{cfg.gams_sysdir}\\gams {gms_model} {gdx_out} lo=3 --scenario={scenario_name}')
+        subprocess.run(f'{cfg.GMS_SYS_DIR}\\gams {gms_model} {gdx_out} lo=3 --scenario={scenario_name}')
 
     # delete input
 

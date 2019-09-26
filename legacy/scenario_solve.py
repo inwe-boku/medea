@@ -200,9 +200,9 @@ scenario_CoalCommission = {
 # --------------------------------------------------------------------------- #
 # %% initialize GAMS workspace and load model data
 # --------------------------------------------------------------------------- #
-ws = GamsWorkspace(system_directory=cfg.gams_sysdir)
+ws = GamsWorkspace(system_directory=cfg.GMS_SYS_DIR)
 
-db_input = ws.add_database_from_gdx(os.path.join(cfg.folder, 'medea', 'opt', 'medea_data.gdx'))
+db_input = ws.add_database_from_gdx(os.path.join(cfg.MEDEA_ROOT_DIR, 'medea', 'opt', 'medea_data.gdx'))
 data_yr = db_input['year'].first_record().value
 
 # read sets for clusters, hydro storage plants and products from db_input
@@ -228,7 +228,7 @@ df_load = gdx2df(db_input, 'CONSUMPTION', ['r', 't', 'prd'], [])
 # --------------------------------------------------------------------------- #
 # %% scenario generation
 # --------------------------------------------------------------------------- #
-os.chdir(os.path.join(cfg.folder, 'medea', 'opt'))
+os.chdir(os.path.join(cfg.MEDEA_ROOT_DIR, 'medea', 'opt'))
 idx = pd.IndexSlice
 traded_fuels = ['Nuclear', 'Lignite', 'Gas', 'Oil', 'Coal', 'Biomass']
 
@@ -373,7 +373,7 @@ for scn in scenario_set:
         reset_parameter(db_input, 'CONSUMPTION', df_load_mod)
 
         # export scenario data to database
-        export_location = os.path.join(cfg.folder, 'medea', 'opt', f'MEDEA_{scenario_name}_data.gdx')
+        export_location = os.path.join(cfg.MEDEA_ROOT_DIR, 'medea', 'opt', f'MEDEA_{scenario_name}_data.gdx')
         db_input.export(export_location)
 
         # call iterative model solution
@@ -383,8 +383,8 @@ for scn in scenario_set:
 #            goodness_of_fit.loc[scenario_iteration, key] = goodfit[key]
 
         # delete scenario data file
-    if os.path.isfile(os.path.join(cfg.folder, 'medea', 'opt', f'MEDEA_{scenario_name}_data.gdx')):
-        os.remove(os.path.join(cfg.folder, 'medea', 'opt', f'MEDEA_{scenario_name}_data.gdx'))
+    if os.path.isfile(os.path.join(cfg.MEDEA_ROOT_DIR, 'medea', 'opt', f'MEDEA_{scenario_name}_data.gdx')):
+        os.remove(os.path.join(cfg.MEDEA_ROOT_DIR, 'medea', 'opt', f'MEDEA_{scenario_name}_data.gdx'))
 
         # --------------------------------------------------------------------------- #
         # postprocessing and aggregation of results

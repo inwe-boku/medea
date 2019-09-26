@@ -15,8 +15,13 @@ $title medea
 * command-line option --NORAGUROBI
 * NORAGUROBI no: use default solver on local machine (recommended)
 * NORAGUROBI yes: use gurobi solver on nora (only in boku lan)
+* ------------------------------------------------------------------------------
+* command-line option --SYNGAS
+* SYNGAS no: use default fuels for power generation
+* SYNGAS yes: allow for use of synthetic gas in natural gas-fired units
 * ==============================================================================
 $if not set NORAGUROBI $set NORAGUROBI no
+$if not set SYNGAS $set SYNGAS no
 * ==============================================================================
 
 * enable end.of.line-comments with '#'

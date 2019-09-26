@@ -1,3 +1,4 @@
+import ftplib
 import shutil
 
 import numpy as np
@@ -123,3 +124,18 @@ def download_file(url, save_to):
     http = urllib3.PoolManager()
     with http.request('GET', url, preload_content=False) as r, open(save_to, 'wb') as out_file:
         shutil.copyfileobj(r, out_file)
+
+
+pwd = 'ausmaus76'
+
+
+def get_from_entsoe_ftp(user, pwd):
+    ftp = ftplib.FTP('sftp-transparency.entsoe.eu')
+    ftp.login(user, pwd)
+    data = []
+    ftp.dir(data.append)
+    ftp.quit()
+
+    for line in data:
+        print
+        "-", line

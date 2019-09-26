@@ -16,11 +16,11 @@ def solve(output_folder, output_name, scenario_iteration, gen_target):
     # --------------------------------------------------------------------------- #
     # initialize GAMS workspace
     # --------------------------------------------------------------------------- #
-    ws = GamsWorkspace(system_directory=cfg.gams_sysdir)
+    ws = GamsWorkspace(system_directory=cfg.GMS_SYS_DIR)
 
     # read input data from MEDEA_data.gdx
     db_input = ws.add_database_from_gdx(
-        os.path.join(cfg.folder, f'medea', 'opt', 'medea_data.gdx'))
+        os.path.join(cfg.MEDEA_ROOT_DIR, f'medea', 'opt', 'medea_data.gdx'))
     # read sets for clusters, hydro storage plants and products from db_input
     clust_dict = {rec.keys[0] for rec in db_input['tec']}
     hsp_dict = {rec.keys[0] for rec in db_input['tec_hsp']}
@@ -93,7 +93,7 @@ def solve(output_folder, output_name, scenario_iteration, gen_target):
     # --------------------------------------------------------------------------- #
     # generate iterations
     # --------------------------------------------------------------------------- #
-    os.chdir(os.path.join(cfg.folder, 'medea', 'opt'))
+    os.chdir(os.path.join(cfg.MEDEA_ROOT_DIR, 'medea', 'opt'))
     for iteration in range(1, cfg.iter_num + 1):
         print(f'Iteration {iteration} in progress')
 
@@ -132,20 +132,22 @@ def solve(output_folder, output_name, scenario_iteration, gen_target):
         """
         # data export for first iteration
         # if iteration == 1:
-        db_init.export(os.path.join(cfg.folder, 'medea', 'opt', f'medea_{output_folder}_{output_name}_iterdata.gdx'))
+        db_init.export(
+            os.path.join(cfg.MEDEA_ROOT_DIR, 'medea', 'opt', f'medea_{output_folder}_{output_name}_iterdata.gdx'))
 
         # --------------------------------------------------------------------------- #
         # call GAMS
         # --------------------------------------------------------------------------- #
-        gms_in = os.path.join(cfg.folder, 'medea', 'opt', f'medea_{cfg.model_type}.gms')
+        gms_in = os.path.join(cfg.MEDEA_ROOT_DIR, 'medea', 'opt', f'medea_{cfg.model_type}.gms')
         gdx_out = f'gdx=medea_{output_name}_{scenario_iteration}_{iteration}.gdx'
-        subprocess.run(f'{cfg.gams_sysdir}\\gams {gms_in} {gdx_out} lo=3 --scenario={output_folder}_{output_name}')
+        subprocess.run(f'{cfg.GMS_SYS_DIR}\\gams {gms_in} {gdx_out} lo=3 --scenario={output_folder}_{output_name}')
 
         # ----------------------------------------------------------------------- #
         # read model solution
         # ----------------------------------------------------------------------- #
         db_solution = ws.add_database_from_gdx(
-            os.path.join(cfg.folder, 'medea', 'opt', f'medea_{output_name}_{scenario_iteration}_{iteration}.gdx'))
+            os.path.join(cfg.MEDEA_ROOT_DIR, 'medea', 'opt',
+                         f'medea_{output_name}_{scenario_iteration}_{iteration}.gdx'))
 
         # check model and solve stats
         model_stat = db_solution['modelStat'].first_record().value
@@ -262,32 +264,32 @@ def solve(output_folder, output_name, scenario_iteration, gen_target):
         # --------------------------------------------------------------------------- #
 
         # check if scenario-folder exists, create if it does not exist
-        if not os.path.exists(os.path.join(cfg.folder, 'medea', 'output', output_folder)):
-            os.makedirs(os.path.join(cfg.folder, 'medea', 'output', output_folder))
+        if not os.path.exists(os.path.join(cfg.MEDEA_ROOT_DIR, 'medea', 'output', output_folder)):
+            os.makedirs(os.path.join(cfg.MEDEA_ROOT_DIR, 'medea', 'output', output_folder))
 
         for key in result_dict:
-            result_dict[key].to_csv(os.path.join(cfg.folder, 'medea', 'output', output_folder,
+            result_dict[key].to_csv(os.path.join(cfg.MEDEA_ROOT_DIR, 'medea', 'output', output_folder,
                                                  f'{key}_{output_name}_{scenario_iteration}.csv'),
                                     sep=';', encoding='utf-8')
 
         # write each df to csv in scenario-specific folder
         gen_by_fuel.to_csv(
-            os.path.join(cfg.folder, 'medea', 'output', output_folder,
+            os.path.join(cfg.MEDEA_ROOT_DIR, 'medea', 'output', output_folder,
                          f'gen_power_by_fuel_{output_name}_{scenario_iteration}.csv'), sep=';', encoding='utf-8')
         htgen_by_fuel.to_csv(
-            os.path.join(cfg.folder, 'medea', 'output', output_folder,
+            os.path.join(cfg.MEDEA_ROOT_DIR, 'medea', 'output', output_folder,
                          f'gen_heat_by_fuel_{output_name}_{scenario_iteration}.csv'), sep=';', encoding='utf-8')
         burn_by_fuel.to_csv(
-            os.path.join(cfg.folder, 'medea', 'output', output_folder,
+            os.path.join(cfg.MEDEA_ROOT_DIR, 'medea', 'output', output_folder,
                          f'fuelburn_by_fuel_{output_name}_{scenario_iteration}.csv'), sep=';', encoding='utf-8')
         co2_emissions.to_csv(
-            os.path.join(cfg.folder, 'medea', 'output', output_folder,
+            os.path.join(cfg.MEDEA_ROOT_DIR, 'medea', 'output', output_folder,
                          f'emissions_{output_name}_{scenario_iteration}.csv'), sep=';', encoding='utf-8')
         marginal_power.to_csv(
-            os.path.join(cfg.folder, 'medea', 'output', output_folder,
+            os.path.join(cfg.MEDEA_ROOT_DIR, 'medea', 'output', output_folder,
                          f'price_power_{output_name}_{scenario_iteration}.csv'), sep=';', encoding='utf-8')
         obj_cost.to_csv(
-            os.path.join(cfg.folder, 'medea', 'output', output_folder,
+            os.path.join(cfg.MEDEA_ROOT_DIR, 'medea', 'output', output_folder,
                          f'total_cost_{output_name}_{scenario_iteration}.csv'), sep=';', encoding='utf-8')
 
     # --------------------------------------------------------------------------- #
@@ -295,9 +297,11 @@ def solve(output_folder, output_name, scenario_iteration, gen_target):
     # --------------------------------------------------------------------------- #
     del db_solution
     if os.path.isfile(
-            os.path.join(cfg.folder, f'medea', 'opt', f'medea_{output_name}_{scenario_iteration}_{iteration}.gdx')):
+            os.path.join(cfg.MEDEA_ROOT_DIR, f'medea', 'opt',
+                         f'medea_{output_name}_{scenario_iteration}_{iteration}.gdx')):
         os.remove(
-            os.path.join(cfg.folder, f'medea', 'opt', f'medea_{output_name}_{scenario_iteration}_{iteration}.gdx'))
+            os.path.join(cfg.MEDEA_ROOT_DIR, f'medea', 'opt',
+                         f'medea_{output_name}_{scenario_iteration}_{iteration}.gdx'))
 
     # --------------------------------------------------------------------------- #
     # model fit - correlation & rmse

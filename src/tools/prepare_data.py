@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 import config as cfg
-from medea.helpers import hours_in_year
+from src.tools.helpers import hours_in_year
 
 # TODO: PerformanceWarning: indexing past lexsort-depth may impact performance. need to sort index of affected
 # dataframes. Possibly by reindex() or sort_index(). lexsort can be checked with df.index.is_lexsorted()
@@ -59,7 +59,8 @@ dict_sets = {
         'Solar': [80],
         'Wind': [90],
         'Power': [100],
-        'Heat': [110]
+        'Heat': [110],
+        'Syngas': [120]
     },
     'l': {f'l{x}': [True] for x in range(1, 5)},
     'm': {
@@ -103,7 +104,8 @@ dict_static = {
         'Solar': [0],
         'Wind': [0],
         'Power': [0],
-        'Heat': [0]
+        'Heat': [0],
+        'Syngas': [0]
     },
     'eta': {
         'nuc': [0.34],
