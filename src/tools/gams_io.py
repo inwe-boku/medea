@@ -45,10 +45,14 @@ def gdx2df(db_gams, symbol, index_list, column_list):
     elif isinstance(sym, GamsEquation):
         gdx_dict = {tuple(obj.keys): obj.marginal for obj in sym}
     elif isinstance(sym, GamsSet):
-        raise ValueError('gdx2df for sets not yet implemented')
+        gdx_dict = {obj.keys[0] for obj in sym}
+    else:
+        raise ValueError('Symbol not in gdx')
 
     if not gdx_dict:
         gdx_df = pd.DataFrame([False], index=[symbol], columns=['Value'])
+    elif isinstance(sym, GamsSet):
+        gdx_df = pd.DataFrame(data=True, index=gdx_dict, columns=['Value'])
     else:
         gdx_df = pd.DataFrame(list(gdx_dict.values()), index=pd.MultiIndex.from_tuples(gdx_dict.keys()), columns=['Value'])
         gdx_df.index.names = db_gams.get_symbol(symbol).domains_as_strings
