@@ -74,6 +74,7 @@ Parameters
          OM_COST_R_VAR(z,n)      variable operation and maintenance cost [EUR per MWh]
          PEAK_LOAD(z)            maximum electricity demand [GW]
          PEAK_PROFILE(z,n)       maximum relative generation from intermittent sources
+         PLANT_FUELS(i,f)        maps fuels to plants - used to tighten model formulation
          PRICE_CO2(z,t)          CO2 price [EUR per t CO2]
          PRICE_FUEL(z,t,f)       fuel price [EUR per MWh]
          SIGMA                   intermittent generation scaling factor for system service requirement
@@ -105,6 +106,14 @@ $load    SWITCH_INVEST_THERM SWITCH_INVEST_ITM SWITCH_INVEST_STORAGE
 $load    SWITCH_INVEST_ATC
 $gdxin
 
+PLANT_FUELS(i,f)$(sum(m,EFFICIENCY_G(i,m,f))) = yes;
+
+* ------------------------------------------------------------------------------
+* enable the use of synthetic gas in natural gas-fired plant
+$if %SYNGAS% == yes PLANT_FUELS(i,'Syngas')$PLANT_FUELS(i,'Gas') = yes;
+$if %SYNGAS% == yes EFFICIENCY_G(i, 'el', 'Syngas') = EFFICIENCY_G(i, 'el', 'Gas');
+$if %SYNGAS% == yes FEASIBLE_INPUT(i,l,'Syngas') = FEASIBLE_INPUT(i,l,'Gas');
+
 * ------------------------------------------------------------------------------
 Variables
          cost_system             total system cost [kEUR]
@@ -134,14 +143,14 @@ Positive Variables
 *         deco_s(z,k)             storage capacity (in and out) decommissioned [GW]
 *         deco_v(z,k)             storage volume decommissioned [GWh]
 *         deco_x(z,zz)            transmission capacity decommissioned [GW]
-         g(z,t,i,m)              energy generation by dispatchable generators [GW]
+         g(z,t,i,m,f)            energy generation by dispatchable generators [GW]
          r(z,t,n)                bookkeeping of electricity generation by intermittent generators [GW]
          s_in(z,t,k)             energy stored-in (flow) [GW]
          s_out(z,t,k)            energy stored-out (flow) [GW]
          v(z,t,k)                energy storage level (stock) [GWh]
          q_curtail(z,t)          curtailed electricity [GW]
          q_nse(z,t,m)            non-served energy [GW]
-         w(z,t,i,l)              feasible operating region weight
+         w(z,t,i,l,f)            feasible operating region weight
 ;
 * ==============================================================================
 
@@ -196,7 +205,7 @@ bal_zone(z)..
 bal_fuel(z,t,i)..
                  cost_fuel(z,t,i)
                  =E=
-                 sum(f, PRICE_FUEL(z,t,f) * b(z,t,i,f) )
+                 sum(f$(PLANT_FUELS(i,f) ), PRICE_FUEL(z,t,f) * b(z,t,i,f) )
                  ;
 bal_co2(z,t,i)..
                  cost_co2(z,t,i)
@@ -207,7 +216,7 @@ bal_om_g(z,i)..
                  cost_om_g(z,i)
                  =E=
                  OM_COST_G_QFIX(i) * (INITIAL_CAP_G(z,i) + add_g(z,i) - deco_g(z,i) )
-                 + sum((t,m), OM_COST_G_VAR(i) * g(z,t,i,m) )
+                 + sum((t,m,f)$(PLANT_FUELS(i,f) ), OM_COST_G_VAR(i) * g(z,t,i,m,f) )
                  ;
 bal_om_r(z,n)..
                  cost_om_r(z,n)
@@ -251,7 +260,7 @@ bal_el(z,t)..
                  + sum(zz, x(z,zz,t) )
                  - q_nse(z,t,'el')
                  =E=
-                 sum(i, g(z,t,i,'el') )
+                 sum((i,f)$(PLANT_FUELS(i,f) ), g(z,t,i,'el',f) )
                  + sum(n, r(z,t,n) )
                  + sum(k, s_out(z,t,k) )
                  - q_curtail(z,t)
@@ -260,42 +269,45 @@ bal_ht(z,t)..
                  DEMAND(z,t,'ht')
                  - q_nse(z,t,'ht')
                  =E=
-                 sum(i, g(z,t,i,'ht') )
+                 sum((i,f)$(PLANT_FUELS(i,f) ), g(z,t,i,'ht',f) )
                  ;
 * ------------------------------------------------------------------------------
 * CONVENTIONAL ELECTRICITY GENERATION
 
+* set efficiency for electricity-only gas plants
+
 uplim_g(z,t,i,m)..
-                 g(z,t,i,m)
+                 sum(f$(PLANT_FUELS(i,f) ), g(z,t,i,m,f) )
                  =L=
                  INITIAL_CAP_G(z,i) + add_g(z,i) - deco_g(z,i)
                  ;
-lolim_b(z,t,i,m)$(NOT j(i))..
-                 g(z,t,i,m)
-                 =L=
-                 sum(f, EFFICIENCY_G(i,m,f) * b(z,t,i,f) )
+lolim_b(z,t,i,m,f)$(NOT j(i))..
+                 g(z,t,i,m,f)
+                 =E=
+                 EFFICIENCY_G(i,m,f) * b(z,t,i,f)
                  ;
-* restrict fuel use according to technology
-b.UP(z,t,i,f)$(NOT sum(m,EFFICIENCY_G(i,m,f))) = 0;   # is this neccessary? does it speed up solution?
 
 * ------------------------------------------------------------------------------
 * CO-GENERATION OF HEAT AND ELECTRICITY
 
+* set kennlinienfeld for gas chps
+
 bal_w_chp(z,t,i)$(j(i))..
-                 sum(l, w(z,t,i,l))
-                 =E=
+                 sum((l,f)$(PLANT_FUELS(i,f) ), w(z,t,i,l,f))
+                 =L=
                  INITIAL_CAP_G(z,i) + add_g(z,i) - deco_g(z,i)
                  ;
-uplim_g_chp(z,t,i,m)$(j(i))..
-                 g(z,t,i,m)
-                 =L=
-                 sum(l, FEASIBLE_OUTPUT(i,l,m) * w(z,t,i,l) )
+uplim_g_chp(z,t,i,m,f)$(j(i))..
+                 g(z,t,i,m,f)
+                 =E=
+                 sum(l$(PLANT_FUELS(i,f) ), FEASIBLE_OUTPUT(i,l,m) * w(z,t,i,l,f) )
                  ;
 lolim_b_chp(z,t,i,f)$(j(i))..
                  b(z,t,i,f)
-                 =G=
-                 sum(l, FEASIBLE_INPUT(i,l,f) * w(z,t,i,l) )
+                 =E=
+                 sum(l$(PLANT_FUELS(i,f) ), FEASIBLE_INPUT(i,l,f) * w(z,t,i,l,f) )
                  ;
+w.UP(z,t,i,l,f)$(NOT FEASIBLE_INPUT(i,l,f)) = 0;
 * ------------------------------------------------------------------------------
 * INTERMITTENT ELECTRICITY GENERATION
 
@@ -341,7 +353,7 @@ lolim_add_v(z,k)..
 acn_co2(z,t,i)..
                  emission_co2(z,t,i)
                  =E=
-                 sum(f, CO2_INTENSITY(f) * b(z,t,i,f) )
+                 sum(f$(CO2_INTENSITY(f)), CO2_INTENSITY(f) * b(z,t,i,f) )
                  ;
 * ------------------------------------------------------------------------------
 * INTERZONAL ELECTRICITY EXCHANGE
@@ -385,7 +397,7 @@ uplim_deco_r(z,n)..
 * ANCILLARY SERVICES
 
 lolim_ancservices(z,t)..
-                 sum(i, g(z,t,i,'el') )
+                 sum((i,f)$(PLANT_FUELS(i,f) ), g(z,t,i,'el',f) )
                  + r(z,t,'ror')
                  + sum(k, s_out(z,t,k) + s_in(z,t,k) )
                  =G=
@@ -446,6 +458,30 @@ modelStat = medea.modelstat;
 solveStat = medea.solvestat;
 
 * ------------------------------------------------------------------------------
+* ex post renewables share
+parameter
+REN_SHARE(z),
+ANN_G_BIOMASS(z),
+ANN_G_SYNGAS(Z),
+ANN_R(z),
+ANN_EL_CONS(z);
+
+REN_SHARE(z) =   (sum((t,n), r.L(z,t,n) )
+                 + sum((t,k), s_out.L(z,t,k) )
+                 - sum((t,k), s_in.L(z,t,k) )
+                 + sum((t,i), g.L(z,t,i,'el','Biomass') )
+                 + sum((t,i), g.L(z,t,i,'el','Syngas') ) )
+                 / sum(t, DEMAND(z,t,'el') )
+                 ;
+
+ANN_R(z) = sum((t,n), r.L(z,t,n) );
+ANN_G_BIOMASS(z) = sum((t,i), g.L(z,t,i,'el','Biomass') );
+ANN_G_SYNGAS(Z) = sum((t,i), g.L(z,t,i,'el','Syngas') );
+ANN_EL_CONS(z) = sum(t, DEMAND(z,t,'el') );
+
+display REN_SHARE, ANN_G_BIOMASS, ANN_G_SYNGAS, ANN_R, ANN_EL_CONS;
+
+* ------------------------------------------------------------------------------
 * summary of exogenous parameters
 parameters
 ANNUAL_CONSUMPTION(z,m),
@@ -462,7 +498,7 @@ AVG_PRICE_CO2(z) = sum(t, PRICE_CO2(z,t)) / card(t);
 * annual system operation
 parameter
 annual_g(z,m),
-annual_g_by_tec(z,i,m),
+annual_g_by_tec(z,i,m,f),
 annual_s_in(z),
 annual_s_out(z),
 annual_x(z),
@@ -470,14 +506,16 @@ annual_b(z,f),
 annual_co2(z),
 annual_curtail(z);
 
-annual_g(z,m) = sum((t,i), g.L(z, t, i, m));
-annual_g_by_tec(z,i,m) = sum(t, g.L(z, t, i, m));
+annual_g(z,m) = sum((t,i,f), g.L(z, t, i, m, f));
+annual_g_by_tec(z,i,m,f) = sum(t, g.L(z, t, i, m, f));
 annual_s_in(z) = sum((t,k), s_in.L(z,t,k));
 annual_s_out(z) = sum((t,k), s_out.L(z,t,k));
 annual_x(zz) = sum(t, x.L('AT',zz,t));
 annual_b(z,f) = sum((t,i), b.L(z,t,i,f));
 annual_co2(z) = sum((t,i), emission_co2.L(z,t,i));
 annual_curtail(z) = sum(t, q_curtail.L(z,t));
+
+display annual_b, annual_s_in, annual_s_out;
 
 * ------------------------------------------------------------------------------
 * annual monetary values
@@ -489,8 +527,8 @@ annual_value_s_out(z),
 annual_value_x(z,zz),
 annual_value_curtail(z);
 
-annual_value_g(z,m) = sum((t,i), bal_el.M(z,t) * g.L(z,t,i,m));
-annual_value_g_by_tec(z,i,m) = sum(t, bal_el.M(z,t) * g.L(z,t,i,m));
+annual_value_g(z,m) = sum((t,i,f), bal_el.M(z,t) * g.L(z,t,i,m,f));
+annual_value_g_by_tec(z,i,m) = sum((t,f), bal_el.M(z,t) * g.L(z,t,i,m,f));
 annual_value_s_in(z) = sum((t,k), bal_el.M(z,t) * s_in.L(z,t,k));
 annual_value_s_out(z) = sum((t,k), bal_el.M(z,t) * s_out.L(z,t,k));
 annual_value_x(z,zz) = sum(t, bal_el.M(z,t) * x.L(z,zz,t));
@@ -517,12 +555,12 @@ annual_price_ht(z) = sum(t, bal_ht.M(z,t))/card(t);
 annual_cost_g(z,i) = sum(t, cost_fuel.L(z,t,i) + cost_co2.L(z,t,i) )
                      + cost_om_g.L(z,i);
 
-annual_revenue_g(z,i) = sum(t, bal_el.M(z,t) * g.L(z,t,i,'el')
-                             + bal_ht.M(z,t) * g.L(z,t,i,'ht') );
+annual_revenue_g(z,i) = sum((t,f), bal_el.M(z,t) * g.L(z,t,i,'el',f)
+                             + bal_ht.M(z,t) * g.L(z,t,i,'ht',f) );
 annual_profit_g(z,i) = annual_revenue_g(z,i) - annual_cost_g(z,i);
 annual_surplus_g(z,i) = annual_revenue_g(z,i)
                          - sum(t, cost_fuel.L(z,t,i) + cost_co2.L(z,t,i) )
-                         - sum((t,m), OM_COST_G_VAR(i) * g.L(z,t,i,m) );
+                         - sum((t,m,f), OM_COST_G_VAR(i) * g.L(z,t,i,m,f) );
 
 annual_profit_s(z,k) = sum(t,
                          bal_el.M(z,t) * s_out.L(z,t,k)
