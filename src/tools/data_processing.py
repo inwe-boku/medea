@@ -5,6 +5,23 @@ import numpy as np
 import pandas as pd
 import urllib3
 
+
+# ==============================================================================================
+# general functions
+
+def is_leapyear(year):
+    """Determine whether a given year is a leapyear"""
+    flag = year % 400 == 0 or (year % 4 == 0 and year % 100 != 0)
+    return flag
+
+
+def hours_in_year(year):
+    if is_leapyear(year):
+        return 8784
+    else:
+        return 8760
+
+
 # ==============================================================================================
 # functions for heat load calculation
 # ----------------------------------------------------------------------------------------------

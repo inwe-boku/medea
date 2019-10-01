@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 import config as cfg
-from src.tools.functions import heat_yr2day, heat_day2hr, resample_index, download_file
+from src.tools.data_processing import heat_yr2day, heat_day2hr, resample_index, download_file
 
 # ----------------------------------------------------------------------------
 # set current working directory

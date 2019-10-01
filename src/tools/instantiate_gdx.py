@@ -39,7 +39,7 @@ logging.info('medea sets instantiated')
 # --------------------------------------------------------------------------- #
 CAPITALCOST_G = df2gdx(db, static_data['tec']['annuity'].round(4),
                             'CAPITALCOST_G', 'par', [i_set], '[kEUR per GW]')
-CAPITALCOST_R = df2gdx(db, static_data['CAPCOST_R'].stack().reorder_levels([1, 0]).round(4).loc[:, 'annuity'],
+CAPITALCOST_R = df2gdx(db, static_data['CAPCOST_R'].loc[:, 'annuity of total installed cost'],
                        'CAPITALCOST_R', 'par', [z_set, n_set], '[kEUR per GW]')
 CAPITALCOST_S = df2gdx(db, plant_data['storage_clusters']['cost_power'].reorder_levels((1, 0)), 'CAPITALCOST_S', 'par',
                        [z_set, k_set], '[GW]')
@@ -67,7 +67,7 @@ INFLOWS = df2gdx(db, ts_data['inflows'].stack((0, 1)).reorder_levels((1, 0, 2)).
                  'INFLOWS', 'par', [z_set, t_set, k_set])
 INITIAL_CAP_G = df2gdx(db, dict_instantiate['tec_props']['cap'], 'INITIAL_CAP_G', 'par',
                        [z_set, i_set], '[GW]')
-INITIAL_CAP_R = df2gdx(db, dict_instantiate['CAP_R'], 'INITIAL_CAP_R', 'par', [z_set, n_set], '[GW]')
+INITIAL_CAP_R = df2gdx(db, dict_instantiate['CAP_R'].stack().unstack(1), 'INITIAL_CAP_R', 'par', [z_set, n_set], '[GW]')
 INITIAL_CAP_S_OUT = df2gdx(db, plant_data['storage_clusters']['power_out'].reorder_levels((1, 0)), 'INITIAL_CAP_S_OUT',
                            'par', [z_set, k_set], '[GW]')
 INITIAL_CAP_S_IN = df2gdx(db, plant_data['storage_clusters']['power_in'].reorder_levels((1, 0)), 'INITIAL_CAP_S_IN',
@@ -82,11 +82,10 @@ LAMBDA = df2gdx(db, static_data['LAMBDA'], 'LAMBDA', 'par', 0, '[]')
 OM_COST_G_QFIX = df2gdx(db, static_data['tec']['om_fix'], 'OM_COST_G_QFIX', 'par', [i_set], '[kEUR per GW]')
 OM_COST_G_VAR = df2gdx(db, static_data['tec']['om_var'], 'OM_COST_G_VAR', 'par', [i_set], '[kEUR per GWh]')
 
-OM_COST_R_QFIX = df2gdx(db, static_data['CAPCOST_R'].stack().reorder_levels([1, 0]).loc[:, 'om_qfix'],
-                        'OM_COST_R_QFIX', 'par', [z_set, n_set], '[kEUR per GW]')
-OM_COST_R_VAR = df2gdx(db, static_data['CAPCOST_R'].stack().reorder_levels([1, 0]).loc[:, 'om_var'],
-                       'OM_COST_R_VAR', 'par', [z_set, n_set], '[kEUR per GWh]')
-
+OM_COST_R_QFIX = df2gdx(db, static_data['CAPCOST_R'].loc[:, 'quasi-fixed o&m-cost'], 'OM_COST_R_QFIX', 'par',
+                        [z_set, n_set], '[kEUR per GW]')
+OM_COST_R_VAR = df2gdx(db, static_data['CAPCOST_R'].loc[:, 'variable o&m-cost'], 'OM_COST_R_VAR', 'par',
+                       [z_set, n_set], '[kEUR per GWh]')
 PEAK_LOAD = df2gdx(db, dict_instantiate['PEAK_LOAD'], 'PEAK_LOAD', 'par', [z_set], '[GW]')
 PEAK_PROFILE = df2gdx(db, dict_instantiate['PEAK_PROFILE'], 'PEAK_PROFILE', 'par', [z_set, n_set], '[]')
 
@@ -136,6 +135,6 @@ logging.info('medea`s timeseries instantiated')
 # --------------------------------------------------------------------------- #
 # %% data export to gdx
 # --------------------------------------------------------------------------- #
-export_location = os.path.join(cfg.MEDEA_ROOT_DIR, 'medea', 'data', 'medea_main_data.gdx')
+export_location = os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'gdx', 'medea_main_data.gdx')
 db.export(export_location)
 logging.info(f'medea gdx exported to {export_location}')

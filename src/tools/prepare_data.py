@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 import config as cfg
-from src.tools.helpers import hours_in_year
+from src.tools.data_processing import hours_in_year
 
 # TODO: PerformanceWarning: indexing past lexsort-depth may impact performance. need to sort index of affected
 # dataframes. Possibly by reindex() or sort_index(). lexsort can be checked with df.index.is_lexsorted()
@@ -21,15 +21,15 @@ idx = pd.IndexSlice
 # --------------------------------------------------------------------------- #
 
 static_data = {
-    'CAP_R': pd.read_excel(STATIC_FNAME, 'installed_itm', header=[0, 1], index_col=[0]),
-    'CAPCOST_R': pd.read_excel(STATIC_FNAME, 'invest_itm', header=[0, 1], index_col=[0]),
-    'tec': pd.read_excel(STATIC_FNAME, 'param_thermal'),
-    'feasops': pd.read_excel(STATIC_FNAME, 'feasgen_thermal'),
-    'CAP_X': pd.read_excel(STATIC_FNAME, 'ATC', index_col=[0]),
-    'CAPCOST_K': pd.read_excel(STATIC_FNAME, 'invest_storage', header=[0, 1], index_col=[0]),
-    'cost_transport': pd.read_excel(STATIC_FNAME, 'cost_transport', header=[0], index_col=[0]),
+    'CAP_R': pd.read_excel(STATIC_FNAME, 'INITIAL_CAP_R', header=[0], index_col=[0, 1]),
+    'CAPCOST_R': pd.read_excel(STATIC_FNAME, 'CAPITALCOST_R', header=[0], index_col=[0, 1]),
     'potentials': pd.read_excel(STATIC_FNAME, 'potentials', header=[0], index_col=[0]),
-    'DISTANCE': pd.read_excel(STATIC_FNAME, 'km', index_col=[0])
+    'tec': pd.read_excel(STATIC_FNAME, 'parameters_G'),
+    'feasops': pd.read_excel(STATIC_FNAME, 'FEASIBLE_INPUT-OUTPUT'),
+    'cost_transport': pd.read_excel(STATIC_FNAME, 'COST_TRANSPORT', header=[0], index_col=[0]),
+    'CAPCOST_K': pd.read_excel(STATIC_FNAME, 'CAPITALCOST_S', header=[0], index_col=[0, 1]),
+    'CAP_X': pd.read_excel(STATIC_FNAME, 'ATC', index_col=[0]),
+    'DISTANCE': pd.read_excel(STATIC_FNAME, 'KM', index_col=[0])
 }
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -178,8 +178,8 @@ dict_additions = {
         'energy_max': [0],
         'efficiency_in': [0.96],
         'efficiency_out': [0.96],
-        'cost_power': [static_data['CAPCOST_K'].loc['battery', ('annuity-power', 'AT')].round(4)],
-        'cost_energy': [static_data['CAPCOST_K'].loc['battery', ('annuity-energy', 'AT')].round(4)],
+        'cost_power': [static_data['CAPCOST_K'].loc[('AT', 'battery'), 'annuity-power'].round(4)],
+        'cost_energy': [static_data['CAPCOST_K'].loc[('AT', 'battery'), 'annuity-energy'].round(4)],
         'inflow_factor': [0]
     }
 }
@@ -198,7 +198,7 @@ dict_instantiate['efficiency'].index.set_names(['medea_type', 'product', 'fuel_n
 for i in range(1, 6):
     dict_instantiate['efficiency'][f'l{i}'] = dict_instantiate['efficiency']['l1']
 
-dict_instantiate.update({'CAP_R': static_data['CAP_R'].loc[cfg.year, :]})
+dict_instantiate.update({'CAP_R': static_data['CAP_R'].loc[idx[:, cfg.year], :]})
 dict_instantiate.update({'CAP_X': static_data['CAP_X'].loc[static_data['CAP_X'].index.str.contains('|'.join(cfg.zones)),
                                                        static_data['CAP_X'].columns.str.contains('|'.join(cfg.zones))] /
                                 1000})

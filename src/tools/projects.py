@@ -23,20 +23,20 @@ def create_project(project_name, medea_dir):
 
         # fetch main gams model, if required
         if not os.path.isfile(os.path.join(medea_dir, 'projects', project_name, 'opt', 'medea_main.gms')):
-            copyfile(os.path.join(medea_dir, 'medea', 'medea_main.gms'),
+            copyfile(os.path.join(medea_dir, 'src', 'model', 'medea_main.gms'),
                      os.path.join(medea_dir, 'projects', project_name, 'opt', 'medea_main.gms'))
         # fetch template for custom gams model modifications, if required
         if not os.path.isfile(os.path.join(medea_dir, 'projects', project_name, 'opt', f'medea_{project_name}.gms')):
-            copyfile(os.path.join(medea_dir, 'medea', 'medea_custom.gms'),
+            copyfile(os.path.join(medea_dir, 'src', 'model', 'medea_custom.gms'),
                      os.path.join(medea_dir, 'projects', project_name, 'opt', f'medea_{project_name}.gms'))
         # fetch main gams data, if required
         if not os.path.isfile(os.path.join(medea_dir, 'projects', project_name, 'opt', 'medea_main_data.gdx')):
-            copyfile(os.path.join(medea_dir, 'medea', 'data', 'medea_main_data.gdx'),
+            copyfile(os.path.join(medea_dir, 'data', 'gdx', 'medea_main_data.gdx'),
                      os.path.join(medea_dir, 'projects', project_name, 'opt', 'medea_main_data.gdx'))
 
         # fetch **settings** template, if required
         if not os.path.isfile(os.path.join(medea_dir, 'projects', project_name, 'opt', f'settings_{project_name}.py')):
-            f = open(os.path.join(medea_dir, 'medea', 'templates', 'settings_template.py'), 'r')
+            f = open(os.path.join(medea_dir, 'src', 'templates', 'settings_template.py'), 'r')
             settings_template = f.read()
             f.close()
             settings_project = settings_template.replace('_project_name_', project_name)
@@ -46,7 +46,7 @@ def create_project(project_name, medea_dir):
 
         # read, adjust and write **run** template, if required
         if not os.path.isfile(os.path.join(medea_dir, 'projects', project_name, 'opt', f'run_{project_name}.py')):
-            f = open(os.path.join(medea_dir, 'medea', 'templates', 'run_template.py'), 'r')
+            f = open(os.path.join(medea_dir, 'src', 'templates', 'run_template.py'), 'r')
             run_template = f.read()
             f.close()
             run_project = run_template.replace('medea.settings_template',
@@ -57,7 +57,7 @@ def create_project(project_name, medea_dir):
 
         # fetch scenario **results** template, if required
         if not os.path.isfile(os.path.join(medea_dir, 'projects', project_name, 'opt', f'results_{project_name}.py')):
-            f = open(os.path.join(medea_dir, 'medea', 'templates', 'results_template.py'), 'r')
+            f = open(os.path.join(medea_dir, 'src', 'templates', 'results_template.py'), 'r')
             results_template = f.read()
             f.close()
             results_project = results_template.replace('medea.settings_template',
