@@ -1,5 +1,11 @@
+import logging
 import os
+import sys
 from shutil import copyfile
+
+dirname = os.path.dirname
+sys.path.append(os.path.join(dirname(dirname(dirname(__file__)))))
+from logging_config import setup_logging
 
 
 def create_project(project_name, medea_dir):
@@ -36,34 +42,36 @@ def create_project(project_name, medea_dir):
 
         # fetch **settings** template, if required
         if not os.path.isfile(os.path.join(medea_dir, 'projects', project_name, 'opt', f'settings_{project_name}.py')):
-            f = open(os.path.join(medea_dir, 'src', 'templates', 'settings_template.py'), 'r')
-            settings_template = f.read()
-            f.close()
+            with open(os.path.join(medea_dir, 'src', 'templates', 'settings_template.py'), 'r') as f:
+                settings_template = f.read()
+
             settings_project = settings_template.replace('_project_name_', project_name)
-            f = open(os.path.join(medea_dir, 'projects', project_name, f'settings_{project_name}.py'), 'w')
-            f.write(settings_project)
-            f.close()
+            with open(os.path.join(medea_dir, 'projects', project_name, f'settings_{project_name}.py'), 'w') as f:
+                f.write(settings_project)
 
         # read, adjust and write **run** template, if required
         if not os.path.isfile(os.path.join(medea_dir, 'projects', project_name, 'opt', f'run_{project_name}.py')):
-            f = open(os.path.join(medea_dir, 'src', 'templates', 'run_template.py'), 'r')
-            run_template = f.read()
-            f.close()
+            with open(os.path.join(medea_dir, 'src', 'templates', 'run_template.py'), 'r') as f:
+                run_template = f.read()
+
             run_project = run_template.replace('medea.settings_template',
                                                f'projects.{project_name}.settings_{project_name}')
-            f = open(os.path.join(medea_dir, 'projects', project_name, f'run_{project_name}.py'), 'w')
-            f.write(run_project)
-            f.close()
+            with open(os.path.join(medea_dir, 'projects', project_name, f'run_{project_name}.py'), 'w') as f:
+                f.write(run_project)
 
         # fetch scenario **results** template, if required
         if not os.path.isfile(os.path.join(medea_dir, 'projects', project_name, 'opt', f'results_{project_name}.py')):
-            f = open(os.path.join(medea_dir, 'src', 'templates', 'results_template.py'), 'r')
-            results_template = f.read()
-            f.close()
+            with open(os.path.join(medea_dir, 'src', 'templates', 'results_template.py'), 'r') as f:
+                results_template = f.read()
+
             results_project = results_template.replace('medea.settings_template',
                                                        f'projects.{project_name}.settings_{project_name}')
-            f = open(os.path.join(medea_dir, 'projects', project_name, f'results_{project_name}.py'), 'w')
-            f.write(results_project)
-            f.close()
+            with open(os.path.join(medea_dir, 'projects', project_name, f'results_{project_name}.py'), 'w') as f:
+                f.write(results_project)
 
-    print(f'Successfully created files and folders for project {project_name}')
+    logging.info(f'Successfully created files and folders for project {project_name}')
+
+
+if __name__ == '__main__':
+    setup_logging()
+    create_project(sys.argv[1], sys.argv[2])
