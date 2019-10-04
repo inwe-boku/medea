@@ -5,7 +5,6 @@ import pandas as pd
 import config as cfg
 
 directory = os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'raw', 'AggregatedGenerationPerType')
-# directory = os.fsencode(directory_in_str)
 df_ror = pd.DataFrame()
 
 for file in os.listdir(directory):

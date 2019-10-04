@@ -1,51 +1,66 @@
-import ftplib
+import logging
+import os
 import shutil
 
+import cdsapi
 import numpy as np
 import pandas as pd
 import urllib3
 
 
-# ==============================================================================================
-# general functions
+# ======================================================================================================================
+# leap year functions
+# ----------------------------------------------------------------------------------------------------------------------
 
 def is_leapyear(year):
-    """Determine whether a given year is a leapyear"""
+    """
+    determines whether a given year is a leap year
+    :param year: year to check (numeric)
+    :return: boolean
+    """
     flag = year % 400 == 0 or (year % 4 == 0 and year % 100 != 0)
     return flag
 
 
+def days_in_year(year):
+    """
+    returns number of days in a given year
+    :param year: year of interest (numeric)
+    :return: number of days in year (numeric)
+    """
+    if is_leapyear(year):
+        return 366
+    else:
+        return 365
+
+
 def hours_in_year(year):
+    """
+    returns number of hours in a goven year
+    :param year: year of interest (numeric)
+    :return: number of hours in year (numeric)
+    """
     if is_leapyear(year):
         return 8784
     else:
         return 8760
 
 
-# ==============================================================================================
+# ======================================================================================================================
 # functions for heat load calculation
-# ----------------------------------------------------------------------------------------------
-"""
-for a description of the algorithm see: https://www.agcs.at/agcs/clearing/lastprofile/lp_studie2008.pdf
-
-Implemented consumer clusters are for residential and commercial consumers:
-    HE08 Heizgas Einfamilienhaus LP2008
-    MH08 Heizgas Mehrfamilienhaus LP2008
-    HG08 Heizgas Gewerbe LP2008
-
-industry load profiles are specific and typically measured, i.e. not approximated by load profiles 
-"""
-
-
-# ----------------------------------------------------------------------------------------------
-
-
+# ----------------------------------------------------------------------------------------------------------------------
 def heat_yr2day(av_temp, ht_cons_annual):
     """
-    expected inputs:
-    av_temp ... pandas Series with datetime-index holding daily average temperatures
-    ht_cons_annual ... pandas dataframe with
-    :param av_temp:
+    Converts annual heat consumption to daily heat consumption, based on daily mean temperatures.
+    Underlying algorithm relies on https://www.agcs.at/agcs/clearing/lastprofile/lp_studie2008.pdf
+    Implemented consumer clusters are for residential and commercial consumers:
+    * HE08 Heizgas Einfamilienhaus LP2008
+    * MH08 Heizgas Mehrfamilienhaus LP2008
+    * HG08 Heizgas Gewerbe LP2008
+    Industry load profiles are specific and typically measured, i.e. not approximated by load profiles
+
+    :param av_temp: datetime-indexed pandas.DataFrame holding daily average temperatures
+    :param ht_cons_annual:
     :return:
     """
     # ----------------------------------------------------------------------------
@@ -91,12 +106,17 @@ def heat_yr2day(av_temp, ht_cons_annual):
 
 
 def heat_day2hr(df_ht, con_day, con_pattern):
-    # ----------------------------------------------------------------------------
-    # breakdown of daily consumption to hourly consumption
-    # FAILS FOR DAILY AVERAGE TEMPERATURES BELOW -25°C
-    # ----------------------------------------------------------------------------
+    """
+    convert daily heat consumption to hourly heat consumption
+    Underlying algorithm relies on https://www.agcs.at/agcs/clearing/lastprofile/lp_studie2008.pdf
+    ATTENTION: Algorithm fails for daily average temperatures below -25°C !
+    :param df_ht:
+    :param con_day:
+    :param con_pattern:
+    :return:
+    """
     sigm_a = {'HE08': 2.8423015098, 'HM08': 2.3994211316, 'HG08': 3.0404658371}
-    # apply gas_demand_pattern
+    # apply demand_pattern
     last_day = pd.DataFrame(index=df_ht.tail(1).index + pd.Timedelta(1, unit='d'), columns=sigm_a.keys())
 
     cons_hourly = con_day.append(last_day).astype(float).resample('1H').sum()
@@ -114,17 +134,11 @@ def heat_day2hr(df_ht, con_day, con_pattern):
 
 
 def resample_index(index, freq):
-    """Resamples each day in the daily `index` to the specified `freq`.
-    Parameters
-    ----------
-    index : pd.DatetimeIndex
-        The daily-frequency index to resample
-    freq : str
-        A pandas frequency string which should be higher than daily
-    Returns
-    -------
-    pd.DatetimeIndex
-        The resampled index
+    """
+    resamples a pandas.DateTimeIndex in daily frequency to
+    :param index: pandas.DateTimeIndex to be resampled. Must be daily frequency
+    :param freq: pandas frequency string (of higher than daily frequency)
+    :return: pandas.DateTimeIndex (resampled)
     """
     assert isinstance(index, pd.DatetimeIndex)
     start_date = index.min()
@@ -134,25 +148,60 @@ def resample_index(index, freq):
     return pd.DatetimeIndex(series.loc[index].values)
 
 
-# ================================================================================
-
-
+# ======================================================================================================================
+# functions to retrieve data
+# ----------------------------------------------------------------------------------------------------------------------
 def download_file(url, save_to):
+    """
+    downloads a file from a specified url to disk
+    :param url: url-string
+    :param save_to: destination file name (string)
+    :return:
+    """
     http = urllib3.PoolManager()
     with http.request('GET', url, preload_content=False) as r, open(save_to, 'wb') as out_file:
         shutil.copyfileobj(r, out_file)
 
 
-pwd = 'ausmaus76'
+def download_era_temp(filename, year, bounding_box):
+    """
+    download daily mean temperatures 2m above surface from ERA5 land data from the copernicus climate data store
+    requires registration at https://cds.climate.copernicus.eu/user/register
+    for further information see: https://confluence.ecmwf.int/display/CKB/ERA5-Land+data+documentation
+    :param filename: path and name of downloaded file
+    :param year: year for which daily temperature data is downloaded
+    :param bounding_box: bounding box of temperature data
+    :return:
+    """
+    logging.info('downloading bounding box=%s for year=%s', bounding_box, year)
+    c = cdsapi.Client()
 
+    if os.path.exists(filename):
+        logging.info(f'Skipping {filename}, already exists')
+        return
 
-def get_from_entsoe_ftp(user, pwd):
-    ftp = ftplib.FTP('sftp-transparency.entsoe.eu')
-    ftp.login(user, pwd)
-    data = []
-    ftp.dir(data.append)
-    ftp.quit()
-
-    for line in data:
-        print
-        "-", line
+    logging.info(f'starting download of {filename}...')
+    for i in range(5):
+        try:
+            c.retrieve(
+                'reanalysis-era5-single-levels',
+                {
+                    'product_type': 'reanalysis',
+                    'format': 'netcdf',
+                    'variable': '2m_temperature',
+                    'year': f'{year}',
+                    'month': [f'{month:02d}' for month in range(1, 13, 1)],
+                    'area': bounding_box,
+                    'day': [f'{day:02d}' for day in range(1, 32)],
+                    'time': [f'{hour:02d}:00' for hour in range(24)],
+                },
+                f'{filename}.part'
+            )
+        except Exception as e:
+            logging.warning('download failed: %s', e)
+        else:
+            logging.info(f'download of {filename} successful')
+            os.rename(f'{filename}.part', filename)
+            break
+    else:
+        logging.warning('download failed permanently')

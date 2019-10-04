@@ -16,3 +16,6 @@
 *.blg
 *.spl
 *.synctex.gz
+
+# yaml
+*.yml

@@ -1,3 +1,6 @@
+cdsapi
+scipy
+netCDF4
 urllib3
 #
 ### requirements for medea
