@@ -254,22 +254,22 @@ bal_nse(z)..
 * MARKET CLEARING
 
 bal_el(z,t)..
+                 sum((i,f)$(PLANT_FUELS(i,f) ), g(z,t,i,'el',f) )
+                 + sum(n, r(z,t,n) )
+                 + sum(k, s_out(z,t,k) )
+                 - q_curtail(z,t)
+                 =E=
                  DEMAND(z,t,'el')
                  + sum(i, b(z,t,i,'Power') )
                  + sum(k, s_in(z,t,k) )
                  + sum(zz, x(z,zz,t) )
                  - q_nse(z,t,'el')
-                 =E=
-                 sum((i,f)$(PLANT_FUELS(i,f) ), g(z,t,i,'el',f) )
-                 + sum(n, r(z,t,n) )
-                 + sum(k, s_out(z,t,k) )
-                 - q_curtail(z,t)
                  ;
 bal_ht(z,t)..
+                 sum((i,f)$(PLANT_FUELS(i,f) ), g(z,t,i,'ht',f) )
+                 =E=
                  DEMAND(z,t,'ht')
                  - q_nse(z,t,'ht')
-                 =E=
-                 sum((i,f)$(PLANT_FUELS(i,f) ), g(z,t,i,'ht',f) )
                  ;
 * ------------------------------------------------------------------------------
 * CONVENTIONAL ELECTRICITY GENERATION
@@ -314,7 +314,7 @@ w.UP(z,t,i,l,f)$(NOT FEASIBLE_INPUT(i,l,f)) = 0;
 acn_itm(z,t,n)..
                  r(z,t,n)
                  =E=
-                 GEN_PROFILE(z,t,n) * (INITIAL_CAP_R(z,n) + add_r(z,n) )
+                 GEN_PROFILE(z,t,n) * (INITIAL_CAP_R(z,n) + add_r(z,n) - deco_r(z,n) )
                  ;
 * ------------------------------------------------------------------------------
 * ELECTRICITY STORAGE
