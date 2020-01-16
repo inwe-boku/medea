@@ -92,13 +92,14 @@ for key, value in dict_sets.items():
 # --------------------------------------------------------------------------- #
 # %% prepare static data
 # --------------------------------------------------------------------------- #
+# Source 'CO2_INTENSITY': CO2 Emission Factors for Fossil Fuels, UBA, 2016
 dict_static = {
     'CO2_INTENSITY': {
         'Nuclear': [0],
-        'Lignite': [0.45],
-        'Coal': [0.333],
-        'Gas': [0.199],
-        'Oil': [0.275],
+        'Lignite': [0.399],
+        'Coal': [0.337],
+        'Gas': [0.201],
+        'Oil': [0.266],
         'Hydro': [0],
         'Biomass': [0],
         'Solar': [0],

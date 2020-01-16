@@ -89,9 +89,10 @@ OM_COST_R_VAR = df2gdx(db, static_data['CAPCOST_R'].loc[:, 'variable o&m-cost'],
 PEAK_LOAD = df2gdx(db, dict_instantiate['PEAK_LOAD'], 'PEAK_LOAD', 'par', [z_set], '[GW]')
 PEAK_PROFILE = df2gdx(db, dict_instantiate['PEAK_PROFILE'], 'PEAK_PROFILE', 'par', [z_set, n_set], '[]')
 
-PRICE_CO2 = df2gdx(db, ts_data['price'].loc[:, idx['EUA', :]].stack(), 'PRICE_CO2', 'par', [t_set, z_set])
+PRICE_CO2 = df2gdx(db, ts_data['price'].loc[:, idx['EUA', :]].stack().reorder_levels((1, 0)),
+                   'PRICE_CO2', 'par', [z_set, t_set])
 PRICE_FUEL = df2gdx(db, ts_data['price'].drop(['EUA', 'price_day_ahead'], axis=1).stack((0, 1)).reorder_levels(
-    (0, 2, 1)).round(4), 'PRICE_FUEL', 'par', [t_set, z_set, f_set])
+    (2, 0, 1)).round(4), 'PRICE_FUEL', 'par', [z_set, t_set, f_set])
 # PRICE_DA is NOT required by model
 PRICE_DA = df2gdx(db, ts_data['price'].loc[:, idx['price_day_ahead', :]].stack(), 'PRICE_DA', 'par', [t_set, z_set])
 
