@@ -3,6 +3,7 @@ import os
 import shutil
 
 import cdsapi
+import certifi
 import numpy as np
 import pandas as pd
 import urllib3
@@ -158,7 +159,7 @@ def download_file(url, save_to):
     :param save_to: destination file name (string)
     :return:
     """
-    http = urllib3.PoolManager()
+    http = urllib3.PoolManager(ca_certs=certifi.where())
     with http.request('GET', url, preload_content=False) as r, open(save_to, 'wb') as out_file:
         shutil.copyfileobj(r, out_file)
 
