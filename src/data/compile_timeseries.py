@@ -50,7 +50,7 @@ itm_capacities = pd.read_excel(os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'process
 itm_capacities['date'] = pd.to_datetime(itm_capacities.index.get_level_values(1) + 1, format='%Y',
                                         utc='true') - pd.Timedelta(days=184)
 itm_capacities = itm_capacities.unstack(level=0)
-itm_capacities.set_index('date', inplace=True)
+itm_capacities.set_index(('date', 'AT'), inplace=True)
 ts_medea['AT-pv-capacity'] = itm_capacities[('pv', 'AT')]
 ts_medea['AT-pv-capacity'] = ts_medea['AT-pv-capacity'].interpolate()
 ts_medea['AT-wind_on-capacity'] = itm_capacities[('wind_on', 'AT')]

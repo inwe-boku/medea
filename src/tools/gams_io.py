@@ -158,7 +158,7 @@ def run_medea(gms_exe_dir, gms_model, medea_project, project_scenario, export_lo
     gdx_out = f'gdx=medea_out_{project_scenario}.gdx'
     # call GAMS to solve model / scenario
     subprocess.run(
-        f'{gms_exe_dir}\\gams {gms_model} {gdx_out} lo=3 --project={medea_project} --scenario={project_scenario}')
+        f'{gms_exe_dir}\\gams {gms_model} {gdx_out} lo=3 o=nul --project={medea_project} --scenario={project_scenario}')
     # clean up after each run and delete input data (which is also included in output, so no information lost)
     if os.path.isfile(export_location):
         os.remove(export_location)
@@ -178,7 +178,7 @@ def run_medea_project(project_name, scenario_id):
 
     # call GAMS to solve model / scenario
     subprocess.run(
-        f'{cfg.GMS_SYS_DIR}\\gams {gms_model_fname} {gdx_out_fname} lo=3 --project={project_name} --scenario={scenario_id}')
+        f'{cfg.GMS_SYS_DIR}\\gams {gms_model_fname} {gdx_out_fname} lo=3 o=nul --project={project_name} --scenario={scenario_id}')
     # clean up after each run and delete input data (which is also included in output, so no information lost)
     if os.path.isfile(input_fname):
         os.remove(input_fname)
