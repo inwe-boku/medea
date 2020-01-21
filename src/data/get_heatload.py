@@ -72,7 +72,8 @@ cons_annual = ht_cons * 1.125
 # read data
 # ----------------------------------------------------------------------------
 
-df_heat = pd.read_csv(os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'processed', 'temp_daily_mean.csv'), index_col=[0])
+df_heat = pd.read_csv(os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'processed', 'temp_daily_mean.csv'), index_col=[0],
+                      parse_dates=True)
 df_heat['year'] = df_heat.index.year
 df_heat['weekday'] = df_heat.index.strftime('%a')
 # fill NA to prevent NAs in temperature smoothing below
