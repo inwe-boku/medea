@@ -16,7 +16,8 @@ setup_logging()
 # download data from sources
 # ----------------------------------------------------------------------------
 # Austrian energy balance as provided by Statistik Austria
-url = 'http://www.statistik.at/wcm/idc/idcplg?IdcService=GET_NATIVE_FILE&RevisionSelectionMethod=LatestReleased&dDocName=029955'
+url = ('http://www.statistik.at/wcm/idc/idcplg?IdcService=GET_NATIVE_FILE&'
+       'RevisionSelectionMethod=LatestReleased&dDocName=029955')
 enbal_at = os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'raw', 'enbal_AT.xlsx')
 logging.info(f'downloading Austrian energy balance')
 download_file(url, enbal_at)
@@ -48,7 +49,8 @@ ht_cons = pd.DataFrame(index=YEARS, columns=ht_cols)
 #     (cf. https://www.statistik.rlp.de/fileadmin/dokumente/gemeinschaftsveroeff/zen/Zensus_GWZ_2014.pdf)
 #   - average space in single-family houses: 127.3 m^2; in multiple dwellings: 70.6 m^2
 #   - specific heat consumption: EFH: 147.9 kWh/m^2; MFH: 126.5 kWh/m^2
-#     (cf. http://www.rwi-essen.de/media/content/pages/publikationen/rwi-projektberichte/PB_Datenauswertung-Energieverbrauch-privHH.pdf, p. 5)
+#     (cf. http://www.rwi-essen.de/media/content/pages/publikationen/rwi-projektberichte/
+#     PB_Datenauswertung-Energieverbrauch-privHH.pdf, p. 5)
 #   - implied share of heat consumption, assuming on average 7 appartments per MFH: 37.6% EFH; 62.4% MFH
 
 ht_cons.loc[YEARS, ('AT', 'HE08')] = ht_enduse_at.loc['Private Haushalte', YEARS] / 1000 * 0.376 * 0.75
@@ -66,7 +68,7 @@ ht_cons.loc[YEARS, ('DE', 'IND')] = ht_enduse_de.loc['Bergbau, Gew. Steine u. Er
                                                      YEARS] / 3.6
 
 # Accounting for own consumption and line losses
-cons_annual = ht_cons * 1.125
+cons_annual = ht_cons.multiply(1.125)
 
 # ----------------------------------------------------------------------------
 # read data
