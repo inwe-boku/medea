@@ -30,7 +30,7 @@ url_extensions = {12: 'xlsx', 13: 'xls', 14: 'xls', 15: 'xlsx', 16: 'xls', 17: '
 for yr in [x - 2000 for x in YEARS]:
     url = f'https://ag-energiebilanzen.de/index.php?article_id=29&fileName=bilanz{yr}d.{url_extensions[yr]}'
     enbal_de = os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'raw', f'enbal_DE_20{yr}.xlsx')
-    logging.info(f'downloading Germany energy balance for year 20{yr}')
+    logging.info(f'downloading German energy balance for year 20{yr}')
     download_file(url, enbal_de)
     df = pd.read_excel(enbal_de, sheet_name='tj', index_col=[0], usecols=[0, 31], skiprows=list(range(0, 50)),
                        nrows=24, na_values=['-'])

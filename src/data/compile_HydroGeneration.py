@@ -25,13 +25,13 @@ for file in os.listdir(directory):
             ts_agpt.columns = newcols
 
         for reg in cfg.zones:
-            df_tmpror = ts_agpt.loc[(ts_agpt['ProductionType'] == 'Hydro Run-of-river and poundage ') & (
+            df_tmpror = ts_agpt.loc[(ts_agpt['ProductionType'] == 'Hydro Run-of-river and poundage') & (
                     ts_agpt['MapCode'] == reg), 'ActualGenerationOutput']
-            df_tmpres = ts_agpt.loc[(ts_agpt['ProductionType'] == 'Hydro Water Reservoir ') & (
+            df_tmpres = ts_agpt.loc[(ts_agpt['ProductionType'] == 'Hydro Water Reservoir') & (
                     ts_agpt['MapCode'] == reg), 'ActualGenerationOutput']
-            df_tmppspgen = ts_agpt.loc[(ts_agpt['ProductionType'] == 'Hydro Pumped Storage ') & (
+            df_tmppspgen = ts_agpt.loc[(ts_agpt['ProductionType'] == 'Hydro Pumped Storage') & (
                     ts_agpt['MapCode'] == reg), 'ActualGenerationOutput']
-            df_tmppspcon = ts_agpt.loc[(ts_agpt['ProductionType'] == 'Hydro Pumped Storage ') & (
+            df_tmppspcon = ts_agpt.loc[(ts_agpt['ProductionType'] == 'Hydro Pumped Storage') & (
                     ts_agpt['MapCode'] == reg), 'ActualConsumption']
             df_tmpfile[f'ror_{reg}'] = df_tmpror.drop_duplicates()
             df_tmpfile[f'res_{reg}'] = df_tmpres.drop_duplicates()
