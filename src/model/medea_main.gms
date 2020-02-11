@@ -46,6 +46,8 @@ Sets
 alias(z,zz);
 * ------------------------------------------------------------------------------
 Parameters
+         AIR_POL_COST_FIX(f)     fixed air pollution cost [EUR per MW]
+         AIR_POL_COST_VAR(f)     variable air pollution cost [EUR per MWh]
          CAPITALCOST_G(i)        specific annualized capital cost of dispatchable generators [EUR per MW]
          CAPITALCOST_R(z,n)      specific annualized capital cost of intermittent generators [EUR per MW]
          CAPITALCOST_S(z,k)      specific annualized capital cost of storage power (in and out) [EUR per MW]
@@ -68,13 +70,14 @@ Parameters
          INITIAL_CAP_V(z,k)      initial installed storage volume [GWh]
          INITIAL_CAP_X(z,zz)     initial installed transmission capacity [GW]
          LAMBDA                  load scaling factor for system service requirement
+         MAP_FUEL_G(i,f)         maps fuels to dispatchable plants
+         MAP_FUEL_R(n,f)         maps fuels to renewable generators
          OM_COST_G_QFIX(i)       quasi-fixed operation and maintenance cost [EUR per MW]
          OM_COST_G_VAR(i)        variable operation and maintenance cost [EUR per MWh]
          OM_COST_R_QFIX(z,n)     quasi-fixed operation and maintenance cost [EUR per MW]
          OM_COST_R_VAR(z,n)      variable operation and maintenance cost [EUR per MWh]
          PEAK_LOAD(z)            maximum electricity demand [GW]
          PEAK_PROFILE(z,n)       maximum relative generation from intermittent sources
-         PLANT_FUELS(i,f)        maps fuels to plants - used to tighten model formulation
          PRICE_CO2(z,t)          CO2 price [EUR per t CO2]
          PRICE_FUEL(z,t,f)       fuel price [EUR per MWh]
          SIGMA                   intermittent generation scaling factor for system service requirement
@@ -95,6 +98,7 @@ $if NOT exist MEDEA_%scenario%_data.gdx  $gdxin medea_main_data
 $if     exist MEDEA_%scenario%_data.gdx  $gdxin medea_%scenario%_data
 $if NOT %PROJECT% == test $load t
 $load    f i h j k l m n z
+$load    AIR_POL_COST_FIX AIR_POL_COST_VAR
 $load    CAPITALCOST_R CAPITALCOST_G CAPITALCOST_S CAPITALCOST_V CAPITALCOST_X
 $load    CO2_INTENSITY DEMAND DISTANCE EFFICIENCY_G EFFICIENCY_S_OUT
 $load    EFFICIENCY_S_IN FEASIBLE_INPUT FEASIBLE_OUTPUT GEN_PROFILE INFLOWS
@@ -106,11 +110,15 @@ $load    SWITCH_INVEST_THERM SWITCH_INVEST_ITM SWITCH_INVEST_STORAGE
 $load    SWITCH_INVEST_ATC
 $gdxin
 
-PLANT_FUELS(i,f)$(sum(m,EFFICIENCY_G(i,m,f))) = yes;
+MAP_FUEL_G(i,f)$(sum(m,EFFICIENCY_G(i,m,f))) = yes;
+MAP_FUEL_R('ror','Hydro') = yes;
+MAP_FUEL_R('pv','Solar') = yes;
+MAP_FUEL_R('wind_on','Wind') = yes;
+MAP_FUEL_R('wind_off','Wind') = yes;
 
 * ------------------------------------------------------------------------------
 * enable the use of synthetic gas in natural gas-fired plant
-$if %SYNGAS% == yes PLANT_FUELS(i,'Syngas')$PLANT_FUELS(i,'Gas') = yes;
+$if %SYNGAS% == yes MAP_FUEL_G(i,'Syngas')$MAP_FUEL_G(i,'Gas') = yes;
 $if %SYNGAS% == yes EFFICIENCY_G(i, 'el', 'Syngas') = EFFICIENCY_G(i, 'el', 'Gas');
 $if %SYNGAS% == yes FEASIBLE_INPUT(i,l,'Syngas') = FEASIBLE_INPUT(i,l,'Gas');
 
@@ -121,6 +129,7 @@ Variables
 ;
 
 Positive Variables
+         cost_air_pol(z,f)       external cost of air pollution [kEUR]
          cost_fuel(z,t,i)        total cost of fuel used for energy generation [kEUR]
          cost_co2(z,t,i)         total cost of CO2 emissions [kEUR]
          cost_om_g(z,i)          total operation and maintenance cost of dispatchables [kEUR]
@@ -171,6 +180,7 @@ bal_w_chp, uplim_g_chp, lolim_b_chp,
 acn_itm,
 uplim_store_in, uplim_store_out, uplim_store_vol, bal_store, lolim_add_v,
 acn_co2,
+acn_airpollute,
 uplim_transmission, lolim_transmission, bal_transmission, bal_add_x,
 uplim_deco_g, uplim_deco_r,
 lolim_ancservices,
@@ -205,7 +215,7 @@ bal_zone(z)..
 bal_fuel(z,t,i)..
                  cost_fuel(z,t,i)
                  =E=
-                 sum(f$(PLANT_FUELS(i,f) ), PRICE_FUEL(z,t,f) * b(z,t,i,f) )
+                 sum(f$(MAP_FUEL_G(i,f) ), PRICE_FUEL(z,t,f) * b(z,t,i,f) )
                  ;
 bal_co2(z,t,i)..
                  cost_co2(z,t,i)
@@ -216,7 +226,7 @@ bal_om_g(z,i)..
                  cost_om_g(z,i)
                  =E=
                  OM_COST_G_QFIX(i) * (INITIAL_CAP_G(z,i) + add_g(z,i) - deco_g(z,i) )
-                 + sum((t,m,f)$(PLANT_FUELS(i,f) ), OM_COST_G_VAR(i) * g(z,t,i,m,f) )
+                 + sum((t,m,f)$(MAP_FUEL_G(i,f) ), OM_COST_G_VAR(i) * g(z,t,i,m,f) )
                  ;
 bal_om_r(z,n)..
                  cost_om_r(z,n)
@@ -254,7 +264,7 @@ bal_nse(z)..
 * MARKET CLEARING
 
 bal_el(z,t)..
-                 sum((i,f)$(PLANT_FUELS(i,f) ), g(z,t,i,'el',f) )
+                 sum((i,f)$(MAP_FUEL_G(i,f) ), g(z,t,i,'el',f) )
                  + sum(n, r(z,t,n) )
                  + sum(k, s_out(z,t,k) )
                  - q_curtail(z,t)
@@ -266,7 +276,7 @@ bal_el(z,t)..
                  - q_nse(z,t,'el')
                  ;
 bal_ht(z,t)..
-                 sum((i,f)$(PLANT_FUELS(i,f) ), g(z,t,i,'ht',f) )
+                 sum((i,f)$(MAP_FUEL_G(i,f) ), g(z,t,i,'ht',f) )
                  =E=
                  DEMAND(z,t,'ht')
                  - q_nse(z,t,'ht')
@@ -277,7 +287,7 @@ bal_ht(z,t)..
 * set efficiency for electricity-only gas plants
 
 uplim_g(z,t,i,m)..
-                 sum(f$(PLANT_FUELS(i,f) ), g(z,t,i,m,f) )
+                 sum(f$(MAP_FUEL_G(i,f) ), g(z,t,i,m,f) )
                  =L=
                  INITIAL_CAP_G(z,i) + add_g(z,i) - deco_g(z,i)
                  ;
@@ -293,19 +303,19 @@ lolim_b(z,t,i,m,f)$(NOT j(i))..
 * set kennlinienfeld for gas chps
 
 bal_w_chp(z,t,i)$(j(i))..
-                 sum((l,f)$(PLANT_FUELS(i,f) ), w(z,t,i,l,f))
+                 sum((l,f)$(MAP_FUEL_G(i,f) ), w(z,t,i,l,f))
                  =L=
                  INITIAL_CAP_G(z,i) + add_g(z,i) - deco_g(z,i)
                  ;
 uplim_g_chp(z,t,i,m,f)$(j(i))..
                  g(z,t,i,m,f)
                  =E=
-                 sum(l$(PLANT_FUELS(i,f) ), FEASIBLE_OUTPUT(i,l,m) * w(z,t,i,l,f) )
+                 sum(l$(MAP_FUEL_G(i,f) ), FEASIBLE_OUTPUT(i,l,m) * w(z,t,i,l,f) )
                  ;
 lolim_b_chp(z,t,i,f)$(j(i))..
                  b(z,t,i,f)
                  =E=
-                 sum(l$(PLANT_FUELS(i,f) ), FEASIBLE_INPUT(i,l,f) * w(z,t,i,l,f) )
+                 sum(l$(MAP_FUEL_G(i,f) ), FEASIBLE_INPUT(i,l,f) * w(z,t,i,l,f) )
                  ;
 w.UP(z,t,i,l,f)$(NOT FEASIBLE_INPUT(i,l,f)) = 0;
 * ------------------------------------------------------------------------------
@@ -356,6 +366,18 @@ acn_co2(z,t,i)..
                  sum(f$(CO2_INTENSITY(f)), CO2_INTENSITY(f) * b(z,t,i,f) )
                  ;
 * ------------------------------------------------------------------------------
+* ACCOUNTING FOR EXTERNALITIES FROM AIR POLLUTANTS
+
+acn_airpollute(z,f)..
+                 cost_air_pol(z,f)
+                 =E=
+                 sum(i$MAP_FUEL_G(i,f), AIR_POL_COST_FIX(f) * (INITIAL_CAP_G(z,i) + add_g(z,i) - deco_g(z,i)) * MAP_FUEL_G(i,f))
+                 + sum(n$MAP_FUEL_R(n,f), AIR_POL_COST_FIX(f) * (INITIAL_CAP_R(z,n) + add_r(z,n) - deco_r(z,n)) * MAP_FUEL_R(n,f))
+                 + sum((t,i)$MAP_FUEL_G(i,f), AIR_POL_COST_VAR(f) * b(z,t,i,f))
+                 + sum((t,n)$MAP_FUEL_R(n,f), AIR_POL_COST_VAR(f) * r(z,t,n) * MAP_FUEL_R(n,f) )
+                 ;
+
+* ------------------------------------------------------------------------------
 * INTERZONAL ELECTRICITY EXCHANGE
 
 uplim_transmission(z,zz,t)..
@@ -397,7 +419,7 @@ uplim_deco_r(z,n)..
 * ANCILLARY SERVICES
 
 lolim_ancservices(z,t)..
-                 sum((i,f)$(PLANT_FUELS(i,f) ), g(z,t,i,'el',f) )
+                 sum((i,f)$(MAP_FUEL_G(i,f) ), g(z,t,i,'el',f) )
                  + r(z,t,'ror')
                  + sum(k, s_out(z,t,k) + s_in(z,t,k) )
                  =G=

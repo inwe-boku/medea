@@ -7,9 +7,6 @@ import pandas as pd
 import config as cfg
 from src.tools.data_processing import hours_in_year
 
-# TODO: PerformanceWarning: indexing past lexsort-depth may impact performance. need to sort index of affected
-# dataframes. Possibly by reindex() or sort_index(). lexsort can be checked with df.index.is_lexsorted()
-
 # --------------------------------------------------------------------------- #
 # %% settings and initializing
 # --------------------------------------------------------------------------- #
@@ -29,7 +26,8 @@ static_data = {
     'cost_transport': pd.read_excel(STATIC_FNAME, 'COST_TRANSPORT', header=[0], index_col=[0]),
     'CAPCOST_K': pd.read_excel(STATIC_FNAME, 'CAPITALCOST_S', header=[0], index_col=[0, 1]),
     'CAP_X': pd.read_excel(STATIC_FNAME, 'ATC', index_col=[0]),
-    'DISTANCE': pd.read_excel(STATIC_FNAME, 'KM', index_col=[0])
+    'DISTANCE': pd.read_excel(STATIC_FNAME, 'KM', index_col=[0]),
+    'AIR_POLLUTION': pd.read_excel(STATIC_FNAME, 'AIR_POLLUTION', index_col=[0])
 }
 
 # --------------------------------------------------------------------------------------------------------------------
@@ -152,26 +150,28 @@ dict_static = {
 
 dict_additions = {
     'boilers': {
-        'medea_type': [49.5],
+        # 'medea_type': [49.5],
+        'set_element': 'ng_boiler_chp',
         ('cap', 'AT'): [4.5],
         ('cap', 'DE'): [25.5],
         ('eta', 'AT'): [0.9],
-        ('eta', 'DE'): [0.9],
-        ('count', 'AT'): [15],
-        ('count', 'DE'): [85],
-        ('num', 'AT'): [85],
-        ('num', 'DE'): [255]
+        ('eta', 'DE'): [0.9]
+        # ('count', 'AT'): [15],
+        # ('count', 'DE'): [85],
+        # ('num', 'AT'): [85],
+        # ('num', 'DE'): [255]
     },
     'heatpumps': {
-        'medea_type': [100],
+        # 'medea_type': [100],
+        'set_element': 'heatpump_pth',
         ('cap', 'AT'): [0.1],
         ('cap', 'DE'): [0.1],
         ('eta', 'AT'): [3.0],
-        ('eta', 'DE'): [3.0],
-        ('count', 'AT'): [1],
-        ('count', 'DE'): [1],
-        ('num', 'AT'): [1],
-        ('num', 'DE'): [1]
+        ('eta', 'DE'): [3.0]
+        # ('count', 'AT'): [1],
+        # ('count', 'DE'): [1],
+        # ('num', 'AT'): [1],
+        # ('num', 'DE'): [1]
     },
     'batteries': {
         'power_in': [0],
@@ -186,7 +186,7 @@ dict_additions = {
 }
 
 dict_instantiate = {'CO2_INTENSITY': pd.DataFrame.from_dict(dict_static['CO2_INTENSITY'],
-                                                                 orient='index', columns=['Value'])}
+                                                            orient='index', columns=['Value'])}
 
 dict_instantiate.update({'efficiency': pd.DataFrame.from_dict(dict_static['eta'], orient='index', columns=['l1'])})
 dict_instantiate['efficiency']['product'] = 'el'
@@ -200,9 +200,9 @@ for i in range(1, 6):
     dict_instantiate['efficiency'][f'l{i}'] = dict_instantiate['efficiency']['l1']
 
 dict_instantiate.update({'CAP_R': static_data['CAP_R'].loc[idx[:, cfg.year], :]})
-dict_instantiate.update({'CAP_X': static_data['CAP_X'].loc[static_data['CAP_X'].index.str.contains('|'.join(cfg.zones)),
-                                                       static_data['CAP_X'].columns.str.contains('|'.join(cfg.zones))] /
-                                1000})
+dict_instantiate.update({'CAP_X': static_data['CAP_X'].loc[
+                                      static_data['CAP_X'].index.str.contains('|'.join(cfg.zones)),
+                                      static_data['CAP_X'].columns.str.contains('|'.join(cfg.zones))] / 1000})
 dict_instantiate.update({'DISTANCE': static_data['DISTANCE'].loc[static_data['DISTANCE'].index.str.contains(
     '|'.join(cfg.zones)), static_data['DISTANCE'].columns.str.contains('|'.join(cfg.zones))]})
 
@@ -214,48 +214,46 @@ static_data.update({'SIGMA': pd.DataFrame(dict_static['SIGMA'], columns=['Value'
 # --------------------------------------------------------------------------- #
 # %% preprocessing plant data
 # --------------------------------------------------------------------------- #
-# select active thermal plants
+# dispatchable (thermal) plants
+
+# filter active thermal plants
 plant_data.update({'active': plant_data['conventional'].loc[
     (plant_data['conventional']['UnitOperOnlineDate'] < pd.Timestamp(cfg.year, 1, 1)) &
     (plant_data['conventional']['UnitOperRetireDate'] > pd.Timestamp(cfg.year, 12, 31)) |
-    np.isnat(plant_data['conventional']['UnitOperRetireDate'])
-    ]})
-plant_data['active'] = plant_data['active'].loc[
-    (plant_data['active']['MedeaType'] < 60) |
-    (plant_data['active']['MedeaType'] >= 70)
-    ]
+    np.isnat(plant_data['conventional']['UnitOperRetireDate'])]})
+# exclude hydro power plant
+plant_data['active'] = plant_data['active'].loc[(plant_data['active']['MedeaType'] < 60) |
+                                                (plant_data['active']['MedeaType'] >= 70)]
 
-# distinguish between plants in different countries
-tec_props = plant_data['active'].groupby(['MedeaType', 'PlantCountry'])['UnitNameplate'].sum().to_frame() / 1000
-tec_props['eta'] = plant_data['active'].groupby(['MedeaType', 'PlantCountry'])['Eta'].mean().to_frame()
-tec_props['count'] = plant_data['active'].groupby(['MedeaType'])['PlantCountry'].value_counts().to_frame(name='count')
-tec_props['num'] = (tec_props['UnitNameplate'].round(decimals=1) * 10).astype(int)
-tec_props.rename(index={'Germany': 'DE', 'Austria': 'AT'}, columns={'UnitNameplate': 'cap'}, inplace=True)
-tec_props = tec_props.unstack(-1)
-tec_props.drop(0.0, axis=0, inplace=True)
-# add data for heat boilers
-tec_props = tec_props.append(pd.DataFrame.from_dict(dict_additions['boilers']).set_index('medea_type'))
-# add data for heatpumps
-tec_props = tec_props.append(pd.DataFrame.from_dict(dict_additions['heatpumps']).set_index('medea_type'))
-# tec_props.drop(0, axis=0, inplace=True)
+# capacities by country in GW
+prop_g = plant_data['active'].groupby(['MedeaType', 'PlantCountry'])['UnitNameplate'].sum().to_frame() / 1000
+prop_g['eta'] = plant_data['active'].groupby(['MedeaType', 'PlantCountry'])['Eta'].mean().to_frame()
+# prop_g['count'] = plant_data['active'].groupby(['MedeaType'])['PlantCountry'].value_counts().to_frame(name='count')
+# prop_g['num'] = (prop_g['UnitNameplate'].round(decimals=1) * 10).astype(int)
 
-# TODO: Throws SettingWithCopyWarning: A value is trying to be set on a copy of a slice from a DataFrame
-for zone in cfg.zones:
-    tec_props.loc[:, 'eta'].update(pd.DataFrame.from_dict(dict_static['eta'], orient='index', columns=[zone]),
-                                   overwrite=False)
+prop_g.rename(index={'Germany': 'DE', 'Austria': 'AT'}, columns={'UnitNameplate': 'cap'}, inplace=True)
+prop_g = prop_g.unstack(-1)
+prop_g.drop(0.0, axis=0, inplace=True)
 # index by plant element names instead of medea_type-numbers
-# TODO: massive error when matching medea-numbers to plant names
-type_plant_match = static_data['tec'][['medea_type', 'set_element']].copy()
-type_plant_match.set_index('medea_type', inplace=True)
-tec_props['set_elements'] = type_plant_match.loc[tec_props.index, :].values
-tec_props.set_index('set_elements', inplace=True)
-tec_props = tec_props.stack(-1).swaplevel(axis=0)
-tec_props = tec_props.dropna()
-dict_instantiate.update({'tec_props': tec_props})
+prop_g.index = prop_g.index.map(pd.Series(static_data['tec']['set_element'].values,
+                                          index=static_data['tec']['medea_type'].values).to_dict())
+# update 'empirical' efficiencies with generic efficiencies
+for zone in cfg.zones:
+    prop_g.loc[:, idx['eta', zone]].update(pd.DataFrame.from_dict(dict_static['eta'],
+                                                                  orient='index', columns=['eta']).iloc[:, 0])
+# add data for heat boilers
+prop_g = prop_g.append(pd.DataFrame.from_dict(dict_additions['boilers']).set_index('set_element'))
+# add data for heatpumps
+prop_g = prop_g.append(pd.DataFrame.from_dict(dict_additions['heatpumps']).set_index('set_element'))
+# remove non-existent plant
+prop_g = prop_g.stack(-1).swaplevel(axis=0)
+prop_g = prop_g.dropna()
+# update instantiation dictionary
+dict_instantiate.update({'tec_props': prop_g})
 
 # add 'tec'-set to dict_sets
-dict_sets.update({'i': pd.DataFrame(data=True, index=tec_props.index.get_level_values(1).unique().values,
-                                      columns=['Value'])})
+dict_sets.update({'i': pd.DataFrame(data=True, index=prop_g.index.get_level_values(1).unique().values,
+                                    columns=['Value'])})
 
 static_data['feasops']['fuel_name'] = (static_data['feasops']['medea_type'] / 10).apply(np.floor) * 10
 static_data['feasops']['fuel_name'].replace({y: x for x, y in dict_sets['f'].itertuples()}, inplace=True)
@@ -266,7 +264,7 @@ static_data['feasops'].dropna(inplace=True)
 static_data['feasops'].set_index(['set_element', 'l', 'fuel_name'], inplace=True)
 # following line produces memory error (0xC00000FD) --> workaround with element-wise division
 # df_feasops['fuel_need'] = df_feasops['fuel']/ df_eff
-# TODO: PerformanceWarning: indexing past lexsort depth may impact performance
+# TODO: PerformanceWarning: indexing past lexsort depth may impact performance (3 times)
 static_data['feasops']['fuel_need'] = np.nan
 for typ in static_data['feasops'].index.get_level_values(0).unique():
     for lim in static_data['feasops'].index.get_level_values(1).unique():
