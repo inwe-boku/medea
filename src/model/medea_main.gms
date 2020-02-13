@@ -296,7 +296,7 @@ lolim_b(z,t,i,m,f)$(NOT j(i))..
                  =E=
                  EFFICIENCY_G(i,m,f) * b(z,t,i,f)
                  ;
-
+b.UP(z,t,i,f)$(NOT MAP_FUEL_G(i,f)) = 0;
 * ------------------------------------------------------------------------------
 * CO-GENERATION OF HEAT AND ELECTRICITY
 
@@ -430,9 +430,9 @@ lolim_ancservices(z,t)..
 * CURTAILMENT
 
 uplim_curtail(z,t)..
-                 q_curtail(z,t)
-                 =L=
                  sum(n$(NOT SAMEAS(n,'ror')), r(z,t,n) )
+                 =G=
+                 q_curtail(z,t)
                  ;
 * ------------------------------------------------------------------------------
 * INVESTMENT SWITCHES FOR THE LONG AND THE SHORT RUN
