@@ -480,138 +480,88 @@ modelStat = medea.modelstat;
 solveStat = medea.solvestat;
 
 * ------------------------------------------------------------------------------
-* ex post renewables share
-parameter
-REN_SHARE(z),
-ANN_G_BIOMASS(z),
-ANN_G_SYNGAS(Z),
-ANN_R(z),
-ANN_EL_CONS(z);
-
-REN_SHARE(z) =   (sum((t,n), r.L(z,t,n) )
-                 + sum((t,k), s_out.L(z,t,k) )
-                 - sum((t,k), s_in.L(z,t,k) )
-                 + sum((t,i), g.L(z,t,i,'el','Biomass') )
-                 + sum((t,i), g.L(z,t,i,'el','Syngas') ) )
-                 / sum(t, DEMAND(z,t,'el') )
-                 ;
-
-ANN_R(z) = sum((t,n), r.L(z,t,n) );
-ANN_G_BIOMASS(z) = sum((t,i), g.L(z,t,i,'el','Biomass') );
-ANN_G_SYNGAS(Z) = sum((t,i), g.L(z,t,i,'el','Syngas') );
-ANN_EL_CONS(z) = sum(t, DEMAND(z,t,'el') );
-
-display REN_SHARE, ANN_G_BIOMASS, ANN_G_SYNGAS, ANN_R, ANN_EL_CONS;
-
-* ------------------------------------------------------------------------------
-* summary of exogenous parameters
+* EX-POST ANALYSIS
+* parameters summarizing model solution - CamelCaseStyle beginning with Ann
 parameters
-ANNUAL_CONSUMPTION(z,m),
-FULL_LOAD_HOURS(z,n),
-AVG_PRICE(z,f),
-AVG_PRICE_CO2(z);
-
-ANNUAL_CONSUMPTION(z,m) = sum(t, DEMAND(z,t,m));
-FULL_LOAD_HOURS(z,n) = sum(t, GEN_PROFILE(z,t,n));
-AVG_PRICE(z,f) = sum(t, PRICE_FUEL(z,t,f)) / card(t);
-AVG_PRICE_CO2(z) = sum(t, PRICE_CO2(z,t)) / card(t);
-
-* ------------------------------------------------------------------------------
-* annual system operation
-parameter
-annual_g(z,m),
-annual_g_by_tec(z,i,m,f),
-annual_s_in(z),
-annual_s_out(z),
-annual_x(z),
-annual_b(z,f),
-annual_co2(z),
-annual_curtail(z);
-
-annual_g(z,m) = sum((t,i,f), g.L(z, t, i, m, f));
-annual_g_by_tec(z,i,m,f) = sum(t, g.L(z, t, i, m, f));
-annual_s_in(z) = sum((t,k), s_in.L(z,t,k));
-annual_s_out(z) = sum((t,k), s_out.L(z,t,k));
-annual_x(zz) = sum(t, x.L('AT',zz,t));
-annual_b(z,f) = sum((t,i), b.L(z,t,i,f));
-annual_co2(z) = sum((t,i), emission_co2.L(z,t,i));
-annual_curtail(z) = sum(t, q_curtail.L(z,t));
-
-display annual_b, annual_s_in, annual_s_out;
-
-* ------------------------------------------------------------------------------
-* annual monetary values
-parameters
-annual_value_g(z,m),
-annual_value_g_by_tec(z,i,m),
-annual_value_s_in(z),
-annual_value_s_out(z),
-annual_value_x(z,zz),
-annual_value_curtail(z);
-
-annual_value_g(z,m) = sum((t,i,f), bal_el.M(z,t) * g.L(z,t,i,m,f));
-annual_value_g_by_tec(z,i,m) = sum((t,f), bal_el.M(z,t) * g.L(z,t,i,m,f));
-annual_value_s_in(z) = sum((t,k), bal_el.M(z,t) * s_in.L(z,t,k));
-annual_value_s_out(z) = sum((t,k), bal_el.M(z,t) * s_out.L(z,t,k));
-annual_value_x(z,zz) = sum(t, bal_el.M(z,t) * x.L(z,zz,t));
-annual_value_curtail(z) = sum(t, bal_el.M(z,t) * q_curtail.L(z,t));
-
-* ------------------------------------------------------------------------------
-* annual prices, cost, producer surplus
-parameter
-annual_price_el(z),
-annual_price_ht(z),
-annual_cost_g(z,i),
-annual_revenue_g(z,i),
-annual_profit_g(z,i),
-annual_surplus_g(z,i),
-annual_profit_s(z,k),
-annual_profit_r(z,n),
-annual_surplus_s(z,k),
-annual_surplus_r(z,n),
-producer_surplus(z);
-
-annual_price_el(z) = sum(t, bal_el.M(z,t))/card(t);
-annual_price_ht(z) = sum(t, bal_ht.M(z,t))/card(t);
-
-annual_cost_g(z,i) = sum(t, cost_fuel.L(z,t,i) + cost_co2.L(z,t,i) )
-                     + cost_om_g.L(z,i);
-
-annual_revenue_g(z,i) = sum((t,f), bal_el.M(z,t) * g.L(z,t,i,'el',f)
-                             + bal_ht.M(z,t) * g.L(z,t,i,'ht',f) );
-annual_profit_g(z,i) = annual_revenue_g(z,i) - annual_cost_g(z,i);
-annual_surplus_g(z,i) = annual_revenue_g(z,i)
-                         - sum(t, cost_fuel.L(z,t,i) + cost_co2.L(z,t,i) )
-                         - sum((t,m,f), OM_COST_G_VAR(i) * g.L(z,t,i,m,f) );
-
-annual_profit_s(z,k) = sum(t,
-                         bal_el.M(z,t) * s_out.L(z,t,k)
-                         - bal_el.M(z,t) * s_in.L(z,t,k)
-                         );
-
-annual_profit_r(z,n) = sum(t, bal_el.M(z,t) * r.L(z,t,n) )
-                         - OM_COST_R_QFIX(z,n) * (INITIAL_CAP_R(z,n) + add_r.L(z,n) - deco_r.L(z,n) )
-                         - sum(t, OM_COST_R_VAR(z,n) * r.L(z,t,n) );
-
-producer_surplus(z) =    sum(i, annual_surplus_g(z,i))
-                         + sum(k, annual_profit_s(z,k))
-                         + sum((t,n), bal_el.M(z,t) * r.L(z,t,n))
-                         - sum((t,n), OM_COST_R_VAR(z,n) * r.L(z,t,n) )
-                         ;
-
-* ------------------------------------------------------------------------------
-* hourly prices
-parameter
-hourly_price_el(z,t),
-hourly_price_ht(z,t),
-hourly_price_system_services(z,t)
+AnnRenShare(z)                   renewables generation divided by electricity consumption
+AnnG(z,m)                        annual thermal generation
+AnnGByTec(z,i,m,f)               annual thermal generation by technology
+AnnGFossil(z)                    annual generation from fossil sources
+AnnGSyngas(z)                    annual generation from synthetic gases
+AnnGBiomass(z)                   annual generation from biomass
+AnnR(z)                          annual generation from renewable sources
+AnnSIn(z)                        annual consumption of electricity storages
+AnnSOut(z)                       annual generation of electricity storages
+AnnCons(z,m)                     annual consumption of electricity and heat
+AnnFullLoadHours(z,n)            annual full load hours of renewable technologies
+AnnX(z)                          annual electricity exports
+AnnB(z,f)                        annual fuel burn
+AnnCO2Emissions(z)               annual CO2 emissions
+AnnCurtail(z)                    annual curtailment of generation from renewables
+AnnValueG(z,m)                   annual value of thermal generation
+AnnValueGByTec(z,i,m)            annual value of thermal generation by technology
+AnnValueSIn(z)                   annual value of electricity consumed by storages
+AnnValueSOut(z)                  annual value of electricity generated by storages
+AnnValueX(z,zz)                  annual value of electricity exports
+AnnValueCurtail(z)               annual value of electricity curtailed
+AnnCostG(z,i)                    annual cost of thermal generators
+AnnRevenueG(z,i)                 annual revenue of thermal generators
+AnnProfitG(z,i)                  annual profit of thermal generators
+AnnProfitS(z,k)                  annual profit of storages
+AnnProfitR(z,n)                  annual profit of renewable generators
+AnnSurplusG(z,i)                 annual surplus of thermal generators
+AnnProdSurplus(z)                annual producer surplus
+AnnSpendingEl(z)                 annual consumer spending on electricity
+AnnSpendingHt(z)                 annual consumer spending on heat
+AnnSpending(z)                   annual consumer spending on electricity and heat
+AvgPriceFuels(z,f)               annual average price of fuels
+AvgPriceCO2(z)                   annual average price of CO2 emissions
+AvgPriceEl(z)                    annual average price of electricity
+AvgPriceHt(z)                    annual average price of heat
+HourlyPriceEl(z,t)               hourly price of electricity
+HourlyPriceHt(z,t)               hourly price of heat
+HourlyPriceSystemServices(z,t)   hourly price of system services
 ;
-
-hourly_price_el(z,t) = bal_el.M(z,t);
-hourly_price_ht(z,t) = bal_ht.M(z,t);
-hourly_price_system_services(z,t) = lolim_ancservices.M(z,t);
-* ==============================================================================
-
+* ------------------------------------------------------------------------------
+* parameter calculation
+AnnRenShare(z) = (sum((t,n), r.L(z,t,n) ) + sum((t,k), s_out.L(z,t,k) ) - sum((t,k), s_in.L(z,t,k) ) + sum((t,i), g.L(z,t,i,'el','Biomass') ) + sum((t,i), g.L(z,t,i,'el','Syngas') ) ) / sum(t, DEMAND(z,t,'el') );
+AnnG(z,m) = sum((t,i,f), g.L(z, t, i, m, f));
+AnnGByTec(z,i,m,f) = sum(t, g.L(z, t, i, m, f));
+AnnGSyngas(z) = sum((t,i), g.L(z,t,i,'el','Syngas') );
+AnnGBiomass(z) = sum((t,i), g.L(z,t,i,'el','Biomass') );
+AnnGFossil(z) = sum(m, AnnG(z,m)) - AnnGSyngas(z) - AnnGBiomass(z);
+AnnR(z) = sum((t,n), r.L(z,t,n) );
+AnnSIn(z) = sum((t,k), s_in.L(z,t,k));
+AnnSOut(z) = sum((t,k), s_out.L(z,t,k));
+AnnCons(z,m) = sum(t, DEMAND(z,t,m));
+AnnFullLoadHours(z,n) = sum(t, GEN_PROFILE(z,t,n));
+AnnX(zz) = sum(t, x.L('AT',zz,t));
+AnnB(z,f) = sum((t,i), b.L(z,t,i,f));
+AnnCO2Emissions(z) = sum((t,i), emission_co2.L(z,t,i));
+AnnCurtail(z) = sum(t, q_curtail.L(z,t));
+AnnValueG(z,m) = sum((t,i,f), bal_el.M(z,t) * g.L(z,t,i,m,f));
+AnnValueGByTec(z,i,m) = sum((t,f), bal_el.M(z,t) * g.L(z,t,i,m,f));
+AnnValueSIn(z) = sum((t,k), bal_el.M(z,t) * s_in.L(z,t,k));
+AnnValueSOut(z) = sum((t,k), bal_el.M(z,t) * s_out.L(z,t,k));
+AnnValueX(z,zz) = sum(t, bal_el.M(z,t) * x.L(z,zz,t));
+AnnValueCurtail(z) = sum(t, bal_el.M(z,t) * q_curtail.L(z,t));
+AnnCostG(z,i) = sum(t, cost_fuel.L(z,t,i) + cost_co2.L(z,t,i) ) + cost_om_g.L(z,i);
+AnnRevenueG(z,i) = sum((t,f), bal_el.M(z,t) * g.L(z,t,i,'el',f) + bal_ht.M(z,t) * g.L(z,t,i,'ht',f) );
+AnnProfitG(z,i) = AnnRevenueG(z,i) - AnnCostG(z,i);
+AnnProfitS(z,k) = sum(t, bal_el.M(z,t) * s_out.L(z,t,k) - bal_el.M(z,t) * s_in.L(z,t,k) );
+AnnProfitR(z,n) = sum(t, bal_el.M(z,t) * r.L(z,t,n) ) - cost_om_r.L(z,n);
+AnnSurplusG(z,i) = AnnRevenueG(z,i) - sum(t, cost_fuel.L(z,t,i) + cost_co2.L(z,t,i) ) - sum((t,m,f), OM_COST_G_VAR(i) * g.L(z,t,i,m,f) );
+AnnProdSurplus(z) = sum(i, AnnSurplusG(z,i)) + sum(k, AnnProfitS(z,k)) + sum((t,n), bal_el.M(z,t) * r.L(z,t,n)) - sum((t,n), OM_COST_R_VAR(z,n) * r.L(z,t,n) );
+AnnSpendingEl(z) =  sum(t, bal_el.M(z,t) * DEMAND(z,t,'el') );
+AnnSpendingHt(z) =  sum(t, bal_ht.M(z,t) * DEMAND(z,t,'ht') );
+AnnSpending(z) =  AnnSpendingEl(z) + AnnSpendingHt(z);
+AvgPriceFuels(z,f) = sum(t, PRICE_FUEL(z,t,f)) / card(t);
+AvgPriceCO2(z) = sum(t, PRICE_CO2(z,t)) / card(t);
+AvgPriceEl(z) = sum(t, bal_el.M(z,t))/card(t);
+AvgPriceHt(z) = sum(t, bal_ht.M(z,t))/card(t);
+HourlyPriceEl(z,t) = bal_el.M(z,t);
+HourlyPriceHt(z,t) = bal_ht.M(z,t);
+HourlyPriceSystemServices(z,t) = lolim_ancservices.M(z,t);
 
 * ==============================================================================
 * THE END
