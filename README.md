@@ -8,7 +8,12 @@ This repository contains code for the power system model _medea_, developed by
 [Johannes Schmidt](https://homepage.boku.ac.at/jschmidt/).
 
 _medea_ was used to analyze [district heating systems under high CO2 prices](https://arxiv.org/abs/1810.02109)
-and is currently employed within the [reFUEL](https://refuel.world) project.
+and is currently employed within the [reFUEL](https://refuel.world) project. 
+
+Recently, _medea_ was used in [project _asparagus_](projects/asparagus), in which we investigate the electricity system cost 
+of undisturbed Austrian landscapes. We present findings at the 
+[NOeG annual meeting 2020](https://www.wu.ac.at/economics/ver/noeg-tagung) and the [EGU 2020](https://www.egu2020.eu/).
+Corresponding slides are available [here](doc/slides.pdf).   
  
 
 Requirements
@@ -36,12 +41,15 @@ python packages dependencies can be installed via
 the forked repository's url and `git clone` _medea_ to your local disk.
 
 ## Setting up _medea_ ##
-For _medea_ to work properly, the variables `folder` and `gams_sysdir` in `medea/config.py` must point to the correct locations, i.e. `folder` must point 
-to the local medea repository (e.g. `D:\git_repos\medea`) and `gams_sysdir` must point to the folder of the local GAMS 
-installation that contains the GAMS executable. (On Windows this might be something like `C:\GAMS\win64\27.1`)
+For _medea_ to work properly, the variables `folder` and `gams_sysdir` in `medea/config.py` must point to the correct 
+locations, i.e. `folder` must point to the local medea repository (e.g. `D:\git_repos\medea`) and `gams_sysdir` must 
+point to the folder of the local GAMS installation that contains the GAMS executable. (On Windows this might be 
+something like `C:\GAMS\win64\27.1`)
 
 ## Getting started ##
-For more information on how to use _medea_, please consult [_getting started_](https://github.com/inwe-boku/medea/blob/master/doc/getting_started.md).  
+For more information on how to use _medea_, please consult 
+[_getting started_](https://github.com/inwe-boku/medea/blob/master/doc/getting_started.md).  
 
 ------- 
- For comments and bug reporting please contact [Sebastian Wehrle](mailto:sebastian.wehrle@boku.ac.at).
+ Feel free to use the github-tools for bug reporting, feature requests etc. You can also 
+ [contact me](mailto:sebastian.wehrle@boku.ac.at).
