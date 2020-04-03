@@ -32,9 +32,9 @@ def plot_subn(df, fname, width=2, xlim=None, ylim=None, xlabel=None, ylabel=None
         b = sub_boxes[col][1]
 
         if color is not None:
-            axis[a, b].plot(df.iloc[:, col], color=color[col])
+            axis[a, b].plot(df.iloc[:, col], linewidth=2, color=color[col])
         else:
-            axis[a, b].plot(df.iloc[:, col])
+            axis[a, b].plot(df.iloc[:, col], linewidth=2)
 
         if xlabel is not None:
             axis[a, b].set_xlabel(xlabel)
@@ -75,7 +75,7 @@ def plot_lines(df, fname, xlim=None, ylim=None, xlabel=None, ylabel=None, color=
     axis.set_ylabel(ylabel)
     axis.set_xlabel(xlabel)
     for col in range(0, ncols):
-        axis.plot(df.iloc[:, col], color=color[col])
+        axis.plot(df.iloc[:, col], linewidth=2, color=color[col])
     axis.set_ylim(ylim)
     axis.set_xlim(xlim)
     axis.grid()
@@ -213,16 +213,16 @@ mta = mts.loc['2016-01-01':'2016-12-31', ['AT-wind_on-profile', 'AT-pv-profile']
 
 fig, axs = plt.subplots(2, figsize=(8, 5))
 # winter week
-axs[0].plot(mta.loc['2016-06-13':'2016-06-19', 'AT-pv-profile'] * 100, color=RES_COLORS[0])
-axs[0].plot(mta.loc['2016-06-13':'2016-06-19', 'AT-wind_on-profile'] * 100, color=RES_COLORS[2])
+axs[0].plot(mta.loc['2016-06-13':'2016-06-19', 'AT-pv-profile'] * 100, linewidth=2, color=RES_COLORS[0])
+axs[0].plot(mta.loc['2016-06-13':'2016-06-19', 'AT-wind_on-profile'] * 100, linewidth=2, color=RES_COLORS[2])
 axs[0].set_ylabel('% of installed capacity')
 axs[0].set_ylim(0, 100)
 axs[0].grid()
 axs[0].legend(['Solar PV', 'Wind'], loc='upper left')
 axs[0].set_title('Summer Week')
 # summer week
-axs[1].plot(mta.loc['2016-12-05':'2016-12-11', 'AT-pv-profile'] * 100, color=RES_COLORS[0])
-axs[1].plot(mta.loc['2016-12-05':'2016-12-11', 'AT-wind_on-profile'] * 100, color=RES_COLORS[2])
+axs[1].plot(mta.loc['2016-12-05':'2016-12-11', 'AT-pv-profile'] * 100, linewidth=2, color=RES_COLORS[0])
+axs[1].plot(mta.loc['2016-12-05':'2016-12-11', 'AT-wind_on-profile'] * 100, linewidth=2, color=RES_COLORS[2])
 axs[1].set_ylabel('% of installed capacity')
 axs[1].set_ylim(0, 100)
 axs[1].grid()
