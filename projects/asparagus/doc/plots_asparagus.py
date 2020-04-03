@@ -22,7 +22,11 @@ def plot_subn(df, fname, width=2, xlim=None, ylim=None, xlabel=None, ylabel=None
     :param color:
     :return:
     """
-    ncols = len(df.columns)
+    if isinstance(df, pd.DataFrame):
+        ncols = len(df.columns)
+    else:
+        raise TypeError
+
     sub_length = np.ceil(ncols / width).astype(int)
     sub_boxes = list(itertools.product(range(0, width), range(0, sub_length)))
 
@@ -52,6 +56,7 @@ def plot_subn(df, fname, width=2, xlim=None, ylim=None, xlabel=None, ylabel=None
 
         axis[a, b].grid()
         axis[a, b].set_title(df.columns[col])
+    plt.rcParams.update({'font.size': 16})
     plt.tight_layout()
     plt.savefig(fname)
     plt.close()
@@ -69,17 +74,36 @@ def plot_lines(df, fname, xlim=None, ylim=None, xlabel=None, ylabel=None, color=
     :param color:
     :return:
     """
-    ncols = len(df.columns)
+    if isinstance(df, pd.DataFrame):
+        ncols = len(df.columns)
+    elif isinstance(df, pd.Series):
+        ncols = 1
+    else:
+        raise TypeError
 
     figure, axis = plt.subplots(1, 1, figsize=(8, 5))
     axis.set_ylabel(ylabel)
     axis.set_xlabel(xlabel)
-    for col in range(0, ncols):
-        axis.plot(df.iloc[:, col], linewidth=2, color=color[col])
+
+    if isinstance(df, pd.DataFrame):
+        for col in range(0, ncols):
+            axis.plot(df.iloc[:, col], linewidth=2, color=color[col])
+    elif isinstance(df, pd.Series):
+        axis.plot(df, color=color[0])
+    else:
+        raise TypeError
+
+    if isinstance(df, pd.DataFrame):
+        axis.legend(df.columns)
+    elif isinstance(df, pd.Series):
+        axis.legend([df.name])
+    else:
+        raise TypeError
+
     axis.set_ylim(ylim)
     axis.set_xlim(xlim)
     axis.grid()
-    axis.legend(df.columns)
+    plt.rcParams.update({'font.size': 16})
     plt.tight_layout()
     plt.savefig(fname)
     plt.close()
@@ -128,6 +152,12 @@ restrict_sysops = restrict_sysops[['Net electricity generation', 'Net electricit
 plot_subn(restrict_sysops / 1000, os.path.join(FPATH, 'sysops.pdf'), xlim=[18, 0], color=REFUEL_COLORS,
           xlabel='Added Capacity of Wind [GW]', ylabel=['TWh', 'TWh', 'TWh', 'million t'])
 
+plot_lines(restrict_sysops['CO2 emissions from energy generation'] / 1000, os.path.join(FPATH, 'co2emissions.pdf'),
+           xlim=[18, 0], color=REFUEL_COLORS, xlabel='Added Capacity of Wind [GW]', ylabel='million t')
+
+plot_lines(restrict_sysops['Fossil thermal generation'] / 1000, os.path.join(FPATH, 'thermal_generation.pdf'),
+           xlim=[18, 0], color=[REFUEL_COLORS[1]], xlabel='Added Capacity of Wind [GW]', ylabel='TWh')
+
 # %% ----- ----- ----- plot wind restriction: changes in cost ----- ----- -----
 # system cost, electricity trade balance, system cost net of trade, cost of air pollution (SOx, NOx, PM)
 undisturbed_cost = results.loc[idx['base', :, :, 36715], idx['AT', ['syscost', 'export_value', 'import_value',
@@ -150,6 +180,13 @@ restrict_cost.index = restrict_cost.index.droplevel(0)
 # plot data
 plot_subn(restrict_cost / 1000, os.path.join(FPATH, 'cost.pdf'), xlim=[18, 0], color=REFUEL_COLORS,
           xlabel='Added Capacity of Wind [GW]', ylabel=['million €'])
+
+plot_lines(restrict_cost.loc[:, 'Cost of air pollution (SOx, NOx, PM)'] / 1000,
+           os.path.join(FPATH, 'cost_airpollution.pdf'), xlim=[18, 0], color=[REFUEL_COLORS[2]],
+           xlabel='Added Capacity of Wind [GW]', ylabel='million €')
+
+# plot_lines(restrict_cost[''] / 1000, os.path.join(FPATH, 'sysops.pdf'), xlim=[18, 0], color=REFUEL_COLORS,
+#          xlabel='Added Capacity of Wind [GW]', ylabel=['TWh', 'TWh', 'TWh', 'million t'])
 
 # %% line plot of cost of undisturbed landscapes - baseline capital cost of pv
 undisturbed_base = undisturbed_cost[['System cost net of trade',
