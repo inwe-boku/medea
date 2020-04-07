@@ -43,12 +43,12 @@ is_64bit = sys.maxsize > 2 ** 32
 if not is_64bit:
     print('System appears to be 32-bit. 64-bit system recommended.')
 else:
+    rpath = os.path.normpath(os.getcwd())
+    pos_medea = rpath.find('medea')
+    MEDEA_ROOT_DIR = rpath[0:pos_medea + 6]
     if sys_id == 'win32 WINP1218':
-        MEDEA_ROOT_DIR = r'Y:\git_repos\medea'
         GMS_SYS_DIR = os.path.join(r'C:\GAMS\win64', version[0:4])
     elif sys_id == 'darwin Sebastians-MBP':
-        MEDEA_ROOT_DIR = '/Users/seb/git_repos/medea'
         GMS_SYS_DIR = os.path.join(f'/Applications/GAMS{version[0:4]}', 'sysdir')
     else:
-        MEDEA_ROOT_DIR = r'D:\git_repos\medea'
         GMS_SYS_DIR = os.path.join(r'C:\GAMS\win64', version[0:4])
