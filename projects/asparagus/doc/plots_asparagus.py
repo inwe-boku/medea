@@ -56,7 +56,7 @@ def plot_subn(df, fname, width=2, xlim=None, ylim=None, xlabel=None, ylabel=None
 
         axis[a, b].grid()
         axis[a, b].set_title(df.columns[col])
-    plt.rcParams.update({'font.size': 16})
+    # plt.rcParams.update({'font.size': 12})
     plt.tight_layout()
     plt.savefig(fname)
     plt.close()
@@ -103,7 +103,7 @@ def plot_lines(df, fname, xlim=None, ylim=None, xlabel=None, ylabel=None, color=
     axis.set_ylim(ylim)
     axis.set_xlim(xlim)
     axis.grid()
-    plt.rcParams.update({'font.size': 16})
+    # plt.rcParams.update({'font.size': 16})
     plt.tight_layout()
     plt.savefig(fname)
     plt.close()
@@ -180,6 +180,8 @@ restrict_cost.index = restrict_cost.index.droplevel(0)
 # plot data
 plot_subn(restrict_cost / 1000, os.path.join(FPATH, 'cost.pdf'), xlim=[18, 0], color=REFUEL_COLORS,
           xlabel='Added Capacity of Wind [GW]', ylabel=['million €'])
+plot_subn(restrict_sysops / 1000, os.path.join(FPATH, 'sysops.pdf'), xlim=[18, 0], color=REFUEL_COLORS,
+          xlabel='Added Capacity of Wind [GW]', ylabel=['TWh', 'TWh', 'TWh', 'million t'])
 
 plot_lines(restrict_cost.loc[:, 'Cost of air pollution (SOx, NOx, PM)'] / 1000,
            os.path.join(FPATH, 'cost_airpollution.pdf'), xlim=[18, 0], color=[REFUEL_COLORS[2]],

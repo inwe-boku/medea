@@ -1,6 +1,7 @@
 \documentclass[aspectratio=1610, xcolor=dvipsnames,handout]{beamer} %aspectratio=169, 
 \usetheme{Pittsburgh}
 \usepackage{tikz}
+\usepackage{pgfplots}
 \usepackage{booktabs}
 \usepackage[version=4]{mhchem}
 \usepackage{animate}
@@ -20,7 +21,11 @@
 % Thin fonts
 \usepackage{cmbright}
 \usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{graphicx}
+\usepackage{amsmath}
 
+\pgfplotsset{compat = 1.17}
 \usetikzlibrary{arrows.meta}
 \usetikzlibrary{shapes.geometric, arrows}
 \urlstyle{same}
@@ -51,10 +56,10 @@
 % title page
 \setbeamertemplate{title page}[default][colsep=-4bp,rounded=true]
 \title[The cost of undisturbed landscapes]{The cost of undisturbed landscapes}
-\subtitle{Assessing systemic effects of renewables expansion in Austria}
+\subtitle{Towards designing energy systems from a social perspective}
 \author{Sebastian Wehrle, Johannes Schmidt}
 \institute{University of Natural Resources and Life Sciences, Vienna}
-\date{February 25, 2020\\ \medskip NOeG Annual Meeting 2020}
+\date{May 7, 2020\\ \medskip EGU General Assembly 2020}
 
 %\setbeamertemplate{section page}{
 %	\begin{center}
@@ -94,108 +99,271 @@
          \end{frame}
     }
 
-\section{Background}
-\begin{frame}
-\frametitle{Austrian energy policy objectives}
-\framesubtitle{according to government programme 2020-2024}
-\begin{itemize}
-\item 100\%\footnote[frame]{excluding system services and industry own consumption. At current levels this equals 10\% of consumption, i.e. actual target is around 90\%.} of electricity demand from domestic renewable sources on annual balance by 2030 \pause
-\begin{itemize}
-\item[$\rightarrow$] necessarily turns Austria into a net exporter of electricity \pause
-\end{itemize}
-\item additional annual electricity generation of \SI{27}{\tera\watt\hour} is expected to suffice \pause
-\item technology-specific additions:
-\end{itemize}
+    \section{Background \& Motivation}\label{sec:background}
+    \begin{frame}
+        \frametitle{State of the Art}
+        Power system models used to
+        \begin{itemize}
+            \item demonstrate the feasibility of highly renewable energy systems
+            \item determine the system cost-minimizing mix of renewable energy technologies
+        \end{itemize}
+        find significant capacities of renewable energy technologies (RET), largely wind power, need to be added.
+        \medskip
 
-\begin{table}
-\centering
-\begin{tabular}{| l | r | r | r | r | r |}
-\hline
- & 2018 & 2018\footnote[frame]{meteorological conditions as in 2016} & Policy & 2030 & 2030 \\ 
- & [GW] & [TWh] & [TWh] & [TWh] & [GW] \\ \hline \hline
-Solar PV & 1.44 & 1.23 & +11 & 12.23 &  14.27 \\ \hline
-Wind (onshore) & 3.05 & 6.14 & +10 & 16.14 & 8 \\ \hline
-Hydro (run-of-river) & 5.72 & 28.34 & +5 & 33.34 & 6.73 \\ \hline
-Biomass & $\sim 1$ & 4.78 & +1 & 5.78 & $>2$ \\ \hline
-\end{tabular}
-\end{table}
-\end{frame}
+        Researchers are increasingly aware that social and political restrictions on such large-scale RET expansions must be
+        recognized.
+        \begin{itemize}
+            \item RET deployment in power system models often limited on the upside by results from analyses of land
+            availability, e.g. by excluding areas for technical or legal reasons, or because they are constested by stakeholders
+        \end{itemize}
+        \medskip
+
+        Yet, such `binary' analysis neglects the trade-offs faced by a social planner deciding on RET expansion.
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Motivation}
+        \begin{itemize}
+            \item So far, analysis of \emph{system cost} minimizing energy systems
+            \begin{itemize}
+                \item Investment cost
+                \item Operation and maintenance cost (including fuel and emission cost)
+                \smallskip
+                \item[$\rightarrow$] includes external effects of RET on power system, such as
+                \begin{itemize}
+                    \item Profile cost
+                    \item Transmission expansion cost
+                    \item Balancing cost
+                \end{itemize}
+            \end{itemize}
+        \end{itemize}
+        \medskip
+        \begin{itemize}
+            \item We need analysis of \textbf{\emph{social cost}} minimizing energy systems, including
+            %\item We need to develop tools to minimize \textbf{social cost} of power systems, including
+            \begin{itemize}
+                \item Local external cost, such as visual impact on landscape, harm to wildlife, noise, glaring, \ldots
+                \item Benefits of system transition, such as avoided cost of local air pollution
+                \item[$\rightarrow$] includes external effects of RET beyond power system
+            \end{itemize}
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Framework}
+
+        \begin{textblock*}{5cm}
+            (1.0cm,2cm)
+            Consider a renewable energy technology that
+            \begin{itemize}
+                \item saves system cost (relative to its best alternative), but
+                \item comes at social cost (e.g. due to local negative external effects)
+            \end{itemize}
+            \medskip
+
+            A social planner should deploy this RET (instead of another one) up to the capacity at which
+            \begin{itemize}
+                \item system cost saving equals
+                \item added social cost
+            \end{itemize}
+        \end{textblock*}
+
+        \begin{textblock*}{8.0cm}
+            (6.5cm,2cm)
+            \begin{tikzpicture}
+                \begin{axis}[
+                    width=\textwidth,
+                    clip=false,
+                    axis lines=left,
+                    ticks=none,
+                    xlabel={capacity substituted},
+                    ylabel={cost},
+                    domain=0.5:1.75,
+                    xmin=0.5, xmax=2,
+                    ymin=0, ymax=4,
+                    samples=200
+                ]
+                    \addplot[blue, thick] (x, 1.3*x^1.1+0.6);
+                    \node at (axis cs: 1.925,3) [blue, align=left] {saved\\ system\\ cost};
+
+                    \addplot[bokugreen, thick] (x, -2*x^0.8+4);
+                    \node at (axis cs: 2.0,1) [bokugreen, align=left]{harm \\(from RET\\ externality)};
+                \end{axis}
+            \end{tikzpicture}
+        \end{textblock*}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Approach}
+        Focus on the social cost of power systems, including local externalities of \emph{wind power}
+        \begin{itemize}
+            \item Seems to be at center of societal debate currently
+            \item Local externalities well researched (compared to externalities of open-space PV)
+        \end{itemize}
+        \medskip
+        An assessment of socially optimal renewables expansion must be based on two pillars
+        \begin{enumerate}
+            \item \textbf{\textcolor{bokugreen}{The cost of undisturbed landscapes}}
+            \begin{itemize}
+                \item[--] energy system costs of substituting wind power with other RET
+                \item[--] the \emph{opportunity cost} of wind power (versus its best alternative)
+            \end{itemize}
+            \item \textcolor{bokugreen}{The benefit of undisturbed landscapes}
+            \begin{itemize}
+                \item[--] avoided (local) negative external effects of wind turbines
+                \item[--] avoided (local) external cost of wind power
+            \end{itemize}
+        \end{enumerate}
+    \end{frame}
 
 
-\begin{frame}
-\frametitle{Why wind is not solar}
-\framesubtitle{A side note on imperfect substitutes}
+    \section{Method}\label{sec:method}
+
+    \begin{frame}
+        \frametitle{The cost of undisturbed landscapes}
+        \framesubtitle{Estimating the opportunity cost of wind power}
+        To determine the opportunity cost of substituting wind power with solar PV, we
+        \begin{enumerate}
+            \item derive the unrestricted system cost-minimizing deployment of wind and solar power \label{step1}
+            \item restrict deployment of wind power by a small margin (so that the next best RET substitutes for wind power) and
+            observe net system cost $c_{net}$ (calculated as total system cost including air pollution cost net of trade balance) \label{step2}
+            \item repeat \ref{step2} till no wind power can be deployed
+            \item the opportunity cost of wind power is approximated by the change in $c_{net}$ in response to a change in wind
+            power capacity $w$ deployed.
+            \begin{align*}
+                OC_w = \frac{\Delta c_{net}}{\Delta w}
+            \end{align*}
+        \end{enumerate}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{The case of Austria}
+        \begin{itemize}
+            \item Policy goal: \SI{100}{\percent}\footnote[frame]{excluding system services and industry own consumption.
+            At current levels this equals 10\% of consumption, i.e. actual target is around 90\%.} of electricity demand from
+            domestic renewable sources on annual balance by 2030
+            \begin{itemize}
+                \item[$\rightarrow$] Ideal frame for studying substitution / opportunity cost
+            \end{itemize}
+            \item necessarily turns Austria into a net exporter of electricity
+            \item Official expectation: additional generation of \SI{27}{\tera\watt\hour} sufficient
+        \end{itemize}
+        \begin{table}
+            \centering
+            \begin{tabular}{| l | r | r | r | r | r |}
+                \hline
+                & 2018 & 2018\footnote[frame]{meteorological conditions as in 2016} & Policy & 2030 & 2030 \\
+                & [GW] & [TWh] & [TWh] & [TWh] & [GW] \\ \hline \hline
+                Solar PV & 1.44 & 1.23 & +11 & 12.23 & 14.27 \\ \hline
+                Wind (onshore) & 3.05 & 6.14 & +10 & 16.14 & 8 \\ \hline
+                Hydro (run-of-river) & 5.72 & 28.34 & +5 & 33.34 & 6.73 \\ \hline
+                Biomass & $\sim 1$ & 4.78 & +1 & 5.78 & $<2$ \\ \hline
+            \end{tabular}
+        \end{table}
+    \end{frame}
+
+%\begin{frame}
+%\frametitle{Austrian energy policy objectives}
+%\framesubtitle{according to government programme 2020--2024}
+%\begin{itemize}
+%\item 100\%\footnote[frame]{excluding system services and industry own consumption.
+%    At current levels this equals 10\% of consumption, i.e. actual target is around 90\%.} of electricity demand from
+%    domestic renewable sources on annual balance by 2030 \pause
+%\begin{itemize}
+%\item[$\rightarrow$] necessarily turns Austria into a net exporter of electricity \pause
+%\end{itemize}
+%\item additional annual electricity generation of \SI{27}{\tera\watt\hour} is expected to suffice \pause
+%\item technology-specific additions:
+%\end{itemize}
+%
+%\begin{table}
+%\centering
+%\begin{tabular}{| l | r | r | r | r | r |}
+%\hline
+% & 2018 & 2018\footnote[frame]{meteorological conditions as in 2016} & Policy & 2030 & 2030 \\
+% & [GW] & [TWh] & [TWh] & [TWh] & [GW] \\ \hline \hline
+%Solar PV & 1.44 & 1.23 & +11 & 12.23 &  14.27 \\ \hline
+%Wind (onshore) & 3.05 & 6.14 & +10 & 16.14 & 8 \\ \hline
+%Hydro (run-of-river) & 5.72 & 28.34 & +5 & 33.34 & 6.73 \\ \hline
+%Biomass & $\sim 1$ & 4.78 & +1 & 5.78 & $>2$ \\ \hline
+%\end{tabular}
+%\end{table}
+%\end{frame}
+%
+%
+%\begin{frame}
+%\frametitle{Why wind is not solar}
+%\framesubtitle{A side note on imperfect substitutes}
+%%\begin{textblock*}{4cm}(0.75cm, 2.75cm)
+%%Aggregate profile for Austria
 %\begin{textblock*}{4cm}(0.75cm, 2.75cm)
-%Aggregate profile for Austria
-\begin{textblock*}{4cm}(0.75cm, 2.75cm)
-\begin{itemize}
-\item secure system operation requires $S=D$ at any point in time 
-\item electricity not easily storable 
-\item >>transforming<< electricity feed-in to end-use electricity is costly
-\end{itemize}
-\end{textblock*}
+%\begin{itemize}
+%\item secure system operation requires $S=D$ at any point in time
+%\item electricity not easily storable
+%\item >>transforming<< electricity feed-in to end-use electricity is costly
+%\end{itemize}
+%\end{textblock*}
+%
+%\only<2>{
+%\begin{textblock*}{10cm}(5.5cm, 2.25cm) % {block width} (coords)
+%\centering
+%Aggregate generation profile in Austria
+%\includegraphics[width=\textwidth, keepaspectratio]{./figures/wind_not_pv}
+%\end{textblock*}
+%}
+%\end{frame}
+%
 
-\only<2>{
-\begin{textblock*}{10cm}(5.5cm, 2.25cm) % {block width} (coords)
-\centering
-Aggregate generation profile in Austria
-\includegraphics[width=\textwidth, keepaspectratio]{./figures/wind_not_pv}
-\end{textblock*}
-}
-\end{frame}
-
-
-
-\begin{frame}
-\frametitle{Stylized Facts}
-\begin{itemize}
-\item Apart from wind and solar, potentials for renewable electricity generation in Austria largely exhausted
-\item Under announced policies, solar PV is only large-scale substitute to wind power \pause
-\item Increasing social conflict around the large-scale expansion of onshore wind power
-\item Traditional power system models do not account for local negative externalities of renewable energy generators, such as:
-	\begin{itemize}
-	\item visual impact on landscape
-	\item harm to wildlife
-	\item noise, flickering, glaring
-	\end{itemize}
-\end{itemize}
-\end{frame}
-
-
-\section{Motivation \& Method}
-\begin{frame}
-\frametitle{The problem from a social planner's perspective}
-How to account for local negative externalities in renewables expansion planning?
-
-\bigskip
-\textcolor{bokugreen}{The cost of undisturbed landscapes}
-\begin{itemize}
-\item assess energy system effects and costs of substituting wind power with solar PV
-\end{itemize}
-
-\bigskip
-\textcolor{bokugreen}{The value of undisturbed landscapes}
-\begin{itemize}
-\item estimates of the negative external effect of wind turbines reported in literature
-\end{itemize}
-\end{frame}
+    \begin{frame}
+        \frametitle{The case of Austria}
+        \framesubtitle{Some Stylized Facts}
+        \begin{itemize}
+            \item Social conflict around the large-scale expansion of onshore wind power
+            \item Solar PV is the only feasible large-scale substitute for wind power
+            \begin{itemize}
+                \item Use of nuclear power banned in a 1978 referendum
+                \item Hydro power potential largely exploited
+                \item Biomass neither ecologically nor economically sustainable
+            \end{itemize}
+            \item Germany is Austria's most important electricity trading partner, by far
+        \end{itemize}
+    \end{frame}
+%
+%\begin{frame}
+%\frametitle{The problem from a social planner's perspective}
+%How to account for local negative externalities in renewables expansion planning?
+%
+%\bigskip
+%\textcolor{bokugreen}{The cost of undisturbed landscapes}
+%\begin{itemize}
+%\item assess energy system effects and costs of substituting wind power with solar PV
+%\end{itemize}
+%
+%\bigskip
+%\textcolor{bokugreen}{The value of undisturbed landscapes}
+%\begin{itemize}
+%\item estimates of the negative external effect of wind turbines reported in literature
+%\end{itemize}
+%\end{frame}
 
 
-\begin{frame}
-\frametitle{The cost of undisturbed landscapes}
-\framesubtitle{Approach}
-\begin{itemize}
-\item Resemble Austrian power system in 2030
-\item include most important electricity trading partner Germany \pause
-\item set policy target of meeting $90\%$ of demand in 2030 from domestic renewable sources
-\item incorporate announced electricity system targets for Germany in 2030
-	\begin{itemize}
-	\item nuclear phase-out
-	\item partial coal exit
-	\item expansion of renewable capacities in line with EEG 2017
-	\end{itemize} \pause
-\item simulate prospective electricity system with \emph{medea}
-\end{itemize}
+    \begin{frame}
+        \frametitle{The case of Austria}
+        \framesubtitle{Modeling the Austrian Power System}
+        \begin{itemize}
+            \item Resemble prospective power system in Austria in 2030
+            \item Set policy target of meeting at least $90\%$ of demand in 2030 from domestic renewable sources
+            \medskip
+            \item Include most important electricity trading partner Germany
+            \item Incorporate announced electricity system targets for Germany in 2030
+            \begin{itemize}
+                \item nuclear phase-out
+                \item partial coal exit
+                \item expansion of renewable capacities in line with EEG 2017
+            \end{itemize}
+            \medskip
+            \item Simulate operation of and investment in prospective electricity system with \emph{medea}
+        \end{itemize}
 \end{frame}
 
 
@@ -274,7 +442,8 @@ How to account for local negative externalities in renewables expansion planning
 
 \medskip
 \begin{center}
-\emph{medea} is available on \href{https://github.com/inwe-boku/medea}{github.com/inwe-boku/medea} under an open MIT license
+    \emph{medea} is available on \textcolor{blue}{\href{https://github.com/inwe-boku/medea}{github.com/inwe-boku/medea}}
+    under an open MIT license
 \end{center}
 \end{frame}
 \note{
@@ -285,25 +454,8 @@ The model accounts for various technical characteristics of power systems, such 
 }
 
 
-\begin{frame}
-\frametitle{The cost of undisturbed landscapes}
-\framesubtitle{Estimating the opportunity cost of wind power}
-\begin{itemize}
-\item[1)] derive unrestricted optimal deployment of wind and solar power
-\item[2)] restrict deployment of wind power by a small margin \\($\rightarrow$ solar PV substitutes for wind)
-\item[3)] repeat till no wind power can be deployed
-\end{itemize}
-
-\bigskip
-We approximate the cost of undisturbed landscapes (i.e. the forgone value of wind power $w$) by the change in net cost of the electricity system including air pollution cost $c_{net}$ in response to a change in deployed wind power $w$, i.e.
-\begin{align*}
-oc_w = \frac{\Delta c_{net}}{\Delta w}
-\end{align*}
-
-\end{frame}
-
-
 \section{Results}
+
 \begin{frame}
 \frametitle{The cost of undisturbed landscapes}
 
@@ -329,15 +481,15 @@ Capital cost of solar PV & $630$ & \SI{}{\text{\euro}\per\kilo\watt\text{p}}
 
 \begin{textblock*}{9.5cm}(1.5cm, 8.2cm)
 \begin{tikzpicture}%[thick]
-\draw (5.75,0) -- (9,0);
-\draw[{Latex[length=2mm]}-] (0,0) -- (3.25,0);
-\draw (4.5,0.0) node[] {\scriptsize more wind power};
+    \draw (5.75,0) -- (9,0);
+    \draw[{Latex[length=2mm]}-] (0,0) -- (3.25,0);
+    \draw (4.5,0.0) node[] {\scriptsize more wind power};
 \end{tikzpicture}
 
 \begin{tikzpicture}%[thick]
-\draw[-{Latex[length=2mm]}] (5.5,0) -- (9,0);
-\draw (0,0) -- (3.5,0);
-\draw (4.5,0.0) node[] {\scriptsize more solar PV};
+    \draw[-{Latex[length=2mm]}] (5.5,0) -- (9,0);
+    \draw (0,0) -- (3.5,0);
+    \draw (4.5,0.0) node[] {\scriptsize more solar PV};
 \end{tikzpicture}
 \end{textblock*}
 
@@ -353,12 +505,12 @@ Capital cost of solar PV & $630$ & \SI{}{\text{\euro}\per\kilo\watt\text{p}}
 
 \begin{textblock*}{4cm}(11cm, 2.25cm)
 \begin{small}
-\begin{table}
-\begin{tabular}{p{1.8cm} | p{0.3cm} l}
-Capital cost of solar PV & $630$ & \SI{}{\text{\euro}\per\kilo\watt\text{p}} \\
-\ce{CO2} price & $90$ & \SI{}{\text{\euro}\per\mega\watt\hour}
-\end{tabular}
-\end{table}
+    \begin{table}
+        \begin{tabular}{p{1.8cm} | p{0.3cm} l}
+            Capital cost of solar PV & $630$ & \SI{}{\text{\euro}\per\kilo\watt\text{p}} \\
+            \ce{CO2} price & $90$ & \SI{}{\text{\euro}\per\mega\watt\hour}
+        \end{tabular}
+    \end{table}
 \end{small}
 \end{textblock*}
 
@@ -374,12 +526,12 @@ Capital cost of solar PV & $630$ & \SI{}{\text{\euro}\per\kilo\watt\text{p}} \\
 
 \begin{textblock*}{4cm}(11cm, 2.25cm)
 \begin{small}
-\begin{table}
-\begin{tabular}{p{1.8cm} | p{0.3cm} l}
-Capital cost of solar PV & $630$ & \SI{}{\text{\euro}\per\kilo\watt\text{p}} \\
-\ce{CO2} price & $90$ & \SI{}{\text{\euro}\per\mega\watt\hour}
-\end{tabular}
-\end{table}
+    \begin{table}
+        \begin{tabular}{p{1.8cm} | p{0.3cm} l}
+            Capital cost of solar PV & $630$ & \SI{}{\text{\euro}\per\kilo\watt\text{p}} \\
+            \ce{CO2} price & $90$ & \SI{}{\text{\euro}\per\mega\watt\hour}
+        \end{tabular}
+    \end{table}
 \end{small}
 \end{textblock*}
 
@@ -396,13 +548,13 @@ Capital cost of solar PV & $630$ & \SI{}{\text{\euro}\per\kilo\watt\text{p}} \\
 
 \begin{textblock*}{4cm}(11cm, 2.25cm)
 \begin{small}
-Capital cost estimates for solar PV in 2030
-\begin{table}
-\begin{tabular}{p{1.8cm} | p{0.3cm} l}
-Small-scale rooftop & $830$ & \SI{}{\text{\euro}\per\kilo\watt\text{p}} \\
-Utility-scale open space & $280$ & \SI{}{\text{\euro}\per\kilo\watt\text{p}} \\
-\end{tabular}
-\end{table}
+    Capital cost estimates for solar PV in 2030
+    \begin{table}
+        \begin{tabular}{p{1.8cm} | p{0.3cm} l}
+            Small-scale rooftop & $830$ & \SI{}{\text{\euro}\per\kilo\watt\text{p}} \\
+            Utility-scale open space & $280$ & \SI{}{\text{\euro}\per\kilo\watt\text{p}} \\
+        \end{tabular}
+    \end{table}
 \end{small}
 \end{textblock*}
 \end{frame}
@@ -417,11 +569,11 @@ Utility-scale open space & $280$ & \SI{}{\text{\euro}\per\kilo\watt\text{p}} \\
 
 \begin{textblock*}{4cm}(11cm, 2.25cm)
 \begin{small}
-\begin{table}
-\begin{tabular}{p{1.8cm} | p{0.3cm} l}
-Capital cost of solar PV & $280$ & \SI{}{\text{\euro}\per\kilo\watt\text{p}}
-\end{tabular}
-\end{table}
+    \begin{table}
+        \begin{tabular}{p{1.8cm} | p{0.3cm} l}
+            Capital cost of solar PV & $280$ & \SI{}{\text{\euro}\per\kilo\watt\text{p}}
+        \end{tabular}
+    \end{table}
 \end{small}
 \end{textblock*}
 \end{frame}
@@ -429,33 +581,41 @@ Capital cost of solar PV & $280$ & \SI{}{\text{\euro}\per\kilo\watt\text{p}}
 
 \section{Discussion \& Conclusion}
 \begin{frame}
-\frametitle{The cost of undisturbed landscapes}
-\framesubtitle{Discussion of results}
-\begin{itemize}
-\item Renewable resource quality held constant as capacity is expanded
-\item Sub-national electricity transmission and distribution grids neglected
-\item Technical operation of generators not fully represented \\(e.g. no unit commit, simplified balancing)
-\item Electricity market-splitting has increased market concentration
-\item Announced policy necessarily turns Austria into a net exporter of electricity\\
-$\rightarrow$ "loop-flows" potentially avoided \\
-$\rightarrow$ artificial transmission restriction between DE and AT could be eliminated
+    \frametitle{Discussion of results}
+    \begin{itemize}
+        \item Renewable resource quality held constant as capacity is expanded
+        \item Sub-national electricity transmission and distribution grids neglected
+        \item Technical operation of generators not fully represented \\(e.g. no unit commit, simplified balancing)
+        \item Electricity market-splitting has increased market concentration
+        \item Announced policy necessarily turns Austria into a net exporter of electricity\\
+        $\rightarrow$ "loop-flows" potentially avoided \\
+        $\rightarrow$ artificial transmission restriction between DE and AT could be eliminated
 %\item use Austrian landscape for "overinvesting" in wind and exporting to Germany?
-\end{itemize}
+    \end{itemize}
 \end{frame}
 
-
 \begin{frame}
-\frametitle{Conclusions}
-\begin{itemize}
-\item If we value \ce{CO2} emissions at 30 \SI{}{\text{\euro}\per\mega\watt\hour} or lower, onshore wind power can be substituted by open-space utility-scale solar PV at little loss
-% and approve of open-space utility-scale solar PV, onshore wind power is sub-optimal
-
-\item \ce{CO2} valuation above 30 \SI{}{\text{\euro}\per\mega\watt\hour} or a preference for rooftop PV allows for gains to be made from wind power deployment
-
-\item Gains from wind power could be used to compensate the ones affected by local negative externalities of wind turbines
-
-\item Complementing our analysis with spatially resolved estimates of wind turbine impacts, one could derive a spatially explicit plan for the socially optimal expansion of wind power in Austria
-\end{itemize}
+    \frametitle{Conclusions}
+    \begin{itemize}
+        \item We demonstrated that restricting wind power can come at significant opportunity cost
+        \item Socially optimal wind power deployment depends on cost and benefits of undisturbed landscapes
+        \item Our analysis constitutes one of two pillars needed to determine a spatially explicit, socially
+        optimal renewables expansion
+        \begin{itemize}
+            \item[$\rightarrow$] need to complement findings with a spatially resolved assessment of the negative
+            externalities of wind turbines, for example approximated by wind turbine impact on property prices
+        \end{itemize}
+        \medskip
+        \item For the case of Austria, we find
+        \begin{itemize}
+            \item little social value lost from substituting onshore wind power with utility-scale, open-space solar PV,
+            \emph{if} \ce{CO2} emissions are valued at \SI{30}{\text{\euro}\per\mega\watt\hour} or lower
+            \item potential gains from wind power \emph{if} (i) there is a preference for rooftop solar PV or (ii)
+            the cost of \ce{CO2} emissions exceeds \SI{30}{\text{\euro}\per\mega\watt\hour}
+            \item Gains from wind power deployment could be used to compensate individuals affected by local wind turbine
+            externalities
+        \end{itemize}
+    \end{itemize}
 \end{frame}
 
 
@@ -482,9 +642,9 @@ $\rightarrow$ artificial transmission restriction between DE and AT could be eli
 
         \vspace{1.65cm}
         \includegraphics[height=0.7cm]{./logos/creative-commons-by}
-        
+
         \smallskip
-        \tiny{We gratefully acknowledge support from the European Research Council \\(“reFUEL” ERC-2017-STG 758149).}
+        \tiny{We gratefully acknowledge support from the European Research Council \\(``reFUEL'' ERC-2017-STG 758149).}
 
     \end{frame}
 }   
