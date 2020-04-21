@@ -1,4 +1,4 @@
-\documentclass[aspectratio=169, xcolor=dvipsnames]{beamer}
+\documentclass[aspectratio=1610, xcolor=dvipsnames,handout]{beamer} %aspectratio=169, 
 \usetheme{Pittsburgh}
 \usepackage{tikz}
 \usepackage{booktabs}
@@ -15,6 +15,7 @@
 \usepackage{qrcode}
 \usepackage{eurosym}
 \usepackage{xfrac}
+\usepackage[export]{adjustbox}
 
 % Thin fonts
 \usepackage{cmbright}
@@ -55,17 +56,31 @@
 \institute{University of Natural Resources and Life Sciences, Vienna}
 \date{February 25, 2020\\ \medskip NOeG Annual Meeting 2020}
 
-\setbeamertemplate{section page}{
-	\begin{textblock*}{4cm}(11cm, 4cm) % {block width} (coords)
-	{\LARGE \insertsection}
-	\end{textblock*}
+%\setbeamertemplate{section page}{
+%	\begin{center}
+%	{\usebeamerfont[fg]{section title} \insertsection}
+%	\end{center}
+%}
+\AtBeginSection[]{
+  \begin{frame}
+  \vfill
+%  \centering
+%  \begin{beamercolorbox}[sep=8pt,center,shadow=false,rounded=true]{title}
+\tableofcontents[currentsection]
+%\begin{textblock*}{10cm}(7cm, 2.0cm) % {block width} (coords)
+%\adjincludegraphics[height=6cm,trim={0 0 {.3\width} 0},clip]{./figures/pv}
+%\end{textblock*}
+ %   \usebeamerfont{title} \usebeamercolor{title} \insertsection\par%
+%  \end{beamercolorbox}
+  \vfill
+  \end{frame}
 }
 
 \begin{document}
     %%%%Title Page
     {
         \usebackgroundtemplate{
-	        \begin{picture}(320,300)
+	        \begin{picture}(320,325)
     	        \hspace{9.0cm}
 	              \includegraphics[width=0.7\linewidth]{./logos/refuel_logo_with_text}
             \end{picture}
@@ -79,12 +94,15 @@
          \end{frame}
     }
 
-\section{Introduction}
+\section{Background}
 \begin{frame}
 \frametitle{Austrian energy policy objectives}
 \framesubtitle{according to government programme 2020-2024}
 \begin{itemize}
 \item 100\%\footnote[frame]{excluding system services and industry own consumption. At current levels this equals 10\% of consumption, i.e. actual target is around 90\%.} of electricity demand from domestic renewable sources on annual balance by 2030 \pause
+\begin{itemize}
+\item[$\rightarrow$] necessarily turns Austria into a net exporter of electricity \pause
+\end{itemize}
 \item additional annual electricity generation of \SI{27}{\tera\watt\hour} is expected to suffice \pause
 \item technology-specific additions:
 \end{itemize}
@@ -98,17 +116,41 @@
 Solar PV & 1.44 & 1.23 & +11 & 12.23 &  14.27 \\ \hline
 Wind (onshore) & 3.05 & 6.14 & +10 & 16.14 & 8 \\ \hline
 Hydro (run-of-river) & 5.72 & 28.34 & +5 & 33.34 & 6.73 \\ \hline
-%Biomass & 1 & 5 & +1 & 6 & 2 \\ \hline
+Biomass & $\sim 1$ & 4.78 & +1 & 5.78 & $>2$ \\ \hline
 \end{tabular}
 \end{table}
 \end{frame}
 
 
 \begin{frame}
+\frametitle{Why wind is not solar}
+\framesubtitle{A side note on imperfect substitutes}
+%\begin{textblock*}{4cm}(0.75cm, 2.75cm)
+%Aggregate profile for Austria
+\begin{textblock*}{4cm}(0.75cm, 2.75cm)
+\begin{itemize}
+\item secure system operation requires $S=D$ at any point in time 
+\item electricity not easily storable 
+\item >>transforming<< electricity feed-in to end-use electricity is costly
+\end{itemize}
+\end{textblock*}
+
+\only<2>{
+\begin{textblock*}{10cm}(5.5cm, 2.25cm) % {block width} (coords)
+\centering
+Aggregate generation profile in Austria
+\includegraphics[width=\textwidth, keepaspectratio]{./figures/wind_not_pv}
+\end{textblock*}
+}
+\end{frame}
+
+
+
+\begin{frame}
 \frametitle{Stylized Facts}
 \begin{itemize}
 \item Apart from wind and solar, potentials for renewable electricity generation in Austria largely exhausted
-\item Under announced policies, solar PV is only large-scale substitute to wind power
+\item Under announced policies, solar PV is only large-scale substitute to wind power \pause
 \item Increasing social conflict around the large-scale expansion of onshore wind power
 \item Traditional power system models do not account for local negative externalities of renewable energy generators, such as:
 	\begin{itemize}
@@ -120,26 +162,7 @@ Hydro (run-of-river) & 5.72 & 28.34 & +5 & 33.34 & 6.73 \\ \hline
 \end{frame}
 
 
-\begin{frame}
-\frametitle{Why wind is not solar}
-\framesubtitle{A side note on imperfect substitutes}
-\begin{textblock*}{10cm}(0.75cm, 2.0cm) % {block width} (coords)
-\centering
-Aggregate generation profile in Austria
-\includegraphics[width=\textwidth, keepaspectratio]{./figures/wind_not_pv}
-\end{textblock*}
-\begin{textblock*}{4cm}(11cm, 2.25cm)
-%Aggregate profile for Austria
-\bigskip
-\begin{itemize}
-\item secure system operation requires $S=D$ at any point in time
-\item electricity not easily storable
-\item grid operators >>transform<< electricity feed-in to end-use electricity
-\end{itemize}
-\end{textblock*}
-\end{frame}
-
-
+\section{Motivation \& Method}
 \begin{frame}
 \frametitle{The problem from a social planner's perspective}
 How to account for local negative externalities in renewables expansion planning?
@@ -158,20 +181,19 @@ How to account for local negative externalities in renewables expansion planning
 \end{frame}
 
 
-\section{Research agenda}
 \begin{frame}
 \frametitle{The cost of undisturbed landscapes}
 \framesubtitle{Approach}
 \begin{itemize}
 \item Resemble Austrian power system in 2030
-\item include most important electricity trading partner Germany
+\item include most important electricity trading partner Germany \pause
 \item set policy target of meeting $90\%$ of demand in 2030 from domestic renewable sources
 \item incorporate announced electricity system targets for Germany in 2030
 	\begin{itemize}
 	\item nuclear phase-out
 	\item partial coal exit
 	\item expansion of renewable capacities in line with EEG 2017
-	\end{itemize}
+	\end{itemize} \pause
 \item simulate prospective electricity system with \emph{medea}
 \end{itemize}
 \end{frame}
@@ -248,6 +270,8 @@ How to account for local negative externalities in renewables expansion planning
 \end{column}
 \end{columns}
 \end{footnotesize}
+\bigskip
+
 \medskip
 \begin{center}
 \emph{medea} is available on \href{https://github.com/inwe-boku/medea}{github.com/inwe-boku/medea} under an open MIT license
@@ -298,12 +322,12 @@ Capital cost of solar PV & $630$ & \SI{}{\text{\euro}\per\kilo\watt\text{p}}
 \quad $\rightarrow$ about $\sfrac{2}{3}$ rooftop PV, \\
 \quad $\sfrac{1}{3}$ open space PV
 
-\vspace{3.75cm}
+\vspace{4.25cm}
 \quad wind power and solar PV \\ \quad are substitutes
 \end{small}
 \end{textblock*}
 
-\begin{textblock*}{9.5cm}(1.5cm, 7.7cm)
+\begin{textblock*}{9.5cm}(1.5cm, 8.2cm)
 \begin{tikzpicture}%[thick]
 \draw (5.75,0) -- (9,0);
 \draw[{Latex[length=2mm]}-] (0,0) -- (3.25,0);
@@ -403,7 +427,7 @@ Capital cost of solar PV & $280$ & \SI{}{\text{\euro}\per\kilo\watt\text{p}}
 \end{frame}
 
 
-\section{Discussion}
+\section{Discussion \& Conclusion}
 \begin{frame}
 \frametitle{The cost of undisturbed landscapes}
 \framesubtitle{Discussion of results}
@@ -464,134 +488,134 @@ $\rightarrow$ artificial transmission restriction between DE and AT could be eli
 
     \end{frame}
 }   
-\appendix
-\backupbegin
-
-
-\begin{frame}
-\frametitle{The cost of undisturbed landscapes}
-\framesubtitle{Unconstrained deployment of wind and solar power}
-
-\begin{textblock*}{10cm}(0.75cm, 1.8cm) % {block width} (coords)
-\begin{table}
-\begin{tabular}{l r l}
-\emph{Results for Austria} \\ \hline \hline
-Added Solar PV & 0.0 & \SI{}{\tera\watt\hour} \\ \hline
-Added Wind & 31.0 & \SI{}{\tera\watt\hour} \\ \hline \hline
-System Cost\footnote[frame]{excluding cost for domestic transmission and distribution grids} & $3095.2$ & \SI{}{\mega\text{\euro}} \\ \hline
-Trade balance & $746.8$ & \SI{}{\mega\text{\euro}} \\ \hline
-Cost of air pollution & $184.4$ & \SI{}{\mega\text{\euro}} \\ \hline
-\ce{CO2} emissions & $5227.3$ & \SI{}{\kilo\tonne} \\ \hline
-Electricity generation & $92.8$ & \SI{}{\tera\watt\hour} \\ \hline
-Curtailment & $2.4$ & \SI{}{\tera\watt\hour} \\ \hline
-Net exports & $5.9$ & \SI{}{\tera\watt\hour} \\ \hline
-Wholesale electricity price & $56.05$ & \SI{}{\text{\euro}\per\mega\watt\hour} \\ \hline
-\end{tabular}
-%\caption{Results for Austria}
-\end{table}
-\end{textblock*}
-
-\begin{textblock*}{4cm}(11cm, 2.05cm)
-\begin{small}
-\begin{table}
-\begin{tabular}{p{1.8cm} | p{0.3cm} l}
-Capital cost of solar PV & $630$ & \SI{}{\text{\euro}\per\kilo\watt\text{p}} \\
-\ce{CO2} price & $90$ & \SI{}{\text{\euro}\per\mega\watt\hour}
-\end{tabular}
-\end{table}
-\end{small}
-\end{textblock*}
-
-\end{frame}
-
-
-\begin{frame}
-\frametitle{The value of undisturbed landscapes}
-\framesubtitle{Local Negative Externalities of Wind Turbines}
-%\begin{table}[h!]
-%\caption{Estimates of Wind Turbine Impact on Property Prices}
-\begin{table}
-\centering
-\begin{scriptsize}
-	\begin{tabular}{p{3.2cm} l l l p{1.1cm} p{2.4cm}}
-	\hline
-	Authors & Country & Sample & Framework\footnote[frame]{DID $\ldots$ difference-in-differences, SAR $\ldots$ spatial autoregressive, SFE $\ldots$ spatial fixed effects} & Impact Proxy\footnote[frame]{d $\ldots$ distance, v $\ldots$ visibility} & Estimated Impact \\
-	\hline \hline
-%	\cite{Sims2008} & Cornwall, UK & 2000 - 2007 & hedonic & visibility dummies & insignificant \\ \hline
-	Heintzelmann and Tuttle, 2012 & USA, NY & 2000 - 2009 & hedonic, SFE & d & $-3.6\%$ to $-9.6\%$, insignificant \\ \hline
-	Jensen et al., 2014 & DNK & 2000 - 2011 & hedonic, SAR & d, v & $-4.35\%$ \\ \hline
-	Lang et al., 2014 & USA, RI & 2000 - 2013 & DID & d, v & insignificant  \\ \hline
-	Gibbons, 2015 & GBR, EAW & 2000 - 2011 & DID & d, v & $-6\%$ \\ \hline
-	Hoen et al., 2015 & USA & 1996 - 2011 & DID & d & insignificant \\ \hline
-	Dröes and Koster, 2016 & NED & 1985 - 2011 & DID & d & $-1.4\%$\\ \hline
-	Sunak and Madlener, 2016 & GER, NRW & 1992 - 2010 & DID & v & $-9\%$ to $-14\%$ \\ \hline
-	Jensen et al., 2018 & DNK & - & hedonic, SAR & d, \# of turbines & $-0.2\%$ to $-1.1\%$ \\ \hline
-	Kussel et al., 2019 & GER & 2007 - 2015 & DID & d & $-6.0\%$ \\ \hline \hline
-	\end{tabular}
-%\label{tab:negex}
-\end{scriptsize}
-\end{table}
-\end{frame}
-
-
-\begin{frame}
-\frametitle{Compensating for local negative externalities}
-\framesubtitle{An example}
-\begin{textblock*}{7cm}(0.75cm, 2.0cm) % {block width} (coords)
-OC of wind turbines in Austria
-\vspace{-0.41cm}
-\begin{table}
+%\appendix
+%\backupbegin
+%
+%
+%\begin{frame}
+%\frametitle{The cost of undisturbed landscapes}
+%\framesubtitle{Unconstrained deployment of wind and solar power}
+%
+%\begin{textblock*}{10cm}(0.75cm, 1.8cm) % {block width} (coords)
+%\begin{table}
+%\begin{tabular}{l r l}
+%\emph{Results for Austria} \\ \hline \hline
+%Added Solar PV & 0.0 & \SI{}{\tera\watt\hour} \\ \hline
+%Added Wind & 31.0 & \SI{}{\tera\watt\hour} \\ \hline \hline
+%System Cost\footnote[frame]{excluding cost for domestic transmission and distribution grids} & $3095.2$ & \SI{}{\mega\text{\euro}} \\ \hline
+%Trade balance & $746.8$ & \SI{}{\mega\text{\euro}} \\ \hline
+%Cost of air pollution & $184.4$ & \SI{}{\mega\text{\euro}} \\ \hline
+%\ce{CO2} emissions & $5227.3$ & \SI{}{\kilo\tonne} \\ \hline
+%Electricity generation & $92.8$ & \SI{}{\tera\watt\hour} \\ \hline
+%Curtailment & $2.4$ & \SI{}{\tera\watt\hour} \\ \hline
+%Net exports & $5.9$ & \SI{}{\tera\watt\hour} \\ \hline
+%Wholesale electricity price & $56.05$ & \SI{}{\text{\euro}\per\mega\watt\hour} \\ \hline
+%\end{tabular}
+%%\caption{Results for Austria}
+%\end{table}
+%\end{textblock*}
+%
+%\begin{textblock*}{4cm}(11cm, 2.05cm)
+%\begin{small}
+%\begin{table}
+%\begin{tabular}{p{1.8cm} | p{0.3cm} l}
+%Capital cost of solar PV & $630$ & \SI{}{\text{\euro}\per\kilo\watt\text{p}} \\
+%\ce{CO2} price & $90$ & \SI{}{\text{\euro}\per\mega\watt\hour}
+%\end{tabular}
+%\end{table}
+%\end{small}
+%\end{textblock*}
+%
+%\end{frame}
+%
+%
+%\begin{frame}
+%\frametitle{The value of undisturbed landscapes}
+%\framesubtitle{Local Negative Externalities of Wind Turbines}
+%%\begin{table}[h!]
+%%\caption{Estimates of Wind Turbine Impact on Property Prices}
+%\begin{table}
 %\centering
-\begin{footnotesize}
-	\begin{tabular}{c | c | c | c}
-	$oc_w$ & $\delta$ & NPV $oc_w$ & NPV $oc_w$ \\
-	$[\text{\euro}\, \text{MW}^{-1} \text{a}^{-1}]$ & & $[\text{\euro}\, \text{MW}^{-1}]$ & $[\text{\euro} \, \text{turbine}^{-1}]$ \\ \hline \hline
-	$40\,000$ & $0.05$ & $563\,758$ & $1\,973\,152$ \\ \hline
-	$40\,000$ & $0.03$ & $696\,526$ & $2\,437\,841$ \\ \hline
-	$10\,000$ & $0.05$ & $140\,939$ & $493\,288$ \\ \hline
-	$10\,000$ & $0.03$ & $171\,131$ & $609\,460$ \\ \hline
-	\end{tabular}
-\end{footnotesize}
-\end{table}
-\end{textblock*}
-
-\begin{textblock*}{7cm}(8.25cm, 2.0cm) % {block width} (coords)
-Property value loss in Germany
-%\vspace{-0.5cm}
-\begin{table}
+%\begin{scriptsize}
+%	\begin{tabular}{p{3.2cm} l l l p{1.1cm} p{2.4cm}}
+%	\hline
+%	Authors & Country & Sample & Framework\footnote[frame]{DID $\ldots$ difference-in-differences, SAR $\ldots$ spatial autoregressive, SFE $\ldots$ spatial fixed effects} & Impact Proxy\footnote[frame]{d $\ldots$ distance, v $\ldots$ visibility} & Estimated Impact \\
+%	\hline \hline
+%%	\cite{Sims2008} & Cornwall, UK & 2000 - 2007 & hedonic & visibility dummies & insignificant \\ \hline
+%	Heintzelmann and Tuttle, 2012 & USA, NY & 2000 - 2009 & hedonic, SFE & d & $-3.6\%$ to $-9.6\%$, insignificant \\ \hline
+%	Jensen et al., 2014 & DNK & 2000 - 2011 & hedonic, SAR & d, v & $-4.35\%$ \\ \hline
+%	Lang et al., 2014 & USA, RI & 2000 - 2013 & DID & d, v & insignificant  \\ \hline
+%	Gibbons, 2015 & GBR, EAW & 2000 - 2011 & DID & d, v & $-6\%$ \\ \hline
+%	Hoen et al., 2015 & USA & 1996 - 2011 & DID & d & insignificant \\ \hline
+%	Dröes and Koster, 2016 & NED & 1985 - 2011 & DID & d & $-1.4\%$\\ \hline
+%	Sunak and Madlener, 2016 & GER, NRW & 1992 - 2010 & DID & v & $-9\%$ to $-14\%$ \\ \hline
+%	Jensen et al., 2018 & DNK & - & hedonic, SAR & d, \# of turbines & $-0.2\%$ to $-1.1\%$ \\ \hline
+%	Kussel et al., 2019 & GER & 2007 - 2015 & DID & d & $-6.0\%$ \\ \hline \hline
+%	\end{tabular}
+%%\label{tab:negex}
+%\end{scriptsize}
+%\end{table}
+%\end{frame}
+%
+%
+%\begin{frame}
+%\frametitle{Compensating for local negative externalities}
+%\framesubtitle{An example}
+%\begin{textblock*}{7cm}(0.75cm, 2.0cm) % {block width} (coords)
+%OC of wind turbines in Austria
+%\vspace{-0.41cm}
+%\begin{table}
+%%\centering
+%\begin{footnotesize}
+%	\begin{tabular}{c | c | c | c}
+%	$oc_w$ & $\delta$ & NPV $oc_w$ & NPV $oc_w$ \\
+%	$[\text{\euro}\, \text{MW}^{-1} \text{a}^{-1}]$ & & $[\text{\euro}\, \text{MW}^{-1}]$ & $[\text{\euro} \, \text{turbine}^{-1}]$ \\ \hline \hline
+%	$40\,000$ & $0.05$ & $563\,758$ & $1\,973\,152$ \\ \hline
+%	$40\,000$ & $0.03$ & $696\,526$ & $2\,437\,841$ \\ \hline
+%	$10\,000$ & $0.05$ & $140\,939$ & $493\,288$ \\ \hline
+%	$10\,000$ & $0.03$ & $171\,131$ & $609\,460$ \\ \hline
+%	\end{tabular}
+%\end{footnotesize}
+%\end{table}
+%\end{textblock*}
+%
+%\begin{textblock*}{7cm}(8.25cm, 2.0cm) % {block width} (coords)
+%Property value loss in Germany
+%%\vspace{-0.5cm}
+%\begin{table}
+%%\centering
+%\begin{footnotesize}
+%	\begin{tabular}{c | c | c | c}
+%	  & value & impact & loss \\
+%	  & \euro & \% & \euro \\ \hline \hline
+%	mean & $273\,786$ & $0.06$ & $16\,427$ \\ \hline
+%	mean & $273\,786$ & $0.10$ & $27\,379$ \\ \hline
+%	mean + 1 s.d. & $476\,923$ & $0.06$ & $28\,615$ \\ \hline
+%	mean + 1 s.d. & $476\,923$ & $0.10$ & $47\,692$ \\ \hline
+%	\end{tabular}
+%\end{footnotesize}
+%\end{table}
+%\end{textblock*}
+%
+%\begin{textblock*}{14.5cm}(0.75cm, 6.0cm) % {block width} (coords)
 %\centering
-\begin{footnotesize}
-	\begin{tabular}{c | c | c | c}
-	  & value & impact & loss \\
-	  & \euro & \% & \euro \\ \hline \hline
-	mean & $273\,786$ & $0.06$ & $16\,427$ \\ \hline
-	mean & $273\,786$ & $0.10$ & $27\,379$ \\ \hline
-	mean + 1 s.d. & $476\,923$ & $0.06$ & $28\,615$ \\ \hline
-	mean + 1 s.d. & $476\,923$ & $0.10$ & $47\,692$ \\ \hline
-	\end{tabular}
-\end{footnotesize}
-\end{table}
-\end{textblock*}
-
-\begin{textblock*}{14.5cm}(0.75cm, 5.6cm) % {block width} (coords)
-\centering
-Compensation potential
-\vspace{-0.1cm}
-\begin{table}
-\begin{footnotesize}
-	\begin{tabular}{c | c | c | c | c}
-	$oc_w$  & $\delta$ & value & impact & \# property owners \\ \hline \hline
-	$40\,000$ & $0.05$ & $273\,786$ & $0.06$ & $120$ \\ \hline
-	$40\,000$ & $0.05$ & $273\,786$ & $0.10$ & $72$ \\ \hline
-	$40\,000$ & $0.03$ & $476\,923$ & $0.06$ & $69$ \\ \hline
-	$40\,000$ & $0.03$ & $476\,923$ & $0.10$ & $41$ \\ \hline
-%	$10\,000$ & $0.05$ & $476\,923$ & $0.06$ & $1$ \\ \hline
-	$10\,000$ & $0.03$ & $476\,923$ & $0.10$ & $18$ \\ \hline
-	\end{tabular}
-\end{footnotesize}
-\end{table}
-\end{textblock*}
-
-\end{frame}
-\backupend
+%Compensation potential
+%\vspace{-0.1cm}
+%\begin{table}
+%\begin{footnotesize}
+%	\begin{tabular}{c | c | c | c | c}
+%	$oc_w$  & $\delta$ & value & impact & \# property owners \\ \hline \hline
+%	$40\,000$ & $0.05$ & $273\,786$ & $0.06$ & $120$ \\ \hline
+%	$40\,000$ & $0.05$ & $273\,786$ & $0.10$ & $72$ \\ \hline
+%	$40\,000$ & $0.03$ & $476\,923$ & $0.06$ & $69$ \\ \hline
+%	$40\,000$ & $0.03$ & $476\,923$ & $0.10$ & $41$ \\ \hline
+%%	$10\,000$ & $0.05$ & $476\,923$ & $0.06$ & $1$ \\ \hline
+%	$10\,000$ & $0.03$ & $476\,923$ & $0.10$ & $18$ \\ \hline
+%	\end{tabular}
+%\end{footnotesize}
+%\end{table}
+%\end{textblock*}
+%
+%\end{frame}
+%\backupend
 \end{document}
