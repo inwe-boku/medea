@@ -107,18 +107,20 @@
             \item demonstrate the feasibility of highly renewable energy systems
             \item determine the system cost-minimizing mix of renewable energy technologies
         \end{itemize}
-        find significant capacities of renewable energy technologies (RET), largely wind power, need to be added.
+        find significant capacities of renewable energy technologies (RET), in Central Europe largely wind power,
+        need to be added.
         \medskip
 
-        Researchers are increasingly aware that social and political restrictions on such large-scale RET expansions must be
-        recognized.
+        Researchers are increasingly aware that social and political restrictions on such large-scale RET expansions
+        must be recognized.
         \begin{itemize}
             \item RET deployment in power system models often limited on the upside by results from analyses of land
-            availability, e.g. by excluding areas for technical or legal reasons, or because they are constested by stakeholders
+            availability, e.g. by excluding areas for technical or legal reasons, or because they are constested by
+            stakeholders
         \end{itemize}
         \medskip
 
-        Yet, such `binary' analysis neglects the trade-offs faced by a social planner deciding on RET expansion.
+        Yet, this neglects the trade-offs faced by a social planner deciding on RET expansion.
     \end{frame}
 
     \begin{frame}
@@ -152,39 +154,36 @@
     \begin{frame}
         \frametitle{Framework}
 
-        \begin{textblock*}{5cm}
+        \begin{textblock*}{5.75cm}
             (1.0cm,2cm)
-            Consider a renewable energy technology that
+            Consider a renewable energy technology $\omega$ that
             \begin{itemize}
-                \item saves system cost (relative to its best alternative), but
-                \item comes at social cost (e.g. due to local negative external effects)
+                \item is \emph{system cost} minimizing, i.e.\ it saves cost relative to its best alternative $\mu$, but
+                \item comes at \emph{social cost}, e.g. due to unaccounted negative external effects
             \end{itemize}
             \medskip
 
-            A social planner should deploy this RET (instead of another one) up to the capacity at which
-            \begin{itemize}
-                \item system cost saving equals
-                \item added social cost
-            \end{itemize}
+            A social planner should substitute $\omega$ with $\mu$ up to the point where the increase in system cost
+            equals the reduction in harm (from $\omega$'s negative externality unaccounted in system cost)
         \end{textblock*}
 
-        \begin{textblock*}{8.0cm}
-            (6.5cm,2cm)
+        \begin{textblock*}{7.5cm}
+            (7.5cm,2cm)
             \begin{tikzpicture}
                 \begin{axis}[
                     width=\textwidth,
                     clip=false,
                     axis lines=left,
                     ticks=none,
-                    xlabel={capacity substituted},
+                    xlabel={$\omega$ substituted with equivalent $\mu$},
                     ylabel={cost},
                     domain=0.5:1.75,
                     xmin=0.5, xmax=2,
                     ymin=0, ymax=4,
                     samples=200
                 ]
-                    \addplot[blue, thick] (x, 1.3*x^1.1+0.6);
-                    \node at (axis cs: 1.925,3) [blue, align=left] {saved\\ system\\ cost};
+                    \addplot[blue, thick] (x, 2*x^1.1-0.933);
+                    \node at (axis cs: 1.925,3) [blue, align=left] {additional\\ system\\ cost};
 
                     \addplot[bokugreen, thick] (x, -2*x^0.8+4);
                     \node at (axis cs: 2.0,1) [bokugreen, align=left]{harm \\(from RET\\ externality)};
@@ -457,39 +456,50 @@ The model accounts for various technical characteristics of power systems, such 
 \section{Results}
 
 \begin{frame}
-\frametitle{The cost of undisturbed landscapes}
+    \frametitle{The cost of undisturbed landscapes}
 
-\begin{textblock*}{10cm}(0.75cm, 1.5cm) % {block width} (coords)
-\includegraphics[width=\textwidth, keepaspectratio]{./figures/undisturbed_base}
-\end{textblock*}
+    \begin{textblock*}{10cm}
+        (1.25cm, 1.75cm) % {block width} (coords)
+        \centering
+        \begin{tikzpicture}
+            \draw (4.5,0.0) node[] {\small Opportunity Cost of Wind Power};
+        \end{tikzpicture}
+    \end{textblock*}
 
-\begin{textblock*}{4.5cm}(10.9cm, 1.5cm)
-\begin{small}
-\begin{table}
-\begin{tabular}{p{1.8cm} | r l}
-Capital cost of solar PV & $630$ & \SI{}{\text{\euro}\per\kilo\watt\text{p}}
-\end{tabular}
-\end{table}
-\smallskip
-\quad $\rightarrow$ about $\sfrac{2}{3}$ rooftop PV, \\
-\quad $\sfrac{1}{3}$ open space PV
+    \begin{textblock*}{10cm}
+        (0.75cm, 2.25cm) % {block width} (coords)
+        \includegraphics[width=\textwidth, keepaspectratio]{./figures/undisturbed_base}
+    \end{textblock*}
 
-\vspace{4.25cm}
-\quad wind power and solar PV \\ \quad are substitutes
+    \begin{textblock*}{4.5cm}
+        (10.9cm, 2.5cm)
+        \begin{small}
+            \begin{table}
+                \begin{tabular}{p{1.8cm} | r l}
+                    Capital cost of solar PV & $630$ & \SI{}{\text{\euro}\per\kilo\watt\text{p}}
+                \end{tabular}
+            \end{table}
+            \smallskip
+            \quad $\rightarrow$ about $\sfrac{2}{3}$ rooftop PV, \\
+            \quad $\sfrac{1}{3}$ open space PV
+
+            \vspace{3.75cm}
+            \quad wind power and solar PV \\ \quad are substitutes
 \end{small}
 \end{textblock*}
 
-\begin{textblock*}{9.5cm}(1.5cm, 8.2cm)
-\begin{tikzpicture}%[thick]
-    \draw (5.75,0) -- (9,0);
-    \draw[{Latex[length=2mm]}-] (0,0) -- (3.25,0);
-    \draw (4.5,0.0) node[] {\scriptsize more wind power};
-\end{tikzpicture}
+    \begin{textblock*}{9.5cm}
+        (1.5cm, 8.7cm)
+        \begin{tikzpicture}%[thick]
+            \draw (5.75,0) -- (9,0);
+            \draw[{Latex[length=2mm]}-] (0,0) -- (3.25,0);
+            \draw (4.5,0.0) node[] {\scriptsize more wind power};
+        \end{tikzpicture}
 
-\begin{tikzpicture}%[thick]
-    \draw[-{Latex[length=2mm]}] (5.5,0) -- (9,0);
-    \draw (0,0) -- (3.5,0);
-    \draw (4.5,0.0) node[] {\scriptsize more solar PV};
+        \begin{tikzpicture}%[thick]
+            \draw[-{Latex[length=2mm]}] (5.5,0) -- (9,0);
+            \draw (0,0) -- (3.5,0);
+            \draw (4.5,0.0) node[] {\scriptsize more solar PV};
 \end{tikzpicture}
 \end{textblock*}
 
@@ -540,40 +550,63 @@ Capital cost of solar PV & $630$ & \SI{}{\text{\euro}\per\kilo\watt\text{p}}
 
 \section{Sensitivity}
 \begin{frame}
-\frametitle{The cost of undisturbed landscapes}
-\framesubtitle{Sensitivity to capital cost of solar PV}
-\begin{textblock*}{10cm}(0.75cm, 2.0cm) % {block width} (coords)
-\includegraphics[width=\textwidth, keepaspectratio]{./figures/sens_nrg}
-\end{textblock*}
+    \frametitle{The cost of undisturbed landscapes}
+    \framesubtitle{Sensitivity to capital cost of solar PV}
 
-\begin{textblock*}{4cm}(11cm, 2.25cm)
-\begin{small}
-    Capital cost estimates for solar PV in 2030
-    \begin{table}
-        \begin{tabular}{p{1.8cm} | p{0.3cm} l}
-            Small-scale rooftop & $830$ & \SI{}{\text{\euro}\per\kilo\watt\text{p}} \\
-            Utility-scale open space & $280$ & \SI{}{\text{\euro}\per\kilo\watt\text{p}} \\
-        \end{tabular}
-    \end{table}
-\end{small}
-\end{textblock*}
+    \begin{textblock*}{10cm}
+        (1.25cm, 1.75cm) % {block width} (coords)
+        \centering
+        \begin{tikzpicture}
+            \draw (4.5,0.0) node[] {\small Least Cost Technology Mix};
+        \end{tikzpicture}
+    \end{textblock*}
+
+    \begin{textblock*}{10cm}
+        (0.75cm, 2.25cm) % {block width} (coords)
+%\begin{textblock*}{10cm}(0.75cm, 2.0cm) % {block width} (coords)
+        \includegraphics[width=\textwidth, keepaspectratio]{./figures/sens_nrg}
+    \end{textblock*}
+
+    \begin{textblock*}{4cm}
+        (11cm, 2.5cm)
+        \begin{small}
+            Capital cost estimates for solar PV in 2030
+            \begin{table}
+                \begin{tabular}{p{1.8cm} | p{0.3cm} l}
+                    Small-scale rooftop & $830$ & \SI{}{\text{\euro}\per\kilo\watt\text{p}} \\
+                    Utility-scale open space & $280$ & \SI{}{\text{\euro}\per\kilo\watt\text{p}} \\
+                \end{tabular}
+            \end{table}
+        \end{small}
+    \end{textblock*}
 \end{frame}
 
 
 \begin{frame}
-\frametitle{The cost of undisturbed landscapes}
-\framesubtitle{Sensitivity to capital cost of solar PV}
-\begin{textblock*}{10cm}(0.75cm, 2.0cm) % {block width} (coords)
-\includegraphics[width=\textwidth, keepaspectratio]{./figures/undisturbed_low}
-\end{textblock*}
+    \frametitle{The cost of undisturbed landscapes}
+    \framesubtitle{Sensitivity to capital cost of solar PV}
+    \begin{textblock*}{10cm}
+        (1.25cm, 1.75cm) % {block width} (coords)
+        \centering
+        \begin{tikzpicture}
+            \draw (4.5,0.0) node[] {\small Opportunity Cost of Wind Power};
+        \end{tikzpicture}
+    \end{textblock*}
 
-\begin{textblock*}{4cm}(11cm, 2.25cm)
-\begin{small}
-    \begin{table}
-        \begin{tabular}{p{1.8cm} | p{0.3cm} l}
-            Capital cost of solar PV & $280$ & \SI{}{\text{\euro}\per\kilo\watt\text{p}}
-        \end{tabular}
-    \end{table}
+    \begin{textblock*}{10cm}
+        (0.75cm, 2.25cm) % {block width} (coords)
+%\begin{textblock*}{10cm}(0.75cm, 2.0cm) % {block width} (coords)
+        \includegraphics[width=\textwidth, keepaspectratio]{./figures/undisturbed_low}
+    \end{textblock*}
+
+    \begin{textblock*}{4cm}
+        (11cm, 2.25cm)
+        \begin{small}
+            \begin{table}
+                \begin{tabular}{p{1.8cm} | p{0.3cm} l}
+                    Capital cost of solar PV & $280$ & \SI{}{\text{\euro}\per\kilo\watt\text{p}}
+                \end{tabular}
+            \end{table}
 \end{small}
 \end{textblock*}
 \end{frame}

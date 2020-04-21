@@ -109,12 +109,66 @@ def plot_lines(df, fname, xlim=None, ylim=None, xlabel=None, ylabel=None, color=
     plt.close()
 
 
+def plot_sublines(df, fname, width=2, midx_level=0, subtitle=True, xlim=None, ylim=None, xlabel=None, ylabel=None,
+                  color=None):
+    """
+    plots multiindex pd.DataFrame to multiple subplots
+    :param df: Pandas MultiIndex DataFrame
+    :param fname: name of output file generated
+    :param width: number of subplots in a horizontal row
+    :param midx_level: MultiIndex level to group plots by
+    :param subtitle: boolean, if True generate title for each subplot; False: generate long legend entries instead
+    :param xlim:
+    :param ylim:
+    :param xlabel:
+    :param ylabel:
+    :param color:
+    :return: file with subplots
+    """
+    # determine length and width of subfigures
+    idx_to_group = list(df.columns.get_level_values(midx_level).unique())
+    num_subfigures = len(idx_to_group)
+    sub_length = np.ceil(num_subfigures / width).astype(int)
+
+    fig = plt.figure(figsize=(8, 5))
+    for subplot in range(0, num_subfigures):
+        data_to_plot = df.xs(idx_to_group[subplot], axis=1, level=midx_level)
+        _, num_lines = data_to_plot.shape
+        ax = fig.add_subplot(width, sub_length, subplot + 1)
+
+        if not color:
+            ax.plot(data_to_plot, linewidth=2)
+        elif len(color) == num_lines:
+            for c in range(0, num_lines):
+                ax.plot(data_to_plot.iloc[:, c], linewidth=2, color=color[c])
+        else:
+            raise TypeError(f'Colors misspecified. Should be {num_lines} colors')
+
+        if subtitle:
+            ax.set_title(idx_to_group[subplot])
+            ax.legend(data_to_plot.columns)
+        if not subtitle:
+            legend_entries = [", ".join(i) for i in itertools.product(list(data_to_plot.columns),
+                                                                      [idx_to_group[subplot]])]
+            ax.legend(legend_entries)
+        ax.set_ylabel(ylabel)
+        ax.set_xlabel(xlabel)
+        ax.set_ylim(ylim)
+        ax.set_xlim(xlim)
+        ax.grid()
+
+    plt.tight_layout()
+    plt.savefig(fname)
+    plt.close()
+
+
 # %% ----- ----- ----- ----- settings ----- ----- ----- -----
 idx = pd.IndexSlice
 PRICE_CO2 = 90
 REFUEL_COLORS = ['#c72321', '#0d8085', '#f0c220', '#595959']
 RES_COLORS = ['#d69602', '#ffd53d', '#3758ba', '#7794dd']
 RES_COLORS3 = ['#d69602', '#e5b710', '#ffd53d', '#3758ba', '#3b68f9', '#7794dd']
+RES_COLORS2 = ['#ffd53d', '#3758ba']
 
 ANNUITY_FACTOR = 0.05827816
 FLH_PV = 857.4938
@@ -239,10 +293,14 @@ plot_lines(sensitivity, os.path.join(FPATH, 'sens_cap.pdf'),
 # %% plot sensitivity of optimal res generation to capital cost of pv
 sensitivity_nrg.loc[:, idx['Solar PV', :]] = sensitivity_nrg.loc[:, idx['Solar PV', :]] * FLH_PV / 1000
 sensitivity_nrg.loc[:, idx['Wind Onshore', :]] = sensitivity_nrg.loc[:, idx['Wind Onshore', :]] * FLH_WINDON / 1000
-sensitivity_nrg.columns = sensitivity_nrg.columns.map(', '.join)
+# sensitivity_nrg.columns = sensitivity_nrg.columns.map(', '.join)
 
 plot_lines(sensitivity_nrg, os.path.join(FPATH, 'sens_nrg.pdf'),
            xlim=[650, 250], ylim=None, xlabel='Capital cost of solar PV [€/kWp]', ylabel='TWh', color=RES_COLORS3)
+
+plot_sublines(sensitivity_nrg, os.path.join(FPATH, 'sens_nrg_sub.pdf'),
+              width=2, midx_level=1, subtitle=True, xlim=[650, 250], xlabel='Capital cost of solar PV [€/kWp]',
+              ylabel='TWh p.a.', color=RES_COLORS2)
 
 # %% plot why wind is not pv
 # plot generation profile in one summer week and one winter week
