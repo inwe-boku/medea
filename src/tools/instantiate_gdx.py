@@ -8,7 +8,7 @@ import config as cfg
 from src.tools.gams_io import df2gdx
 from src.tools.prepare_data import dict_sets, dict_instantiate, static_data, plant_data, ts_data, invest_limits
 
-# TODO: Add energy stored in hydro reservoirs - STORAGE_LEVEL
+# TODO: Add observed energy stored in hydro reservoirs - STORAGE_LEVEL
 
 idx = pd.IndexSlice
 # --------------------------------------------------------------------------- #
@@ -17,10 +17,32 @@ idx = pd.IndexSlice
 ws = GamsWorkspace(system_directory=cfg.GMS_SYS_DIR)
 db = ws.add_database()
 
+"""
+parameters affected by multifuel-conversion
+- e_set / f_set
+- m_set (potentially)
+- AIR_POL_COST_FIX
+- AIR_POL_COST_VAR
+- 
+
+i .. 'Elyser', 'Methn'
+e .. 'Syngas', 'Hydrogen'
+k .. 'str_hydrogn', 'str_syng'
+
+introduce:
+ - new unit (set i) 'Elyser', which converts Electricity to 'Hydrogen'
+ - new unit (set i) 'Methn', which converts 'Hydrogen' to 'Syngas'
+ - new storage unit (set k) 'str_hydrogn' which stores 'Hydrogen'
+ - new storage unit (set k) 'str_syng' which stores 'Syngas'
+ - new energy carrier (set e) 'Hydrogen'
+ - new energy carrier (set e) 'Syngas'
+
+
+"""
 # --------------------------------------------------------------------------- #
 # %% instantiate SETS
 # --------------------------------------------------------------------------- #
-f_set = df2gdx(db, dict_sets['f'], 'f', 'set', [])
+e_set = df2gdx(db, dict_sets['e'], 'e', 'set', [])
 l_set = df2gdx(db, dict_sets['l'], 'l', 'set', [])
 m_set = df2gdx(db, dict_sets['m'], 'm', 'set', [])
 z_set = df2gdx(db, dict_sets['z'], 'z', 'set', [])
@@ -37,6 +59,14 @@ logging.info('medea sets instantiated')
 # --------------------------------------------------------------------------- #
 # %% instantiate static PARAMETERS
 # --------------------------------------------------------------------------- #
+# PRICE_TRADE(e) -->            PRICE_SALES(e) * done --> from python * done
+# MAP_FUEL_R(n,e) -->           MAP_NRG_R(n,e) * done - in .gms, set by hand --> move to python * done
+# MAP_STORAGE_CARRIERS(k,e) --> MAP_NRG_S(k,e) * done --> from python * done
+
+AIR_POL_COST_FIX = df2gdx(db, static_data['AIR_POLLUTION']['fixed cost'],
+                          'AIR_POL_COST_FIX', 'par', [e_set], 'EUR per MW')
+AIR_POL_COST_VAR = df2gdx(db, static_data['AIR_POLLUTION']['variable cost'],
+                          'AIR_POL_COST_VAR', 'par', [e_set], 'EUR per MWh')
 CAPITALCOST_G = df2gdx(db, static_data['tec']['annuity'].round(4), 'CAPITALCOST_G', 'par', [i_set], '[kEUR per GW]')
 CAPITALCOST_R = df2gdx(db, static_data['CAPCOST_R'].loc[:, 'equivalent annual cost'],
                        'CAPITALCOST_R', 'par', [z_set, n_set], '[kEUR per GW]')
@@ -46,18 +76,17 @@ CAPITALCOST_V = df2gdx(db, plant_data['storage_clusters']['cost_energy'].reorder
                        'CAPITALCOST_V', 'par', [z_set, k_set], '[GW]')
 CAPITALCOST_X = df2gdx(db, static_data['CAPCOST_X'], 'CAPITALCOST_X', 'par', [z_set], 'kEUR per GW')
 CO2_INTENSITY = df2gdx(db, dict_instantiate['CO2_INTENSITY'],
-                       'CO2_INTENSITY', 'par', [f_set], '[kt CO2 per GWh fuel input]')
+                       'CO2_INTENSITY', 'par', [e_set], '[kt CO2 per GWh fuel input]')
 DEMAND = df2gdx(db, ts_data['zonal'].loc[:, idx[:, :, 'load']].stack((0, 1)).reorder_levels((1, 0, 2)).round(4),
                 'DEMAND', 'par', [z_set, t_set, m_set])
 DISTANCE = df2gdx(db, dict_instantiate['DISTANCE'].stack(), 'DISTANCE', 'par', [z_set, z_set], '[km]')
-EFFICIENCY_G = df2gdx(db, dict_instantiate['efficiency']['l1'], 'EFFICIENCY_G', 'par', [i_set, m_set, f_set], '[%]')
-
+EFFICIENCY_G = df2gdx(db, dict_instantiate['efficiency']['l1'], 'EFFICIENCY_G', 'par', [i_set, m_set, e_set], '[%]')
 EFFICIENCY_S_OUT = df2gdx(db, plant_data['storage_clusters']['efficiency_out'].reorder_levels((1, 0)),
                           'EFFICIENCY_S_OUT', 'par', [z_set, k_set], '[GW]')
 EFFICIENCY_S_IN = df2gdx(db, plant_data['storage_clusters']['efficiency_in'].reorder_levels((1, 0)),
                          'EFFICIENCY_S_IN', 'par', [z_set, k_set], '[GW]')
 FEASIBLE_INPUT = df2gdx(db, static_data['feasops']['fuel_need'].round(4),
-                        'FEASIBLE_INPUT', 'par', [i_set, l_set, f_set], '[GW]')
+                        'FEASIBLE_INPUT', 'par', [i_set, l_set, e_set], '[GW]')
 FEASIBLE_OUTPUT = df2gdx(db, static_data['feasops'][['el', 'ht']].droplevel('fuel_name').stack(),
                          'FEASIBLE_OUTPUT', 'par', [i_set, l_set, m_set], '[GW]')
 GEN_PROFILE = df2gdx(db, ts_data['zonal'].loc[:, idx[:, :, 'profile']].stack((0, 1)).reorder_levels((1, 0, 2)).round(4),
@@ -77,32 +106,25 @@ INITIAL_CAP_X = df2gdx(db, dict_instantiate['CAP_X'].stack(), 'INITIAL_CAP_X', '
 # TODO: Estimate LAMBDA, i.e. the share of must-run capacity in conventional capacity
 #  (controlling for renewables capacity)
 LAMBDA = df2gdx(db, static_data['LAMBDA'], 'LAMBDA', 'par', 0, '[]')
-
+MAP_NRG_R = df2gdx(db, df, 'MAP_NRG_R', 'par', [n_set, e_set], 'binary mapping')
+MAP_NRG_S = df2gdx(db, df, 'MAP_NRG_S', 'par', [k_set, e_set], 'binary mapping')
 OM_COST_G_QFIX = df2gdx(db, static_data['tec']['om_fix'], 'OM_COST_G_QFIX', 'par', [i_set], '[kEUR per GW]')
 OM_COST_G_VAR = df2gdx(db, static_data['tec']['om_var'], 'OM_COST_G_VAR', 'par', [i_set], '[kEUR per GWh]')
-
 OM_COST_R_QFIX = df2gdx(db, static_data['CAPCOST_R'].loc[:, 'quasi-fixed o&m-cost'], 'OM_COST_R_QFIX', 'par',
                         [z_set, n_set], '[kEUR per GW]')
 OM_COST_R_VAR = df2gdx(db, static_data['CAPCOST_R'].loc[:, 'variable o&m-cost'], 'OM_COST_R_VAR', 'par',
                        [z_set, n_set], '[kEUR per GWh]')
 PEAK_LOAD = df2gdx(db, dict_instantiate['PEAK_LOAD'], 'PEAK_LOAD', 'par', [z_set], '[GW]')
 PEAK_PROFILE = df2gdx(db, dict_instantiate['PEAK_PROFILE'], 'PEAK_PROFILE', 'par', [z_set, n_set], '[]')
-
 PRICE_CO2 = df2gdx(db, ts_data['price'].loc[:, idx['EUA', :]].stack().reorder_levels((1, 0)),
                    'PRICE_CO2', 'par', [z_set, t_set])
 PRICE_FUEL = df2gdx(db, ts_data['price'].drop(['EUA', 'price_day_ahead'], axis=1).stack((0, 1)).reorder_levels(
-    (2, 0, 1)).round(4), 'PRICE_FUEL', 'par', [z_set, t_set, f_set])
+    (2, 0, 1)).round(4), 'PRICE_FUEL', 'par', [z_set, t_set, e_set])
+PRICE_SALES = df2gdx(db, df, 'PRICE_SALES', 'par', [e_set], 'EUR per MWh')
 # PRICE_DA is NOT required by model
 PRICE_DA = df2gdx(db, ts_data['price'].loc[:, idx['price_day_ahead', :]].stack(), 'PRICE_DA', 'par', [t_set, z_set])
-
 SIGMA = df2gdx(db, static_data['SIGMA'], 'SIGMA', 'par', 0, '[]')
-
 VALUE_NSE = df2gdx(db, static_data['VALUE_NSE'], 'VALUE_NSE', 'par', [z_set], 'EUR per MWh')
-
-AIR_POL_COST_FIX = df2gdx(db, static_data['AIR_POLLUTION']['fixed cost'],
-                          'AIR_POL_COST_FIX', 'par', [f_set], 'EUR per MW')
-AIR_POL_COST_VAR = df2gdx(db, static_data['AIR_POLLUTION']['variable cost'],
-                          'AIR_POL_COST_VAR', 'par', [f_set], 'EUR per MWh')
 
 # potentially useful for unit committment-models
 # NUM = df2gdx(db, dict_instantiate['tec_props']['num'], 'NUM', 'par', [z_set, i_set], '[#]')
