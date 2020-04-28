@@ -156,15 +156,16 @@
 
         \begin{textblock*}{5.75cm}
             (1.0cm,2cm)
-            Consider a renewable energy technology $\omega$ that
+            Consider a renewable energy technology $T$ that
             \begin{itemize}
-                \item is \emph{system cost} minimizing, i.e.\ it saves cost relative to its best alternative $\mu$, but
+                \item is deployed at the \emph{system cost} minimizing level $T^\ast$, i.e.\ it saves system cost
+                relative to its best alternative $P$, but
                 \item comes at \emph{social cost}, e.g. due to unaccounted negative external effects
             \end{itemize}
             \medskip
 
-            A social planner should substitute $\omega$ with $\mu$ up to the point where the increase in system cost
-            equals the reduction in harm (from $\omega$'s negative externality unaccounted in system cost)
+            A social planner should substitute $T$ with $P$ up to the point where the increase in system cost
+            equals the reduction in harm (from $T$'s negative externality which is unaccounted for in system cost)
         \end{textblock*}
 
         \begin{textblock*}{7.5cm}
@@ -175,7 +176,7 @@
                     clip=false,
                     axis lines=left,
                     ticks=none,
-                    xlabel={$\omega$ substituted with equivalent $\mu$},
+                    xlabel={$\Phi= \frac{T^\ast-T}{T^\ast}$},
                     ylabel={cost},
                     domain=0.5:1.75,
                     xmin=0.5, xmax=2,
@@ -183,10 +184,12 @@
                     samples=200
                 ]
                     \addplot[blue, thick] (x, 2*x^1.1-0.933);
-                    \node at (axis cs: 1.925,3) [blue, align=left] {additional\\ system\\ cost};
+                    \node at (axis cs: 2.05,2.95) [blue, align=left] {additional\\ system cost};
 
                     \addplot[bokugreen, thick] (x, -2*x^0.8+4);
-                    \node at (axis cs: 2.0,1) [bokugreen, align=left]{harm \\(from RET\\ externality)};
+                    \node at (axis cs: 1.9,0.925) [bokugreen, align=left]{harm};
+                    \node at (axis cs: 0.5,-0.25) []{$0$};
+                    \node at (axis cs: 1.925,-0.25) []{$1$};
                 \end{axis}
             \end{tikzpicture}
         \end{textblock*}
@@ -249,14 +252,14 @@
         \end{itemize}
         \begin{table}
             \centering
-            \begin{tabular}{| l | r | r | r | r | r |}
-                \hline
+            \begin{tabular}{lrrrrr}
+                %\hline
                 & 2018 & 2018\footnote[frame]{meteorological conditions as in 2016} & Policy & 2030 & 2030 \\
                 & [GW] & [TWh] & [TWh] & [TWh] & [GW] \\ \hline \hline
                 Solar PV & 1.44 & 1.23 & +11 & 12.23 & 14.27 \\ \hline
                 Wind (onshore) & 3.05 & 6.14 & +10 & 16.14 & 8 \\ \hline
                 Hydro (run-of-river) & 5.72 & 28.34 & +5 & 33.34 & 6.73 \\ \hline
-                Biomass & $\sim 1$ & 4.78 & +1 & 5.78 & $<2$ \\ \hline
+                Biomass & $\sim 1$ & 4.78 & +1 & 5.78 & $<2$ %\\ \hline
             \end{tabular}
         \end{table}
     \end{frame}
@@ -442,27 +445,61 @@
 \medskip
 \begin{center}
     \emph{medea} is available on \textcolor{blue}{\href{https://github.com/inwe-boku/medea}{github.com/inwe-boku/medea}}
-    under an open MIT license
+    (MIT license)
 \end{center}
 \end{frame}
-\note{
-medea is a partial-equilibrium model of the coupled electricity and district heating sectors.
-Operation of and investment in conventional and renewable power plants, storages and transmission lines are determined simultaneously for one year.
-Results include hourly dispatch, investment, inter-zonal trade, electricity and heat prices, profits, and emissions of air pollutants.
-The model accounts for various technical characteristics of power systems, such as co-generation of heat and power, balancing requirements, 
-}
+    \note{
+        medea is a partial-equilibrium model of the coupled electricity and district heating sectors.
+        Operation of and investment in conventional and renewable power plants, storages and transmission lines are determined simultaneously for one year.
+        Results include hourly dispatch, investment, inter-zonal trade, electricity and heat prices, profits, and emissions of air pollutants.
+        The model accounts for various technical characteristics of power systems, such as co-generation of heat and power, balancing requirements,
+    }
 
 
-\section{Results}
+    \section{Results}
+    \begin{frame}
+        \frametitle{The cost of undisturbed landscapes}
 
-\begin{frame}
-    \frametitle{The cost of undisturbed landscapes}
+        \begin{textblock*}{10cm}
+            (1.25cm, 1.75cm) % {block width} (coords)
+            \centering
+            \begin{tikzpicture}
+                \draw (4.5,0.0) node[] {\small Opportunity Cost of Wind Power};
+            \end{tikzpicture}
+        \end{textblock*}
 
-    \begin{textblock*}{10cm}
-        (1.25cm, 1.75cm) % {block width} (coords)
-        \centering
-        \begin{tikzpicture}
-            \draw (4.5,0.0) node[] {\small Opportunity Cost of Wind Power};
+        \begin{textblock*}{10cm}
+            (0.75cm, 2.25cm) % {block width} (coords)
+            \includegraphics[width=\textwidth, keepaspectratio]{./figures/undisturbed_base_share.pdf}
+        \end{textblock*}
+
+        \begin{textblock*}{4.5cm}
+            (10.9cm, 2.5cm)
+            \begin{small}
+                \begin{table}
+                    \begin{tabular}{p{1.8cm} | r l}
+                        Capital cost of solar PV & $630$ & \SI{}{\text{\euro}\per\kilo\watt\text{p}}
+                    \end{tabular}
+                \end{table}
+                \smallskip
+                \quad $\rightarrow$ about $\sfrac{2}{3}$ rooftop PV, \\
+                \quad $\sfrac{1}{3}$ open space PV
+
+                \vspace{3.75cm}
+                \quad wind power and solar PV \\ \quad are substitutes
+            \end{small}
+        \end{textblock*}
+    \end{frame}
+
+
+    \begin{frame}
+        \frametitle{The cost of undisturbed landscapes}
+
+        \begin{textblock*}{10cm}
+            (1.25cm, 1.75cm) % {block width} (coords)
+            \centering
+            \begin{tikzpicture}
+                \draw (4.5,0.0) node[] {\small Opportunity Cost of Wind Power};
         \end{tikzpicture}
     \end{textblock*}
 
@@ -506,7 +543,8 @@ The model accounts for various technical characteristics of power systems, such 
 \end{frame}
 
 
-\begin{frame}
+
+    \begin{frame}
 \frametitle{The cost of undisturbed landscapes}
 \framesubtitle{Cost with restricted wind power}
 \begin{textblock*}{10cm}(0.75cm, 2.0cm) % {block width} (coords)
