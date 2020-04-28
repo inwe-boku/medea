@@ -41,8 +41,10 @@
 \setlength {\marginparwidth }{2cm}
 \usepackage[draft]{todonotes}
 
-% graphics
+% graphics and figures
 \usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
 
 \DeclareMathOperator*{\argmax}{arg\,max}
 \newcommand{\COO}{\ensuremath{\mathrm{CO_2}} }
@@ -539,7 +541,8 @@
     PV instead of wind power leads to an increase in dispatchable thermal generation.
     As thermal generation in Austria is predominantly fossil thermal, this induces an increase in \COO emissions due
     to the increased use of PV\@.
-    In addition to
+
+    Curtailment in Austria is declining up to
 
     \begin{figure*}
         \centering
@@ -556,7 +559,19 @@
 
     \begin{figure*}
         \centering
-        \includegraphics[width=0.8 \textwidth]{./figures/undisturbed_base.pdf}
+        \begin{subfigure}[b]{0.475\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{./figures/undisturbed_base_share.pdf}
+            \caption{Relative substitution}
+            \label{fig:rel_substitution}
+        \end{subfigure}
+        \hfill
+        \begin{subfigure}[b]{0.475\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{./figures/undisturbed_base.pdf}
+            \caption{Absolute substitution}
+            \label{fig::abs_substitution}
+        \end{subfigure}
         \caption{Opportunity cost of wind power assuming PV overnight cost of 630 EUR/kWp}
         \label{figure:opportunity-cost-base}
     \end{figure*}
