@@ -109,23 +109,6 @@ def plot_lines(df, fname, xlim=None, ylim=None, xlabel=None, ylabel=None, color=
     plt.close()
 
 
-# %% ----- ----- ----- ----- settings ----- ----- ----- -----
-idx = pd.IndexSlice
-PRICE_CO2 = 90
-REFUEL_COLORS = ['#c72321', '#0d8085', '#f0c220', '#595959']
-RES_COLORS = ['#d69602', '#ffd53d', '#3758ba', '#7794dd']
-RES_COLORS3 = ['#d69602', '#e5b710', '#ffd53d', '#3758ba', '#3b68f9', '#7794dd']
-
-ANNUITY_FACTOR = 0.05827816
-FLH_PV = 857.4938
-FLH_WINDON = 2015.0359
-
-RPATH = os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', 'asparagus', 'results', 'results.csv')
-FPATH = os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', 'asparagus', 'doc', 'figures')
-
-if not os.path.exists(FPATH):
-    os.makedirs(FPATH)
-
 # %% ----- ----- ----- ----- read results ----- ----- ----- -----
 results = pd.read_csv(RPATH, decimal=',', delimiter=';', index_col=[0, 1, 2, 3, 4], header=[0])
 results = results.unstack(-1)
