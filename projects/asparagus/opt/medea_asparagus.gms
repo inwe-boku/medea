@@ -22,12 +22,24 @@ CAPITALCOST_R(z,'pv') = PV_CAPEX;
 
 add_r.UP('AT','wind_on') = WIND_ON_LIMIT;
 add_r.UP('AT','pv') = 80;
-add_g.UP('AT','nuc') = 0;
+
 add_g.UP('AT','bio') = 0;
 add_g.UP('AT','bio_chp') = 0;
-add_g.UP('DE','nuc') = 0;
 add_g.UP('DE','bio') = 1;
 add_g.UP('DE','bio_chp') = 1;
+add_g.UP(z,'nuc') = 0;
+add_g.UP(z,'lig_stm') = 0;
+add_g.UP(z,'lig_stm_chp') = 0;
+add_g.UP(z,'lig_boa') = 0;
+add_g.UP(z,'lig_boa_chp') = 0;
+add_g.UP(z,'coal_sub') = 0;
+add_g.UP(z,'coal_sub_chp') = 0;
+add_g.UP(z,'coal_sc') = 0;
+add_g.UP(z,'coal_sc_chp') = 0;
+add_g.UP(z,'ng_cbt_lo') = 0;
+add_g.UP(z,'ng_cbt_lo_chp') = 0;
+add_g.UP(z,'ng_cc_lo') = 0;
+add_g.UP(z,'ng_cc_lo_chp') = 0;
 
 x.UP(z,zz,t) = FLOW_LIMIT;
 x.LO(z,zz,t) = -FLOW_LIMIT;
