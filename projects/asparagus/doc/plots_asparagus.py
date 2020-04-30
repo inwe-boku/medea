@@ -178,10 +178,38 @@ wind_add = results.loc[idx['base', :, :, 36715], idx['AT', 'add_wind_on']].unsta
 wind_add.index = wind_add.index.droplevel([0, 2])
 
 undisturbed_marginal = undisturbed_base.iloc[::-1].diff().divide(wind_add.iloc[::-1].diff().round(8), axis=0) * -1
+undisturbed_marginal_share = undisturbed_marginal.copy()
 undisturbed_marginal.columns = [f'CO2 Price: {p} €/t' for p in undisturbed_marginal.columns]
 
 plot_lines(undisturbed_marginal / 1000, os.path.join(FPATH, 'undisturbed_base.pdf'), xlim=[18, 0], ylim=[0, 75],
            xlabel='Added Capacity of Wind [GW]', ylabel='thousand € / MW', color=REFUEL_COLORS)
+
+# %% ------ ----- ----- plot opportunity cost of wind with SHARE of deployment
+uplim = results.loc[idx['base', PRICE_CO2, :, 36715], idx['AT', 'add_wind_on']].max()
+# divide index by uplim, delete indices larger than one except for the smallest and set the smallest to 1
+
+lgnd = []
+
+figure, axis = plt.subplots(1, 1, figsize=(8, 5))
+axis.set_ylabel('thousand € / MW')
+axis.set_xlabel(r'$\phi$')
+i = 0
+for p in undisturbed_marginal_share.columns:
+    oc_by_share = undisturbed_marginal_share.loc[:, p]
+    oc_by_share.index = undisturbed_marginal_share.index / wind_add.loc[:, p].max()
+
+    axis.plot(oc_by_share / 1000, color=REFUEL_COLORS[i])
+    i = i + 1
+    lgnd.append(rf'CO$_2$ Price: {p} €/t')
+
+axis.legend(lgnd)
+# axis.set_ylim(ylim)
+axis.set_xlim([1, 0])
+axis.grid()
+plt.rcParams.update({'font.size': 16})
+plt.tight_layout()
+plt.savefig(os.path.join(FPATH, 'undisturbed_base_share.pdf'))
+plt.close()
 
 # %% line plot of cost of undisturbed landscapes - low capital cost of pv
 undisturbed_cost_low = results.loc[idx['base', :, :, 16715], idx['AT', ['syscost', 'export_value', 'import_value',

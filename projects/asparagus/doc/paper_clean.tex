@@ -1,0 +1,965 @@
+\documentclass[final, 3p, times]{elsarticle} %review, twocolumn, 5p, 12pt, authoryear, twocolumn, 5p,
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+
+% improved float environment
+\usepackage{float}
+% improved underlines (unterstreichungen)
+\usepackage[normalem]{ulem}
+
+% plotting
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.17}
+
+% tables
+\usepackage{booktabs}
+\usepackage{tabulary}
+\usepackage{threeparttable}
+\usepackage{longtable}
+%\usepackage{ctable}
+\usepackage{makecell}
+
+% SI units
+\usepackage{siunitx}
+\DeclareSIUnit{\thermal}{th}
+\DeclareSIUnit{\electric}{el}
+\DeclareSIUnit{\year}{a}
+
+% Euro symbol
+\usepackage[gen]{eurosym}
+
+% citations
+\usepackage{natbib}
+
+% to-do notes
+\setlength {\marginparwidth }{2cm}
+\usepackage[draft]{todonotes}
+
+% graphics and figures
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+
+\DeclareMathOperator*{\argmax}{arg\,max}
+\newcommand{\COO}{\ensuremath{\mathrm{CO_2}} }
+
+\usepackage[colorlinks=true, citecolor=blue, linkcolor=blue, filecolor=blue,urlcolor=blue]{hyperref}
+
+\begin{document}
+    \begin{frontmatter}
+        \title{The Cost of Undisturbed Landscapes}
+        \author[1]{Sebastian Wehrle\corref{cor1}}
+        \ead{sebastian.wehrle@boku.ac.at}
+        \author[1]{Johannes Schmidt}
+        \ead{johannes.schmidt@boku.ac.at}
+        \cortext[cor1]{Corresponding author}
+        \address[1]{Institute for Sustainable Economic Development, University of Natural Resources and Life Sciences,
+        Feistmantelstrasse 4, 1180 Vienna, Austria}
+
+        \begin{abstract}
+            Lorem ipsum et dolores
+        \end{abstract}
+
+        \begin{keyword}
+            externalities \sep wind power \sep system design \sep policy
+            \JEL L94 \sep Q41 \sep C61
+        \end{keyword}
+    \end{frontmatter}
+    \newpage
+
+% %%%%% %%%%% %%%%% DATA AND METHODS %%%%% %%%%% %%%%% %%%%%
+
+
+    \section{Introduction} \label{sec:introduction}
+    Future, low carbon electricity systems should largely rely on renewable energy technologies (RET), such as solar
+    photovoltaics (PV) or wind turbines, according to a substantial body of literature~\citep{Rodriguez2015}.\todo{references}
+    For central Europe, it is typically found that system-cost\footnote{System cost are the sum of fuel and emission
+    cost,operation and maintenance cost, and investment cost} minimizing systems to rely on large shares of onshore
+    wind power~\citep{Rodriguez2015}\todo{references}.
+    Such undertakings frequently implement upper bounds on the deployment of RET, which are thought to reflect the
+    available potential for RET erection~\citep{references}\todo{references}.
+    These potentials, in turn, are usually derived from surveys of land available and suitable for the erection of RET\@.
+    The typical methodology is to exclude areas that are considered not suited because of insufficient resource
+    availability or because of technical or legal restrictions such as minimum distances to settlements.
+    Areas not excluded are then considered as feasible for RET deployment \citep[e.g.][]{McKenna2015, Bosch2017, Ryberg2020}.
+    \todo[inline]{refer to excluded areas as black, feasible areas as white}
+    However, researchers are increasingly aware that such a 'black-or-white'-approach fails to account for more nuanced
+    issues such as the social acceptance of interference with landscapes.
+    Indeed, several contributions sought to improve on such shortcomings, for example by participatory
+    modelling~\citep{Hoeltinger2016}, by xxx~\citep{Jaeger2016} or xxx~\citep{Harper2019}\todo[inline]{add mini review paragraph}
+
+    In contrast, the work of~\cite{Drechsler2011} % Drechsler et al. 2011: Combining spatial modelling and choice experiments ...
+    \todo[inline]{mention later paper by Drechsler} \cite{Drechsler2017}
+    \todo[inline]{refer to negative externalities not included in system cost}
+
+    We improve on this work by xxx. \todo[inline]{explain what we do also in contrast to Drechsler et al.}
+
+    \subsection{Framework}
+    Similar to~\cite{Drechsler2011}, we regard the problem as one of welfare optimization, in which we seek to minimize
+    the social cost (including, but not limited to system cost) of low carbon energy systems.
+    Our framework is best understood by considering a benevolent social planner who is to decide on the deployment of
+    RET\@.
+    Such a social planner faces a trade-off between
+    (i) (potential) negative externalities of a RET at the local level (recall that externalities from emissions are
+    already included in system cost), such as the visual impact on landscapes and
+    (ii) (potential) positive impact of a RET through lowering system cost (compared to its best alternative).
+
+    \begin{figure}[H]
+        \centering
+        \begin{tikzpicture}
+            \begin{axis}[
+                width=0.66 \textwidth,
+                clip=false,
+                axis lines=left,
+                ticks=none,
+                xlabel={$\alpha$},
+                ylabel={cost},
+                domain=0.5:1.75,
+                xmin=0.5, xmax=2,
+                ymin=0, ymax=4,
+                samples=200
+            ]
+                \addplot[thick] (x, x^2-0.25);
+                \addplot[thick] (x, x^2-4.25*x+5);
+                \node at (axis cs: 1.8,2.85) {$s$};
+                \node at (axis cs: 1.8,0.65) {$h$};
+                \node at (axis cs: 0.45,-0.1) {$0$};
+                %\addplot (1.235, x);
+            \end{axis}
+        \end{tikzpicture}
+        \caption{Social optimum}
+        \label{figure:social-optimum}
+    \end{figure}
+
+    For illustration, consider figure~\ref{figure:social-optimum}, which depicts the effect of deviating from a
+    system-cost minimizing RET allocation by substituting some share of technology $A$ with its best alternative,
+    technology $B$.\footnote{Here, we consider the interesting case in which in system-cost minimum a RET causes higher
+    external cost than it saves in system cost.}
+    We let $\alpha$ denote the share of technology $A$ substituted by the best available alternative technology $B$.
+    At $\alpha=0$, we are in the system cost minimum, while the 'harm' $h$ from otherwise unaccounted external cost is
+    high.
+    Now suppose that we can lower external cost by substituting $A$ with $B$, i.e.\ harm $h$ is decreasing in $\alpha$.
+    A benevolent social planner will substitute $A$ with $B$ as long as the resulting increase in system cost is lower
+    than the corresponding decline in harm.
+    \bigskip
+    \todo[inline]{the following subsection must be overhauled}
+    Within this framework, we quantify the opportunity cost of wind power ($s$ in Figure~\ref{figure:social-optimum})
+    for the case of Austria in the work at hand.
+    We chose Austria as our case study, as the government has comitted itself to meeting \SI{100}{\percent} of
+    electricity consumption from renewable sources (on annual balance, excluding industry own-consumption and system
+    services) by 2030.
+    This policy makes Austria an ideal case for studying the substitution of RET while keeping total renewable
+    electricity generation constant.
+    Moreover, the bulk of additional renewable electricity must come either from wind power or solar photovoltaics, as
+    the other renewables potentials are largely exploited already (see section~\ref{section:}), which simplifies our
+    analysis further.
+    In the context of Austria, as in many other European countries, least-cost renewable electricity systems are largely
+    based on wind power~\citep{Rodriguez2015}. \todo[inline]{references}
+    Harm is inflicted by local external effects of wind turbines, such as flickering, noise, negative impacts on
+    wildlife, or (perceived) disturbance of landscapes.
+    \cite{Mattmann2016} identifies the latter as a main trigger of opposition against wind power at the local level.
+    For a review of wind power externalities, see~\cite{Zerrahn2017}.
+    \todo[inline]{1) motivate Austrian case, 2) make clear that paper only looks at opportunity cost of wind power --
+    cost of undisturbed landscapes, NOT at harm, which is assessed in various ways by many papers, though not for
+    Austria}
+
+% %%%%% %%%%% %%%%% DATA AND METHODS %%%%% %%%%% %%%%% %%%%%
+
+
+    \section{Data and Methods} \label{sec:data-and-methods}
+    To investigate the cost of undisturbed landscapes (i.e. the opportunity cost of wind power) we use the power system
+    model \emph{medea}, summarized in section~\ref{subsec:medea}, which we instantiate with scenario assumptions
+    (see section~\ref{subsec:data}) and observed data of the year 2016 (see section~\ref{subsec:scenarios}).
+
+    For determining the opportunity cost of wind power, we proceed as follows:
+    \begin{enumerate}
+        \item We derive the unrestricted system cost-minimizing deployment of wind and solar power,
+        \item we restrict deployment of wind power by a small margin (so that the next best RET substitutes for wind power)
+        and observe net system cost $c_{net}$ for Austria (calculated as total system cost including air pollution cost
+        net of trade balance).\label{enumerate:restrict}
+        \item We repeat step~\ref{enumerate:restrict} till no wind power can be deployed.
+        \item Finally, we approximate the opportunity cost of wind power (at given wind power capacity $w$) $OC_w$ by
+        the change in $c_{net}$ in response to a change in wind power capacity $w$ deployed, i.e.\
+        \[OC_w = \frac{\Delta c_{net}}{\Delta w}\]
+        where $\Delta$ is the difference operator.
+    \end{enumerate}
+
+% ***** medea *****
+
+    \subsection{Power system model \emph{medea}} \label{subsec:medea}
+    We make use of the power system model \emph{medea} to simulate (dis)investment in and hourly operation of the
+    prospective Austrian (and German) power system.
+
+    The model is cast as a linear optimization seeking to minimize total system cost, which consist of fuel and emission
+    cost, quasi-fixed and variable operation and maintenance (O\&M) cost, the costs of investment in energy generation,
+    storage, and transmission assets, and (potential) cost of non-served load.
+
+    The system is required to meet exogenous and inelastic demand for electricity and heat in any hour of the modeled
+    year.
+    Energy supply, in turn, is constrained by available installed capacities of energy conversion, storage, and
+    transmission units.
+    Co-generation units convert fuel to heat and power subject to a feasible operating region defined by the unit's
+    electrical efficiency, the electricity loss per unit of heat production, and the back pressure coefficient.
+    Electricity generation from intermittent sources (wind, water, solar) is subject to exogenous hourly generation
+    profiles, which are scaled according to total installed capacities.
+    Electricity from these sources can be curtailed at no additional cost (free disposal).
+
+    \todo{Energy storage}
+    Electricity can be stored in reservoir and pumped hydro storages or batteries.
+    Generation from hydro storage plants is constrained by turbine capacity and energy contained in reservoirs of
+    limited size.
+    Hydro reservoirs are filled by inflows or by pumping (pumped storages only).
+    To better capture operational differences, we model daily, weekly and seasonal reservoir and pumped storage plants
+    separately.
+
+    \todo{Electricity exchange}
+    Electricity can be exchanged between Austria and Germany.
+
+    \todo{Ancillary services}
+    To ensure a stable and secure operation of the electricity system, power plants must provide ancillary services
+    (e.g. frequency control, voltage support).
+    We assume that this requires generators with an installed capacity of at least 21 GW2 to be operational (either
+    generating or pumping in case of pumped hydro storages) at any point in time.
+
+    For a detailed, mathematical description please refer to \ref{sec:medea}.
+
+    Data processing is implemented in python, the optimization model is based on GAMS. Running the model on an Intel
+    i7-8700 machine with 16 GB RAM, using CPLEX 12.9 as a solver, takes 10--15 minutes, depending on the model
+    parameters.
+    \todo[inline]{perfect foresight, perfect competition, reflects energy-only market}
+
+% ***** Data *****
+
+    \subsection{Data}\label{subsec:data}
+    We set up our model with the goal to resemble Austria's prospective electricity and district heating systems in the
+    year 2030.
+    In addition, we model Austria's largest electricity trading partner Germany, to account for potential effects from
+    electricity trade.
+    As for Austria, our scenario reflects Germany's currently announced electricity sector policies, so that we set
+    generation capacities to levels consistent with policies effective by 2030.
+    These assumptions are laid out in sections~\ref{subsubsec:assumptions-austria} and \ref{subsubsec:assumptions-germany}
+    and summarized in table~\ref{tab:instcaps}.
+
+    \subsubsection{Scenario Assumptions for Austria}\label{subsubsec:assumptions-austria}
+    Austria has set itself the goal of generating \SI{100}{\percent} of electricity consumption from renewable sources
+    on annual balance by 2030.
+    However, industry own consumption and system services, which currently account for \SI{10}{\percent} of annual
+    electricity consumption, are exempt.
+    Hence, in our analysis we set the policy goal to generating at least \SI{90}{\percent} of annual electricity
+    consumption from renewable sources.\footnote{Please note that this policy goal does not imply that the generated
+    electricity must actually be consumed.
+    Hence, we consider curtailed electricity as contributing to the policy goal.}
+    The government plans to achieve this goal by generating an additional \SI{27}{\tera\watt\hour} of electricity
+    annually from renewable sources.
+    Consequently, we have set prospective electricity consumption accordingly.
+
+    New hydro power plants are thought to contribute \SI{5}{\tera\watt\hour} annually, while additional electricity
+    generation from biomass is envisaged to account for \SI{1}{\tera\watt\hour} annually.
+    We add corresponding generation capacities to reach these targets.
+
+    The remainder is projected to come from solar PV (\SI{11}{\tera\watt\hour} annually) and onshore wind turbines
+    (\SI{10}{\tera\watt\hour} annually)~\cite{Regierungsprogramm2020}.
+
+    The latter two RET are the only low-carbon electricity generation technologies with significant expansion potential.
+    Austrians ruled out the use of nuclear power in a 1978 referendum~\citep{Pelinka1983}.
+    Biomass lacks ecological and economical sustainability~\citep{Erb2018}, while available hydro power potentials were
+    already largely exploited~\citep{Walder2014} even before adding another \SI{5}{\tera\watt\hour} of annual generation.
+
+    As we are interested in determining the opportunity cost of wind power versus its best alternative, we allow for
+    endogenous investment in wind and solar power, without enforcing announced targets.
+
+    \subsubsection{Scenario Assumptions for Germany}\label{subsubsec:assumptions-germany}
+    Germany has announced specific capacity targets for several power generation technologies.
+    Following these announcements, we anticipate an end to nuclear power generation, a (partial) coal exit according to
+    recommendations by~\cite{WSB2019}, and a further expansion of renewable electricity generation in line
+    with the German Renewable Energy Sources Act~\cite{noauthor_renewable_2017}.
+    We do, however, expect a lifting of the \SI{52}{\giga\watt} limit on solar PV\@.
+
+    \begin{table}[H]
+        \caption{Initial Generation Capacities}
+        \centering
+        \begin{tabulary}{0.55\textwidth}{lcc}
+            \toprule
+            Technology & Austria & Germany \\
+            & GW & GW \\
+            \midrule
+            Wind Onshore & $2.6$ & $90.8$ \\
+            Wind Offshore & $0.0$ & $15.0$ \\
+            Solar PV & $1.1$ & $73.0$ \\
+            Run-of-river Hydro & $6.7$ & $4.5$ \\
+            Biomass & $0.725$ & $8.4$ \\
+            Lignite & $0.0$ & $11.4$ \\
+            Coal & $0.0$ & $14.0$ \\
+            Natural Gas & $3.9$ & $24.2$ \\
+            Mineral Oil & $0.2$ & $3.5$ \\
+            Heat Pump & $1.0$ & $1.0$ \\
+            Gas Boiler & $3.9$ & $25.5$ \\ \bottomrule
+        \end{tabulary}
+        \label{tab:instcaps}
+    \end{table}
+
+    \subsection{Energy supply}
+    We represent 27\todo{compare with table!} dispatchable energy conversion and storage technologies that are expected
+    to be operational by 2030.
+    In addition to exogenously set, initally installed capacities (see~\ref{tab:instcaps}), the model can endogenously
+    add further generation capacities that are compatible with stated policy objectives.
+    All technologies can also be decommissioned, so that we adopt a long-run perspective on the power system.
+
+    Assumed technology parameters are summarized in Table~\ref{itm:techcost}.
+
+    \begin{table*}[h]
+        \centering
+        \begin{threeparttable}
+            \caption{Technology Input Parameters}\label{itm:techcost}
+            %\begin{longtable}{p{2.9cm} p{1.5cm} p{1.5cm} p{1.6cm} p{1.5cm} p{1.0cm} p{1.2cm} p{1.0cm}}
+            \begin{tabulary}{0.5\textwidth}{lccccccl}
+                \toprule
+                & \multicolumn{2}{c}{Capital Cost} & \multicolumn{2}{c}{O\&M-Cost} & & & \\ \cmidrule(lr){2-3} \cmidrule(lr){4-5}
+                Technology & Power & Energy & Quasi- & Variable & Life- & Efficiency & Source    \\
+                & & & fixed & & time & &           \\
+                & \EUR/kW & \EUR/kWh & \EUR/MWa & \EUR/MWh & a & & \\
+                \midrule
+                %\multicolumn{8}{c}{\emph{Renewable Energy Technologies}}\\ \midrule
+                Wind Onshore & $1040$    & NA & $12600$   & $1.35$     & $30$ & NaN & 1 \\
+                Wind Offshore & $1930$    & NA & $36053$   & $2.70$     & $30$ & NaN & 1 \\
+                %Solar PV       & $630$ & NaN & $8844$ & $0.00$ & $40$ & NaN & 9 \\
+                PV Rooftop & $870$     & NA & $10815$   & $0.00$     & $40$ & NaN & 1 \\
+                PV Open-space & $330$     & NA & $6380$    & $0.00$     & $40$ & NaN & 1 \\ \midrule
+                %\multicolumn{8}{c}{\emph{Thermal Energy Conversion}}\\ \midrule
+                Lignite Adv & -- & NA & $40500$   & $0.85$     & $40$ & 0.439 & \cite{OekoInstitut2017} \\
+                Coal SC & -- & NA & $25000$   & $6.00$     & $40$ & 0.425 & 1 \\
+                Coal USC & -- & NA & $31000$   & $2.90$     & $40$ & 0.485 & 1 \\
+                Nat Gas ST & $400$     & NA & $15000$   & $3.00$     & $30$ & 0.407 & 1 \\
+                Nat Gas GT & $590$     & NA & $19500$   & $4.40$     & $25$ & 0.420 & 1 \\
+                Nat Gas CC & $880$     & NA & $29300$   & $4.40$     & $25$ & 0.610 & 1 \\
+                Oil ST & $400$     & NA & $6000$    & $3.00$     & $30$ & 0.396 & 1 \\
+                Oil GT & $378$     & NA & $8068$    & $4.50$     & $25$ & 0.410 & 1 \\
+                Oil CC & $800$     & NA & $25000$   & $4.00$     & $25$ & 0.470 & 1 \\
+                Biomass & $3400$    & NA & $140000$  & $4.50$     & $25$ & 0.298 & 1 \\ \midrule
+                %\multicolumn{8}{c}{\emph{Energy Storage Technologies}}\\ \midrule
+                Hydro Reservoir & -- & -- & $X$       & $X$       & $80$ & $0.9$  & X \\
+                Hydro PSP & -- & -- & $X$       & $X$       & $80$ & $0.9^2$ & X\\
+                Battery Li-Ion & $1930$    & $321$ & $36053$   & $2.70$    & $30$ & NaN & 1 \\ \midrule
+                %\multicolumn{8}{c}{\emph{Heat Generation Technologies}}\\ \midrule
+                Resistive Heater & $X$      & $X$   & $X$       & $X$       & $25$  & NaN & X \\
+                Heatpump & $500$     & NaN & $36053$   & $2.70$    & $30$ & NaN & 1 \\
+                Natural gas boiler & $60$   & NA & $1950$    & $1.00$    & $20$ & 0.90 & 1 \\ \midrule
+                %\multicolumn{8}{c}{\emph{Electricity Transmission}}\\ \midrule
+                Transmission & $1930$    & NaN & $36053$   & $2.70$    & $30$ & NaN & 1 \\
+                \bottomrule
+            \end{tabulary}
+
+            \begin{tablenotes}
+                \item SC -- supercritical, USC -- ultra-supercritical, ST -- steam turbine, GT -- gas turbine,
+                CC -- combined cycle, PSP -- Pumped storage plant
+                %\item [a] Hydroelectric facilities are not expanded in this model and are considered to be fully amortized.
+                %\item [b] The costs for distribution infrastructure and building retrofitting are approximate (see text)
+                % and they are therefore not optimised or included in the presented total system costs, but calculated
+                % retrospectively and analysed in the text.
+            \end{tablenotes}
+
+        \end{threeparttable}
+    \end{table*}
+
+    Hourly generation from non-dispatchable technologies solar photovoltaics, wind turbines and run-of-river hydro is
+    assumed to follow hourly profiles as observed in 2016.
+    \todo[inline]{more details on derivation of load profiles for Austria, source for Germany, scaling}
+
+    Similarly, hourly inflows into hydro reservoirs (including pumped storage reservoirs) are inferred from weekly
+    reservoir levels in combination with hourly generation and pumping time series published by~\cite{ENTSO-E2020}.
+    However, all storage technologies (including hydro reservoir and pumped storage plant) are charged and dispatched
+    endogenously.
+    \todo[inline]{improve description of methodology for inflow approximation}
+
+    \subsection{Energy demand}\label{subsec:energy-demand}
+    According to projections of the Austrian government, additional renewable electricity generation of
+    \SI{27.0}{\tera\watt\hour} will suffice to meet policy goals by 2030 \citep{Regierungsprogramm2020}.
+    However, official documents do neither provide any information about expected electricity consumption in 2030,
+    nor about expected prices for \COO emissions.
+    Absent these information, we chose to set 2030 electricity demand to a level that results in \SI{27.0}{\tera\watt\hour}
+    additional electricity generation from renewable sources at \COO prices of 60 \EUR per tonne in a setting without
+    restrictions on renewables deployment.
+    The corresponding annual electricity consumption is \SI{86.0}{\tera\watt\hour}, \SI{24}{\tera\watt\hour} above
+    electricity end use observed in our base year 2016.
+    The difference in annual electricity generation stems from
+
+    Please note that the demand level consistent with generating \SI{27.0}{\tera\watt\hour} additional renewable
+    electricity depends on the price of \COO.
+    To keep scenarios comparable, however, we keep annual electricity consumption constant at \SI{86.0}{\tera\watt\hour}
+    throughout all scenarios.
+    In effect, added RET capacities fluctuate with the \COO price.
+
+    For Germany, we assume electricity demand to remain at levels observed in 2016.
+    In consequence, we scale reported hourly load to match annual electricity consumption published in national energy
+    balances \citep{AGEB}.
+    \todo[inline]{cross-check code}
+
+    Annual heat consumption is derived from energy balances for Austria and Germany, respectively \citep{AGEB, OeSTAT2019}.
+    Subsequently, annual heat consumption is broken down to hourly heat consumption on the basis of standard natural gas
+    load profiles for space heating in the residential and commercial sectors \citep{Almbauer2008}.
+    These load profiles make use of daily average temperatures to calculate daily heat demand.
+    We extract spatially resolved temperature data from ERA-5 climate data sets \citep{era-5} and compute a capacity-weighted
+    average of temperatures at locations of combined heat and power (CHP) generation units.
+    Daily heat demand based on these weighted average temperatures is then broken down to hourly consumption on the
+    basis of standardized factors accounting for weekday and time-of-day effects.
+    Descriptive statistics of electricity and heat consumption are provided in table \ref{tab:time-series}.
+
+    \begin{table*}[ht]
+        \centering
+        \caption{Descriptive data of time series used}\label{tab:time-series}
+        \begin{tabular}{l c c c c c c l}
+            \toprule
+            Name & Area & Unit & mean & median & max & min & Source    \\
+            \midrule
+            Electricity load & AT & GW & 7.15 & 7.14 & 10.5 & 4.21 & nose      \\
+            Electricity load & DE & GW & 60.2 & 59.6 & 82.8 & 34.6 & nose      \\
+            District heating load & AT & GW & 2.56 & 2.43 & 5.77 & 0.91 & bladder   \\
+            District heating load & DE & GW & 14.6 & 14.1 & 26.0 & 8.9 & bladder   \\
+            Wind onshore profile & AT & \%    & 0.229 & 0.142 & 0.929 & 0.000 &           \\
+            Wind onshore profile & DE & \%    & 0.176 & 0.133 & 0.764 & 0.003 &           \\
+            Wind offshore profile & DE & \%    & 0.371 & 0.327 & 0.900 & 0.000 &           \\
+            Solar PV profile & AT & \%    & 0.098 & 0.012 & 0.570 & 0.000 &           \\
+            Solar PV profile & DE & \%    & 0.099 & 0.003 & 0.661 & 0.000 &           \\
+            Run-of-river profile & AT & \%    & 0.564 & 0.538 & 0.971 & 0.202 &           \\
+            Run-of-river profile & DE & \%    & 0.437 & 0.420 & 0.637 & 0.208 &           \\
+            \bottomrule
+        \end{tabular}
+    \end{table*}
+
+
+    Electricity transmission between the modelled market areas is constrained by net transfer capacities reported by
+    ENTSO-E for the year 20XX.
+    In addition, the model can expand transmission capacities at a cost of XXX EUR per MW and km.
+
+    Monthly prices for exchange-traded fuels (hard coal, crude oil (Brent), natural gas) are retrieved from the
+    International Monetary Fund's Commodity Data Portal.
+    We convert these prices to \EUR/MWh based on the fuel's energy content and market exchange rates obtained from the
+    European Central Bank \citep{ECB}.
+    Finally, we resample prices to hourly frequency using piecewis cubic hermite interpolation.
+    The price of lignite is assumed at $1.50 EUR / MWh_{th}$, as reported by \cite{OekoInstitut2017}.
+    Biomass is assumed to be subsidized such that the cost of fuel is reduced to 6.5 $EUR / MWh$, which results in
+    continuous operation of biomass plant in our scenarios.\footnote{Subsidies are not included in system cost, as the
+    required level is uncertain. The total sum of subsidies is, however, constant across scenarios as biomass capacity
+    can not be expanded.}
+
+    \begin{table*}[h!]
+        \centering
+        \caption{Descriptive data of price time series}
+        \begin{tabular}{l c r r r r l}
+            \toprule
+            Name & Unit & mean & median & max & min & Source                  \\
+            \midrule
+            Lignite & \EUR/MWh & 1.50 & 1.50 1.50 & 1.50 & \cite{OekoInstitut2017} \\
+            Coal & \EUR/MWh & 8.58 & 8.13 & 11.90 & 6.69 & \cite{IMF}              \\
+            Natural gas & \EUR/MWh & 13.62 & 12.87 & 20.18 & 12.04 & \cite{IMF}              \\
+            Mineral oil & \EUR/MWh & 26.40 & 26.63 & 33.44 & 18.34 & \cite{IMF}              \\
+            Biomass & \EUR/MWh & 6.50 & 6.50 & 6.50 & 6.50 & own assumption          \\
+            \bottomrule
+        \end{tabular}
+    \end{table*}
+    All price as in our baseline year 2016.
+    Transport costs apply to different regions.
+
+    The carbon intensity of fossil fuels is displayed in Table~\ref{table:carbon-intensity}, and is based on an
+    analysis by the German environmental agency~\citep{Juhrich2016}.
+
+    \begin{table}[h!]
+        \centering
+        \caption{\COO intensity of fossil fuels in tonnes \COO per MWh}
+        \label{table:carbon-intensity}
+        \begin{tabular}{c c c l}
+            \toprule
+            Lignite & Coal & Natural Gas & Mineral Oil   \\
+            \midrule
+            0.399 & 0.337 & 0.201 & 0.266         \\
+            \bottomrule
+        \end{tabular}
+    \end{table}
+
+    All data retrieval and processing scripts are available at medea's github repository
+    \url{https://github.com/inwe-boku/medea} under an open MIT license.
+
+
+    \section{Results and Discussion} \label{sec:results-discussion}
+    To derive the social opportunity cost of not using wind power (but solar photovoltaics instead), we start by
+    determining the long-run power market equilibrium without constraints on renewable capacity addition.
+    This gives us our baseline scenario with minimal system costs.
+    Starting from this baseline scenario, we evaluate further scenarios in which we gradually tighten the upper limit
+    on wind power expansion, for example due to social conflict around wind turbine impacts on landscapes.
+    We continue to tighten upper limits on wind power expansion till no wind power is allowed anymore.
+    For each step, we observe system cost, total \COO emissions and other variables of interest.
+    By relating the change in generated wind energy to the change in system cost (or other variables of interest), we
+    derive a measure of the (approximate) marginal impact of wind power expansion (or contraction).
+
+    \subsection{Baseline} \label{subsec:baseline}
+    As a point of reference for our analysis, we determine the least cost power system configuration when addition of
+    wind turbines and solar PV is unconstrained.
+
+    In our baseline scenario, we assume that about two thirds of solar PV installations are mounted on roof tops, while
+    the remainder is realized as open-space solar PV at utility scale.
+    This gives us capacity-weighted average capital cost for solar PV of $630$ \EUR per kW installed.
+    In section~\ref{subsec:sensitivity} we analyze the sensitivity of our results with respect to this assumption.
+    Moreover, we assume pricing of \COO emissions, i.e.\ all otherwise external cost of \COO emissions are
+    internalized through \COO pricing.
+    As future \COO prices are uncertain but impact renewables deployment ~\citep{Brown2020, Kirchner2019}, we conduct
+    our analysis for \COO prices of 30, 60, 90, and 120 \EUR per tonne.
+
+    Given our baseline assumptions, the cost-minimizing system set-up that is consistent with the stated policy
+    goal\footnote{Recall that the policy target is to generate at least 90\% of electricity demand from renewable sources, on annual balance}
+    adds \SI{16.5}{\giga\watt} wind power and \SI{0}{\giga\watt} solar PV to initially set capacities in Austria.
+    Overall, electricity generation from both sources totals \SI{38.5}{\tera\watt\hour} and
+    \SI{0.94}{\tera\watt\hour} annually, respectively.
+    For system services and heat generation, \SI{6.8}{\giga\watt} of fossil thermal co-generation capacities remain
+    active, giving rise to \SI{8.9}{} million tons of \COO emissions per year.
+    As Austria has ample hydro storage capacity in place, no further storage (e.g. from batteries) is added.
+    However, the addition of \SI{1.5}{\giga\watt} of compression heat pumps allows to use electricity for heat
+    generation and to limit curtailment to \SI{2.4}{\tera\watt\hour\per\year}.
+    System cost in Austria amount to $3.4$ billon \EUR in this scenario.\todo{add co2 emissions}
+
+    \subsection{The opportunity cost of wind power in Austria}\label{subsec:opportunity-cost-wind}
+    With a gradual restriction of wind power potentials, the system must increasingly rely on solar PV to generate the
+    amount of electricity from renewable sources that is required to meet policy goals.
+    Consequently, each \SI{}{\giga\watt} of wind power not installed needs to be replaced by \SI{2.35}{\giga\watt} of
+    solar PV\@.
+    Due to the different generation profiles of these technologies, this induces changes in system operation and least
+    cost system configuration.
+
+    \todo[inline]{describe changes in system operation}
+    Substitution of wind power with solar PV leads to a reduction of electricity exports to Germany.
+    Due to the favorable complementarity of Austrian and German wind, Austria adds wind energy generation above the level
+    required for its own consumption.
+    As the admissible addition of wind power is reduced, electricity exports to Germany are being scaled back.
+    This is reinforced by the similarities in generation profiles of solar PV across both countries.
+
+    Due to the concentration of solar PV generation in time (both on a daily and on a seasonal scale), installing solar
+    PV instead of wind power leads to an increase in dispatchable thermal generation.
+    As thermal generation in Austria is predominantly fossil thermal, this induces an increase in \COO emissions due
+    to the increased use of PV\@.
+
+    Curtailment in Austria is declining up to
+
+    \begin{figure*}
+        \centering
+        \includegraphics[width=0.8 \textwidth]{./figures/sysops.pdf}
+        \caption{Opportunity cost of wind power assuming PV overnight cost of 630 EUR/kWp}
+        \label{figure:system-operation-base}
+    \end{figure*}
+
+    \todo[inline]{describe changes in system configuration}
+
+    \todo[inline]{describe marginal change in system cost due to less wind deployed}
+
+    \todo[inline]{insert table with key scenario results}
+
+    \begin{figure*}
+        \centering
+        \begin{subfigure}[b]{0.475\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{./figures/undisturbed_base_share.pdf}
+            \caption{Relative substitution}
+            \label{fig:rel_substitution}
+        \end{subfigure}
+        \hfill
+        \begin{subfigure}[b]{0.475\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{./figures/undisturbed_base.pdf}
+            \caption{Absolute substitution}
+            \label{fig::abs_substitution}
+        \end{subfigure}
+        \caption{Opportunity cost of wind power assuming PV overnight cost of 630 EUR/kWp}
+        \label{figure:opportunity-cost-base}
+    \end{figure*}
+
+    \subsection{Sensitivity Analysis} \label{subsec:sensitivity}
+    A major factor of influence for our results are the assumed capital cost of wind turbines and solar PV.
+    Thus, we complement our baseline scenario with a sensitivity analysis on investment cost.
+    For this purpose, we vary the investment cost of solar PV between our baseline assumption of 630 EUR/kW and 275
+    EUR/kW that \cite{Vartiainen2019} project for utility-scale solar PV in the year 2030.
+
+    \begin{figure*}
+        \centering
+        \includegraphics[width=0.8 \textwidth]{./figures/undisturbed_low.pdf}
+        \caption{Opportunity cost of wind power}
+    \end{figure*}
+
+%    Further uncertainty surrounds
+%    •	Storage prices
+%    •	Weather / full-load hours
+%    •	LOOK AT WHAT HAPPENS WHEN GERMANY BUILDS MORE PV THAN ANTICIPATED (particularly in the low pv-cost scenario)
+    Effect of \COO prices on opportunity cost of wind power:
+    - lower \COO price means less 'voluntary' RET installed
+    - more PV means more ancillary capacities installed (?)
+    - more PV means more fuel used in dispatchable plant
+    - more PV means more curtailment (?)
+    - more PV means lower exports -- large dependency on \COO price. At price of 60-120, exports fall as less wind.
+    For low \COO price exports increase as less wind. -->> Need to look at capacities in Germany!
+    - more PV means
+    * PV capacity at full wind substitution is (almost) invariant to \COO price and comes in at 24.11-24.26 GW
+    * wind on capacity is sensitive to \COO price. At 120 \EUR \COO, 17.07 GW wind on added, at 0 \EUR \COO10.43 GW added
+    * austria builds coal plants -- this should be impossible! --> correct in re-run
+    * austria builds oil instead of nat gas plants. --> check and potentially correct cost versus HAt gas
+    * absolutely no heatpump added. why?
+
+    + Germany add lignite and coal. With rising \COO price more coal is added. (!)
+    + Germany adds oil. At lower \COO price more oil, less ng added
+    + No bio added in Germany (proly restriction)
+    + No heatpumps added --> Why???
+    + Germany adds PV and wind only with \COO price at 120
+
+    Need to re-run model with restricted additions
+
+    \subsection{Limitations of the Analysis}
+    To little surprise, the optimal deployment of renewable energy technologies heavily depends on underlying capital
+    cost.
+    Alas, uncertainty regarding future capital cost is high.
+    \todo[inline]{WRITE SOMETHING ON THE IMPACT OF DIFFERENT COST ASSUMPTIONS ON TOTAL SYSTEM COST.}
+
+    Nevertheless, several findings are remarkably robust to changing capital cost.
+    A higher penetration level of PV leads to increasing emissions of CO2 in the least-cost systems we investigated.
+    Due to the strong seasonal differences in electricity generation from solar PV, systems relying heavily on this technology either need to deploy excess PV capacity to boost generation in winter (resulting in heavy curtailment in summer) or, alternatively, add additional capacity to make up for the winter shortfall in electricity generation from solar PV.
+    This additional capacity could be storage capacity to transfer summer excesses to winter.
+    However, storages would have to balance seasonal differences in this case, implying the need for very high storage capacities, which are costly to realize.
+    Typically, it will be cheapest to add (at least some) fossil-fueled backup plants, even at \COO prices of EUR 70 per ton.
+    \todo[inline]{HERE, WE COULD INVESTIGATE AT WHICH CO2-PRICE FOSSIL BACKUP VANISHES.}
+
+    Moreover, the observed increase in producer surplus in line with higher CO2 penetration is robust to capital cost uncertainty.
+    Higher levels of PV penetration require more efforts for system integration.
+    \todo[inline]{THIS CAN'T BE THE FULL EXPLANATION AS PROD SURPLUS DECREASES AT VERY HIGH LEVELS OF PV}
+
+
+    \section{Conclusions and Policy Implication} \label{sec:conclusions-policy-implication}
+    We have analyzed the social willingness-to-pay for wind power (versus solar PV).
+
+    By combining estimates of the social willingness-to-pay for wind power with (spatially resolved) estimates of the negative externalities of wind turbines, we can determine the socially optimal deployment of wind turbines in Austria.
+    This opens up several possibilities for evidence-based policy making.
+
+    First, these estimates can inform compensation schemes for residents accepting wind turbines nearby.
+    Compensation might be an economically efficient measure to increase wind turbines acceptance.
+
+    Second, energy policies could be evaluated based on their impact on the opportunity cost of wind turbines.
+    This would allow to include otherwise unaccounted negative externalities of wind turbines in decision making, for example through a direct measure of opportunity cost, or an indirect measure of avoided wind turbines in social optimum.
+
+    Finally, our analysis also sheds some light on the distributional consequences of energy system design.
+
+
+    \section{Data Availability}\label{sec:data-availability}
+    Data and model is avaliable on github \url{}. Raw data is sourced from danish Energy Agency \url{}, ENTSO-E's
+    transparency database \url{},
+
+    \newpage
+    \bibliography{asparagus}
+    \bibliographystyle{elsarticle-harv}
+
+    \newpage
+    \appendix
+
+
+    \section{Description of the power system model \emph{medea}} \label{sec:medea}
+
+    \subsection{Sets} \label{sets}
+    Sets are denoted by upper-case latin letters, while set elements are denoted by lower-case latin letters.
+
+    \begin{table}
+        \caption{Sets}
+        \begin{tabulary}{\textwidth}{LLLp{6cm}}
+            \toprule
+            mathematical symbol & programming symbol & description & elements                                                      \\
+            \midrule
+            $f \in F$             & \texttt{f}         & fuels & \texttt{nuclear, lignite, coal, gas, oil, biomass, power}     \\
+            $i \in I$             & \texttt{i}         & power generation technologies & \texttt{nuc, lig\_stm, lig\_stm\_chp, lig\_boa, lig\_boa\_chp,
+            coal\_sub, coal\_sub\_chp, coal\_sc, coal\_sc\_chp, coal\_usc,
+            coal\_usc\_chp, coal\_igcc, ng\_stm, ng\_stm\_chp, ng\_ctb\_lo,
+            ng\_ctb\_lo\_chp, ng\_ctb\_hi, ng\_ctb\_hi\_chp, ng\_cc\_lo,
+            ng\_cc\_lo\_chp, ng\_cc\_hi, ng\_cc\_hi\_chp, ng\_mtr,
+            ng\_mtr\_chp, ng\_boiler\_chp, oil\_stm, oil\_stm\_chp,
+            oil\_ctb, oil\_ctb\_chp, oil\_cc, oil\_cc\_chp, bio,
+            bio\_chp, heatpump\_pth}                                        \\
+            $h \in H \subset I$     & \texttt{h(i)}    & power to heat technologies & \texttt{heatpump\_pth}                                        \\
+            $j \in J \subset I$     & \texttt{j(i)}    & CHP technologies & \texttt{lig\_stm\_chp, lig\_boa\_chp, coal\_sub\_chp,
+            coal\_sc\_chp, coal\_usc\_chp, ng\_stm\_chp, ng\_ctb\_lo\_chp,
+            ng\_ctb\_hi\_chp, ng\_cc\_lo\_chp, ng\_cc\_hi\_chp,
+            ng\_mtr\_chp, ng\_boiler\_chp,
+            oil\_stm\_chp, oil\_ctb\_chp, oil\_cc\_chp, bio\_chp}           \\
+            $k \in K$               & \texttt{k}       & storage technologies & \texttt{res\_day, res\_week, res\_season, psp\_day,
+            psp\_week, psp\_season, battery}                                \\
+            $l \in L$               & \texttt{l}       & feasible operation region limits & \texttt{l1, l2, l3, l4}                                       \\
+            $m \in M$               & \texttt{m}       & energy products & \texttt{el, ht}                                               \\
+            $n \in N$               & \texttt{n}       & intermittent generators & \texttt{wind\_on, wind\_off, pv, ror}                         \\
+            $t \in T$               & \texttt{t}       & time periods (hours)               & \texttt{t1, t2, \ldots, t8760}                                \\
+            $z \in Z$               & \texttt{z}       & market zones & \texttt{AT, DE}                                               \\
+            \bottomrule
+        \end{tabulary}
+    \end{table}
+
+    \newpage
+
+    \subsection{Parameters} \label{parameters}
+    Parameters are denoted either by lower-case greek letters or by upper-case latin letters.
+    \begin{table}
+        \caption{Parameters}
+        \begin{tabulary}{\textwidth}{LLLL}
+            %\begin{longtable}{p{4.1cm} c l c}
+            \toprule
+            mathematical symbol & programming symbol & description & unit                      \\
+            %\textbf{name} & \makecell[l]{\textbf{math} \\ \textbf{symbol}} & \makecell[l]{\textbf{GAMS} \\\textbf{symbol}} & \textbf{unit} \\
+            % LOWER-CASE GREEK LETTERS
+            \midrule
+            $\delta_{z,zz}$               & \texttt{DISTANCE(z,zz)}                           & distance between countries' center of gravity & km                        \\
+            $\varepsilon_{f}$             & \texttt{CO2\_INTENSITY(f)}                        & fuel emission intensity & $\text{t}_{\COO}$ / MWh   \\
+            $\eta_{i,m,f}$                & \texttt{EFFICIENCY\_G(i,m,f)}                     & power plant efficiency & MWh / MWh                 \\
+            $\eta^{out}_{z,k}$            & \makecell[l]{\texttt{EFFICIENCY\_S\_OUT(k)}}      & discharging efficiency &                           \\
+            $\eta^{in}_{z,k}$             & \makecell[l]{\texttt{EFFICIENCY\_S\_IN(k)}}       & charging efficiency &                           \\
+            $\lambda_{z}$                 & \texttt{LAMBDA(z)}                                & scaling factor for peak load &                           \\
+            $\mu_{z}$                     & \texttt{VALUE\_NSE(z)}                            & value of lost load & \EUR / MWh                \\
+            $\rho_{z,t,k}$                & \makecell[l]{\texttt{INFLOWS(z,t,k)}}             & inflows to storage reservoirs & MW                        \\
+            $\sigma_{z}$                  & \texttt{SIGMA(z)}                                 & scaling factor for peak intermittent generation &                           \\
+            $\phi_{z,t,n}$                & \texttt{GEN\_PROFILE(z,t,n)}                      & intermittent generation profile & $[0,1]$                   \\
+            $\widehat{\phi}_{z,n}$        & \texttt{PEAK\_PROFILE(z,n)}                       & peak intermittent generation profile & $[0,1]$                   \\
+            $\chi_{i,l,f}$                & \texttt{FEASIBLE\_INPUT(i,l,f)}                   & inputs of feasible operating region & $[0,1]$                   \\
+            $\psi_{i,l,m}$                & \texttt{FEASIBLE\_OUTPUT(i,l,m)}                  & output tuples of feasible operating region & $[0,1]$                   \\
+            % UPPER-CASE LATIN LETTERS
+            $C^{r}_{z,n}$                 & \texttt{CAPITALCOST\_R(z,n)}                      & capital cost of intermittent generators (specific, annuity)     & \EUR / MW                 \\
+            $C^{g}_{z,i}$                 & \texttt{CAPITALCOST\_G(z,i)}                      & capital cost of thermal generators (specific, annuity)          & \EUR / MW                 \\
+            $C^{s}_{z,k}$                 & \makecell[l]{\texttt{CAPITALCOST\_S(z,k)}}        & capital cost of storages - power (specific, annuity)            & \EUR / MW                 \\
+            $C^{v}_{z,k}$                 & \makecell[l]{\texttt{CAPITALCOST\_V(z,k)}}        & capital cost of storages - energy (specific, annuity)           & \EUR / MW                 \\
+            $C^{x}$                       & \texttt{CAPITALCOST\_X}                           & capital cost of transmission capacity (specific, annuity)       & \EUR / MW                 \\
+            $D_{z,t,m}$                   & \texttt{DEMAND(z,t,m)}                            & energy demand & GW                        \\
+            $\widehat{D}_{z,m}$           & \texttt{PEAK\_LOAD(z,m)}                          & peak demand & GW                        \\
+            $\widetilde{G}_{z,i}$         & \texttt{INITIAL\_CAP\_G(z,tec)}                   & initial capacity of dispatchable generators & GW                        \\
+            $O^{g}_{i}$                   & \texttt{OM\_COST\_G\_VAR(i)}                      & variable O\&M cost of dispatchable generators & \EUR / MWh                \\
+            $O^{r}_{z,n}$                 & \texttt{OM\_COST\_R\_VAR(z,n)}                    & variable O\&M cost of intermittent generators & \EUR / MWh                \\
+            $P^{e}_{t,z}$                 & \texttt{PRICE\_CO2(t,z)}                          & \COO price & \EUR / $\text{t}_{\COO}$  \\
+            $P_{t,z,f}$                   & \texttt{PRICE\_FUEL(t,z,f)}                       & fuel price & \EUR / MWh                \\
+            $Q^{g}_{i}$                   & \texttt{OM\_COST\_G\_QFIX(i)}                     & quasi-fixed O\&M cost of dispatchable generators & \EUR / MW                 \\
+            $Q^{r}_{z,n}$                 & \texttt{OM\_COST\_R\_QFIX(z,n)}                   & quasi-fixed O\&M cost of intermittent generators & \EUR / MW                 \\
+            $\widetilde{R}_{z,n}$         & \texttt{INITIAL\_CAP\_R(z,n)}                     & initial capacity of intermittent generators & GW                        \\
+            $\widetilde{S}^{out}_{z,k}$   & \makecell[l]{\texttt{INITIAL\_CAP\_S\_OUT(z,k)}}  & initial discharging capacity of storages & GW                        \\
+            $\widetilde{S}^{in}_{z,k}$    & \makecell[l]{\texttt{INITIAL\_CAP\_S\_IN(z,k)}}   & initial charging capacity of storages & GW                        \\
+            $\widetilde{V}_{z,k}$         & \makecell[l]{\texttt{INITIAL\_CAP\_V(z,k)}}       & initial energy storage capacity &                           \\
+            $\widetilde{X}_{z,zz}$        & \texttt{INITIAL\_CAP\_X(z,zz)}                    & initial transmission capacity & GW                        \\
+            \bottomrule
+        \end{tabulary}
+    \end{table}
+
+    \newpage
+
+    \subsection{Variables} \label{variables}
+    Variables are denoted by lower-case latin letters.
+
+    \begin{table*}
+        \centering
+        \caption{Variables}
+        \begin{tabulary}{\textwidth}{LLLL}
+            %\caption{Variables}\label{variables} \\
+            \toprule
+            mathematical symbol & programming symbol & description & unit      \\
+            \midrule
+            $b_{z,t,i,f}$                 & \texttt{b(z,t,i,f)}           & fuel burn for energy generation & GW        \\
+            $c$                           & \texttt{cost\_system}         & total system cost & k\EUR     \\
+            $c_{z}$                       & \texttt{cost\_zonal(z)}       & zonal system cost & k\EUR     \\
+            $c^{b}_{z,t,i}$               & \texttt{cost\_fuel(z,t,i)}    & fuel cost & k\EUR     \\
+            $c^{e}_{z,t,i}$               & \texttt{cost\_co2(z,t,i)}     & emission cost & k\EUR     \\
+            $c^{om}_{z,i}$                & \texttt{cost\_om\_g(z,i)}     & total o\&m cost of dispatchable generators & k\EUR     \\
+            $c^{om}_{z,n}$                & \texttt{cost\_om\_r(z,n)}     & total o\&m cost of intermittent generators & k\EUR     \\
+            $c^{g}_{z}$                   & \texttt{cost\_invest\_g(z)}   & capital cost of generators & k\EUR     \\
+            $c^{q}_{z}$                   & \texttt{cost\_nse(z)}         & total cost of non-served load & k\EUR     \\
+            $c^{r}_{z}$                   & \texttt{cost\_invest\_r(z)}   & capital cost of intermittent generators & k\EUR     \\
+            $c^{s,v}_{z}$                 & \texttt{cost\_invest\_sv(z)}  & capital cost of storages & k\EUR     \\
+            $c^{x}_{z}$                   & \texttt{cost\_invest\_x(z)}   & capital cost of interconnectors & k\EUR     \\
+            $e_{z}$                       & \texttt{emission\_co2(z)}     & \COO emissions & t \COO    \\
+            $\widetilde{g}^{+}_{z,i}$     & \texttt{add\_g(z,i)}          & added capacity of dispatchables & GW        \\
+            $\widetilde{g}^{-}_{z,i}$     & \texttt{deco\_g(z,i)}         & decommissioned capacity of dispatchables & GW        \\
+            $g_{z,t,i,m,f}$               & \texttt{g(z,t,i,m,f)}         & energy generated by conventionals & GW        \\
+            $q^{+}_{z,t}$                 & \texttt{q\_curtail(z,t)}      & curtailed energy & GW        \\
+            $q^{-}_{z,t,m}$               & \texttt{q\_nse(z,t,m)}        & non-served energy & GW        \\
+            $\widetilde{r}^{+}_{z,n}$     & \texttt{add\_r(z,n)}          & added capacity of intermittents & GW        \\
+            $\widetilde{r}^{-}_{z,n}$     & \texttt{deco\_r(z,n)}         & decommissioned capacity of intermittents & GW        \\
+            $r_{z,t,n}$                   & \texttt{r(z,t,n)}             & electricity generated by intermittents & GW        \\
+            $\widetilde{s}^{+}_{z,k}$     & \texttt{add\_s(z,k)}          & added storage capacity (power)              & GW        \\
+            $s^{in}_{z,t,k}$              & \texttt{s\_in(z,t,k)}         & energy stored in & GW        \\
+            $s^{out}_{z,t,k}$             & \texttt{s\_out(z,t,k)}        & energy stored out & GW        \\
+            $\widetilde{v}^{+}_{z,k}$     & \texttt{add\_v(z,k)}          & added storage capacity (energy)             & GWh       \\
+            $v_{z,t,k}$                   & \texttt{v(z,t,k)}             & storage energy content & GWh       \\
+            $w_{z,t,i,l,f}$               & \texttt{w(z,t,i,l,f)}         & operating region weight &           \\
+            $\widetilde{x}^{+}_{z,zz}$    & \texttt{add\_x(z,zz)}         & added transmission capacity & GW        \\
+            $x_{z,zz,t}$                  & \texttt{x(z,zz,t)}            & electricity net export & GW        \\
+            \bottomrule
+        \end{tabulary}
+    \end{table*}
+
+    \newpage
+
+    \subsection{Naming system}
+    \begin{table*}
+        \centering
+        \begin{threeparttable}
+            \caption{Naming System}
+            \begin{tabulary}{\textwidth}{LLLLLL}
+                \toprule
+                & initial capacity\tnote{$\dagger$}    & added capacity\tnote{$\ddagger$}  & decommissioned capacity\tnote{$\ddagger$} & specific investment cost\tnote{$\dagger$} & dispatch\tnote{$\ddagger$}    \\
+                \midrule
+                thermal units & $\widetilde{G}_{z,i}$                 & $\widetilde{g}^{+}_{z,i}$         & $\widetilde{g}^{-}_{z,i}$                 & $C^{g}_{z,i}$                             & $g_{z,t,i,m,f}$               \\
+                intermittent units & $\widetilde{R}_{z,n}$                 & $\widetilde{r}^{+}_{z,n}$         & $\widetilde{r}^{-}_{z,n}$                 & $C^{r}_{z,n}$                             & $r_{z,t,n}$                   \\
+                storages (power)    & $\widetilde{S}_{z,k}$                 & $\widetilde{s}^{+}_{z,k}$         & NA & $C^{s}_{z,k}$                             & $s_{z,t,k}$                   \\ % $\widetilde{s}^{-}_{z,k}$
+                storages (energy)   & $\widetilde{V}_{z,k}$                 & $\widetilde{v}^{+}_{z,k}$         & NA & $C^{v}_{z,k}$                             & NA                            \\ % $\widetilde{v}^{-}_{z,t,k}$
+                transmission & $\widetilde{X}_{z,zz}$                & $\widetilde{x}^{+}_{z,zz}$        & NA & $C^{x}_{z,zz}$                            & $x_{z,zz,t}$                  \\ % $\widetilde{x}^{-}_{z,zz}$
+                \bottomrule
+            \end{tabulary}
+
+            \begin{tablenotes}
+                \item [$\dagger$] parameter
+                \item [$\ddagger$] variable
+            \end{tablenotes}
+        \end{threeparttable}
+    \end{table*}
+
+    \newpage
+
+    \subsection{Mathematical description} \label{mathmodel}
+
+    \paragraph{Model objective}
+    \emph{medea} minimizes total system cost $c$, i.e. the total cost of generating electricity and heat from technologies and capacities adequate to meet demand, over a large number of decision variables, essentially representing investment and dispatch decisions in each market zone $z$ of the modelled energy systems.
+    \begin{align}
+        \min c = \sum_{z} (c_{z})
+    \end{align}
+    Zonal system costs $c_{z}$ are the sum of fuel cost $c^{b}_{z,t,i}$, emission cost $c^{e}_{z,t,i}$, operation and maintenance cost, capital costs of investment in conventional and intermittent generation ($c^{g}_{z}$, $c^{r}_{z}$), storage ($c^{s,v}_{z}$) and transmission ($c^{x}_{z}$) equipment, and the cost of non-served load ($c^{q}_{z}$) that accrues when demand is not met, e.g. when there is a power outage.
+    \begin{align}
+%\begin{split}
+        c_{z} = \sum_{t,i}  c^{b}_{z,t,i} + \sum_{t,i} c^{e}_{z,t,i} + \sum_{i} c^{om}_{z,i} + \sum_{n} c^{om}_{z,n} + c^{g}_{z} +
+        c^{r}_{z} + c^{s,v}_{z} + c^{x}_{z} + c^{q}_{z} \qquad \qquad \forall z
+%\end{split}
+    \end{align}
+    The components of zonal system costs are calculated as given in equations (\ref{fuel_cost}) to (\ref{lost_load_cost}).
+    Lower-case $c$ represent total cost, while upper-case $C$ denotes specific, annualized capital cost of technology investment.
+    Prices for fuels and \COO are denoted by $P$.
+    \begin{align}
+        &c^{b}_{z,t,i}& =&\ \sum_{f} \left( P_{t,z,f} \: b_{t,z,i,f} \right) \qquad \qquad &\forall z,t,i \label{fuel_cost} \\
+        &c^{e}_{z,t,i}& =&\ \sum_{f} \left( P^{e}_{t,z} \: e_{z,t,i} \right) \qquad \qquad &\forall z,t,i\\
+        &c^{om}_{z,i}& =&\ Q^{g}_{i} \left(\widetilde{G}_{z,i} - \widetilde{g}^{-}_{z,i} + \widetilde{g}^{+}_{z,i}\right) + \sum_{t} \sum_{m} \sum_{f} \left(O^{g}_{i} \: g_{z,t,i,m,f}\right) \qquad \qquad &\forall z,i \\
+        &c^{om}_{z,n}& =&\ Q^{r}_{n} \left(\widetilde{R}_{z,n} - \widetilde{r}^{-}_{z,n} + \widetilde{r}^{+}_{z,n}\right) + \sum_{t} \left(O^{r}_{n} \: r_{z,t,n}\right) \qquad \qquad &\forall z,n \\
+        &c^{g}_{z}& =&\ \sum_{i} \left( C^{g}_{z,i} \: \widetilde{g}^{+}_{z,i} \right) \qquad \qquad &\forall z\\
+        &c^{r}_{z}& =&\ \sum_{n} \left( C^{r}_{z,n} \: \widetilde{r}^{+}_{z,n} \right) \qquad \qquad &\forall z\\
+        &c^{s,v}_{z}& =&\ \sum_{k} \left( C^{s}_{z,k} \: \widetilde{s}^{+}_{z,k} + C^{v}_{z,k} \: v^{+}_{z,k} \right) \qquad \qquad &\forall z\\
+        &c^{x}_{z}& =&\ \frac{1}{2} \: \sum_{zz} (C^{x} \: \delta_{z,zz} \: \widetilde{x}^{+}_{z,zz}) \qquad \qquad &\forall z \label{transmission_expansion_cost}\\
+        &c^{q}_{z}& =&\ \mu \sum_{t} \sum_{m} q^{-}_{z,t,m} \qquad \qquad &\forall z \label{lost_load_cost}
+    \end{align}
+
+    \paragraph{Market clearing}
+    In each hour, the markets for electricity and heat have to clear.
+    Equation (\ref{market_clearing_el}) ensures that the total supply from conventional and intermittent sources, and storages equals total electricity demand plus net exports, electricity stored and used for heat generation.
+    Likewise, equation (\ref{market_clearing_ht}) clears the heat market by equating heat generation to heat demand.
+    \begin{align}
+        \begin{split}
+            \sum_{i} \sum_{f} g_{z,t,i,\text{el},f} + \sum_{k} s^{out}_{z,t,k} + \sum_{n} r_{z,t,n} &=  \\ D_{z,t,\text{el}} + \sum_{i} b_{z,t,i,\text{el}} + & \sum_{k} s^{in}_{z,t,k} + \sum_{zz} x_{z,zz,t} - q^{-}_{z,t,\text{el}} + q^{+}_{z,t} \qquad \forall z,t
+        \end{split}
+        \label{market_clearing_el}
+    \end{align}
+    \begin{align}
+        \sum_{i} \sum_{f} g_{z,t,i,\text{ht},f} = D_{z,t,\text{ht}} - q^{-}_{z,t,\text{ht}} \qquad \forall z,t \label{market_clearing_ht}
+    \end{align}
+    \emph{medea} can be thought of as representing energy-only electricity and heat markets without capacity payments. Then, the marginals of the market clearing equations (\ref{market_clearing_el}) and (\ref{market_clearing_ht}), $\partial C / \partial D_{z,t,m}$, can be interpreted as the zonal prices for electricity and heat, respectively.
+
+    \paragraph{Energy generation}
+    Energy generation $g_{z,t,i,m,f} \geq 0$ is constrained by available installed capacity, which can be adjusted through investment ($\widetilde{g}^{+}_{z,i} \geq 0$) and decommissioning $\widetilde{g}^{-}_{z,i} \geq 0$.
+    \begin{align}
+        \sum_{f} g_{z,t,i,m,f} \leq \widetilde{G}_{z,i} + \widetilde{g}^{+}_{z,i} - \widetilde{g}^{-}_{z,i} \qquad \qquad \forall z,t,i,m
+    \end{align}
+    Generator efficiency $\eta$ determines the amount of fuel $b_{z,t,i,f} \geq 0$ that needs to be spent in order to generate a given amount of energy.
+    \begin{align}
+        g_{z,t,i,m,f} = \sum_{f} \eta_{i,m,f} \: b_{z,t,i,f} \qquad \qquad \forall z,t,i \notin J, f
+    \end{align}
+
+    \paragraph{Thermal co-generation}
+    Co-generation units jointly generate heat and electricity. All feasible combinations of heat and electricity generation along with the corresponding fuel requirement are reflected in so-called `feasible operating regions'.
+    The elements $l \in L$ span up a three-dimensional, convex feasible operating region for each co-generation technology.
+    The weights $w_{z,t,i,l,f} \geq 0$ form a convex combination of the corners $l$, which are scaled to the available installed capacity of each co-generation technology.
+    Defining weights over fuels allows co-generation units to switch fuels between multiple alternatives.
+    Heat and electricity output along with the corresponding fuel requirement is then set according to the chosen weights.
+    \begin{align}
+        \sum_{l} \sum_{f} w_{z,t,i,l,f} = \widetilde{G}_{z,i} + \widetilde{g}^{+}_{z,i} - \widetilde{g}^{-}_{z,i} \qquad \qquad \forall z,t,i \in J \\
+        g_{z,t,i,m,f} = \sum_{l} \sum_{f} \psi_{i,l,m} \: w_{z,t,i,l,f} \qquad \qquad \forall z,t,i \in J, m \\
+        b_{z,t,i,f} = \sum_{l} \chi_{i,l,f} \: w_{z,t,i,l,f} \qquad \qquad \forall z,t,i \in J, f\\
+        w(z,t,i,l,f) = 0 \qquad \qquad \forall z,t,i,k,f: \chi_{i,l,f} = 0
+    \end{align}
+
+    \paragraph{Intermittent electricity generation}
+    Electricity generation from intermittent sources wind (on-shore and off-shore), solar irradiation, and river runoff follows generation profiles $\phi_{z,t,n} \in [0,1]$ and is scaled according to corresponding installed ($ \widetilde{R}_{z,n}$) and added ($\widetilde{r}^{+}_{z,n} \geq 0$) capacity.
+    \begin{align}
+        r_{z,t,n} = \phi_{z,t,n} \: \left( \widetilde{R}_{z,n} - \widetilde{r}^{-}_{z,n} + \widetilde{r}^{+}_{z,n} \right) \qquad \qquad \forall z,t,n
+    \end{align}
+
+    \paragraph{Electricity storages}
+    Charging ($s^{in}_{z,t,k} \geq 0$) and discharging ($s^{out}_{z,t,k} \geq 0$) of storages is constrained by the storages' installed ($\widetilde{S}^{in}_{z,k}, \widetilde{S}^{out}_{z,k}$) and added ($\widetilde{s}^{+}_{z,k} \geq 0$) charging and discharging power, respectively. Similarly, the total energy that can be stored is constrained by the storage technology's initial ($\widetilde{V}_{z,k}$) and added ($\widetilde{v}^{+}_{z,k} \geq 0$) energy capacity.
+    \begin{align}
+        s^{out}_{z,t,k} \leq \widetilde{S}^{out}_{z,k} + \widetilde{s}^{+}_{z,k} \qquad \qquad \forall z,t,k \\
+        s^{in}_{z,t,k} \leq \widetilde{S}^{in}_{z,k} + \widetilde{s}^{+}_{z,k} \qquad \qquad \forall z,t,k \\
+        v_{z,t,k} \leq \widetilde{V}_{z,k} + \widetilde{v}^{+}_{z,k} \qquad \qquad \forall z,t,k
+    \end{align}
+    Storage operation is subject to a storage balance, such that the current energy content must be equal to the previous period's energy content plus all energy flowing into the storage less all energy flowing out of the storage.
+    \begin{align}
+        v_{z,t,k} = \rho_{z,t,k} + \eta^{in}_{z,k} \: s^{in}_{z,t,k} - (\eta^{out}_{z,k})^{-1} \: s^{out}_{z,t,k} + v_{z,t-1,k} \qquad \qquad \forall z,t,k: t>1, \: \eta^{out}_{z,k} > 0
+    \end{align}
+    Since the model can add storage power capacity and energy capacity independently, we require a storage to hold at least as much energy as it could store in (or out) in one hour.
+    \begin{align}
+        \widetilde{v}^{+}_{z,k} \geq \widetilde{s}^{+}_{z,k} \qquad \qquad \forall z,k
+    \end{align}
+
+    \paragraph{Emission accounting}
+    Burning fossil fuels for energy generation produces emissions of carbon dioxide (\COO). The amount of \COO emitted is
+    tracked by the following equation
+    \begin{align}
+        e_{z,t,i} = \sum_{f} \left( \varepsilon_{f} \: b_{z,t,i,f} \right) \qquad \qquad \forall z,t,i
+    \end{align}
+
+    \paragraph{Electricity exchange}
+    Implicitly, \emph{medea} assumes that there are no transmission constraints within market zones.
+    However, electricity exchange between market zones is subject to several constraints.
+
+    First, exchange between market zones is constrained by available transfer capacities. Transfer capacities can be expanded at constant, specific investment cost (see equation (\ref{transmission_expansion_cost})). This rules out economies of scale in transmission investment that might arise in interconnected, meshed grids.
+    \begin{align}
+        x_{z,zz,t} \leq \widetilde{X}_{z,zz} + \widetilde{x}^{+}_{z,zz} \qquad \qquad \forall z, zz, t \\
+        x_{z,zz,t} \geq - \left( \widetilde{X}_{z,zz} + \widetilde{x}^{+}_{z,zz} \right) \qquad \qquad \forall z, zz, t
+    \end{align}
+    By definition, electricity net exports $x_{z,zz,t}$ from $z$ to $zz$ must equal electricity net imports of $zz$ from $z$.
+    \begin{align}
+        x_{z,zz,t} = -x_{zz,z,t} \qquad \qquad \forall z, zz, t
+    \end{align}
+    Added transmission capacities can be used in either direction.
+    \begin{align}
+        \widetilde{x}^{+}_{z,zz} = \widetilde{x}^{+}_{zz,z} \qquad \qquad \forall z, zz
+    \end{align}
+    Finally, electricity cannot flow between zones where there is no transmission infrastructure in place (including intra-zonal flows).
+    \begin{align}
+        x_{z,zz,t} = 0 \qquad \qquad \forall z, zz, t: \widetilde{X}_{z,zz} = 0 \\
+        x_{zz,z,t} = 0 \qquad \qquad \forall z, zz, t: \widetilde{X}_{z,zz} = 0
+    \end{align}
+
+    \paragraph{Decommissioning}
+    Keeping plant available for generation gives rise to quasi-fixed operation and maintenance costs.
+    Such cost can be avoided by decommissioning an energy generator. This is modelled as a reduction in generation capacity, which cannot exceed installed capacity.
+    \begin{align}
+        \widetilde{g}^{-}_{z,i} &\leq \widetilde{G}_{z,i} + \widetilde{g}^{+}_{z,i} \qquad \qquad \forall z,i \\
+        \widetilde{r}^{-}_{z,n} &\leq \widetilde{R}_{z,n} + \widetilde{r}^{+}_{z,n} \qquad \qquad \forall z,n
+    \end{align}
+
+    \paragraph{Ancillary services}
+    Power systems require various system services for secure and reliable operation, such as balancing services or voltage support through the provision of reactive power. Such system services can only be supplied by operational generators. Thus, we approximate system service provision by a requirement on the minimal amount of spinning reserves operating at each hour.
+    We assume that ancillary services are supplied by conventional (thermal) power plants, hydro power plants, and storages.
+    The requirement for spinning reserves is proportional to electricity peak load $\widehat{D}_{z,\text{el}} = \max_{t} D_{z,t,\text{el}}$ and peak generation from wind and solar resources, where $\widehat{\phi}_{z,n} = \max_{t} \phi_{z,t,n}$.
+    \begin{align}
+        \sum_{i} \sum_{f} \left( g_{z,t,i,\text{el},f} \right) + r_{z,t,\text{ror}} + \sum_{k} \left( s^{out}_{z,t,k} + s^{in}_{z,t,k} \right) \geq \lambda_{z} \widehat{D}_{z,\text{el}} + \sigma_{z} \sum_{n \setminus \{ \text{ror}\}} \widehat{\phi}_{z,n} (\widetilde{R}_{z,n} + \widetilde{r}^{+}_{z,n}) \qquad \forall z,t
+    \end{align}
+
+    \paragraph{Curtailment}
+    Electricity generated from intermittent sources can be curtailed (disposed of) without any further cost (apart from implicit opportunity cost).
+    \begin{align}
+        q^{+}_{z,t} \leq \sum_{n} r_{z,t,n} \qquad \qquad \forall z, t
+    \end{align}
+
+\end{document}
