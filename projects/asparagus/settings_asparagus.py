@@ -18,19 +18,19 @@ accounts for Germany's nuclear exit and its proposed coal phase-out.
 As restrictions on land availability for wind turbines are not specified, we generate scenarios of deployable wind 
 turbine capacity in the range between 0 and unconstrained deployment. This is repeated for a range of CO2 price 
 assumptions.
-For sensitivity analysis, we also vary the capitalcost of solar PV. 
+For sensitivity analysis, we also vary the capital cost of solar PV. 
 """
 
 # campaigns
 dict_campaigns = {
     'base': {
-        'co2_price': range(120, -1, -30),
-        'wind_cap': range(18, -1, -2),
+        'co2_price': [0],  # range(120, -1, -30),
+        'wind_cap': range(8, -1, -2),  # range(18, -1, -2),
         'pv_cost': [36715, 16715]
-    },
-    'cheappv': {
-        'co2_price': [30, 60, 120],
-        'wind_cap': range(18, 17, -2),
+    },  # ,
+    'pv_sens': {
+        'co2_price': range(120, -1, -30),
+        'wind_cap': [18],
         'pv_cost': range(36715, 16026, -1000)
     }
 }
@@ -65,7 +65,7 @@ scenario_2030 = {
         'wind_off': [0],
         'pv': [1.1],
         'ror': [6.9],
-        'd_power': [62038.515 + 24000]  # 17600]
+        'd_power': [62038.515 + 20761.485]
     },
     'DE': {
         'bio': [1.3],

@@ -33,16 +33,10 @@ symbols_to_read = {
     'AvgPriceHt': ([], ['z']),
     'add_r': (['n'], ['z']),
     'add_g': (['i'], ['z']),
+    'deco_g': (['i'], ['z']),
+    'AnnGByTec': (['i', 'm', 'f'], ['z'])
 }
 # cost_air_pol(z,f)
-var_names = ['syscost', 'co2emission', 'curtail', 'gen_el', 'gen_ht', 'gen_biomass', 'gen_renew', 'cons_spend',
-             'prod_surplus', 'exports', 'export_value', 'import_value', 'in_storages',
-             'gen_storages', 'price_el', 'price_ht', 'add_pv', 'add_ror', 'add_wind_off', 'add_wind_on', 'add_nuc',
-             'add_lig_stm', 'add_lig_stm_chp', 'add_lig_boa', 'add_lig_boa_chp', 'add_coal_sub', 'add_coal_sub_chp',
-             'add_coal_sc', 'add_coal_sc_chp', 'add_ng_stm', 'add_ng_stm_chp', 'add_ng_cbt_lo', 'add_ng_cbt_lo_chp',
-             'add_ng_cbt_hi', 'add_ng_cbt_hi_chp', 'add_ng_cc_lo', 'add_ng_cc_lo_chp', 'add_ng_cc_hi',
-             'add_ng_cc_hi_chp', 'add_ng_mtr', 'add_ng_mtr_chp', 'add_oil_stm', 'add_oil_stm_chp', 'add_oil_cbt',
-             'add_oil_cbt_chp', 'add_oil_cc', 'add_bio', 'add_bio_chp', 'add_ng_boiler_chp', 'add_heatpump_pth']
 
 idx = pd.IndexSlice
 
@@ -65,11 +59,18 @@ for campaign in dict_campaigns.keys():
                 df_collect = pd.DataFrame()
                 for symbol, sets in symbols_to_read.items():
                     df = gdx2df(db_output, symbol, sets[0], sets[1])
+                    if sets[0]:
+                        strix = [f'{symbol}_{ix}' for ix in df.index]
+                    else:
+                        strix = [symbol]
+                    df.index = strix
                     # collect results
-                    df_collect = df_collect.append(df, ignore_index=True)
+                    df_collect = df_collect.append(df, ignore_index=False)
+
+                    # var_names.append(asdf)
 
                 df_collect.index = pd.MultiIndex.from_product(
-                    [[campaign], [price_co2], [cap_wind], [pv_cost], var_names],
+                    [[campaign], [price_co2], [cap_wind], [pv_cost], df_collect.index],
                     names=('campaign', 'co2_price', 'wind_cap', 'pv_cost', 'variable'))
                 # add air pollution cost
                 df_collect.loc[(campaign, price_co2, cap_wind, pv_cost, 'cost_airpol'), :] = air_pol_cost_by_fuel.sum()
@@ -78,5 +79,5 @@ for campaign in dict_campaigns.keys():
 
 # %% write results to csv
 df_result.index = pd.MultiIndex.from_tuples(df_result.index)
-df_result.to_csv(os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', PROJECT_NAME, 'results', 'results.csv'),
+df_result.to_csv(os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', PROJECT_NAME, 'results', 'results_200501.csv'),
                  sep=';', decimal=',', encoding='utf-8-sig')
