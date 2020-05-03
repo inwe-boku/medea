@@ -34,6 +34,7 @@ symbols_to_read = {
     'add_r': (['n'], ['z']),
     'add_g': (['i'], ['z']),
     'deco_g': (['i'], ['z']),
+    'AnnGByTec': (['i', 'm', 'f'], ['z'])
 }
 # cost_air_pol(z,f)
 

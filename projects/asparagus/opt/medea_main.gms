@@ -495,7 +495,8 @@ AnnGByTec(z,i,m,f)               annual thermal generation by technology
 AnnGFossil(z)                    annual generation from fossil sources
 AnnGSyngas(z)                    annual generation from synthetic gases
 AnnGBiomass(z)                   annual generation from biomass
-AnnR(z)                          annual generation from renewable sources
+AnnR(z)                          annual generation from intermittent sources
+AnnRenew(z)                      annual generation from renewable sources
 AnnSIn(z)                        annual consumption of electricity storages
 AnnSOut(z)                       annual generation of electricity storages
 AnnCons(z,m)                     annual consumption of electricity and heat
@@ -538,6 +539,7 @@ AnnGSyngas(z) = sum((t,i), g.L(z,t,i,'el','Syngas') );
 AnnGBiomass(z) = sum((t,i), g.L(z,t,i,'el','Biomass') );
 AnnGFossil(z) = sum(m, AnnG(z,m)) - AnnGSyngas(z) - AnnGBiomass(z);
 AnnR(z) = sum((t,n), r.L(z,t,n) );
+AnnRenew(z) = AnnR(z) + AnnGBiomass(z) + sum((t,k), INFLOWS(z,t,k)*EFFICIENCY_S_OUT(z,k));
 AnnSIn(z) = sum((t,k), s_in.L(z,t,k));
 AnnSOut(z) = sum((t,k), s_out.L(z,t,k));
 AnnCons(z,m) = sum(t, DEMAND(z,t,m));

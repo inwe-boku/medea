@@ -7,6 +7,23 @@ import pandas as pd
 
 import config as cfg
 
+# %% ----- ----- ----- ----- settings ----- ----- ----- -----
+idx = pd.IndexSlice
+PRICE_CO2 = 60
+REFUEL_COLORS = ['#c72321', '#0d8085', '#f0c220', '#595959', '#3b68f9', '#7794dd']
+RES_COLORS = ['#d69602', '#ffd53d', '#3758ba', '#7794dd']
+RES_COLORS3 = ['#d69602', '#e5b710', '#ffd53d', '#3758ba', '#3b68f9', '#7794dd']
+
+ANNUITY_FACTOR = 0.05827816
+FLH_PV = 857.4938
+FLH_WINDON = 2015.0359
+
+RPATH = os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', 'asparagus', 'results', 'results_200501.csv')
+FPATH = os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', 'asparagus', 'doc', 'figures')
+
+if not os.path.exists(FPATH):
+    os.makedirs(FPATH)
+
 
 # %% define plotting functions
 def plot_subn(df, fname, width=2, xlim=None, ylim=None, xlabel=None, ylabel=None, color=None):
@@ -280,3 +297,91 @@ axs[1].set_title('Winter week')
 plt.tight_layout()
 plt.savefig(os.path.join(FPATH, 'wind_not_pv.pdf'))
 plt.close()
+
+# %% data analysis
+
+# % response of capacity additions to \Phi
+capa = results.loc[idx['base', :, :, 36715], idx['AT', :]]
+capa.columns = capa.columns.droplevel(0)
+additions = pd.DataFrame()
+additions['lig'] = capa.loc[:, capa.columns.str.contains('add_g_lig')].sum(axis=1)
+additions['coal'] = capa.loc[:, capa.columns.str.contains('add_g_coal')].sum(axis=1)
+additions['oil'] = capa.loc[:, capa.columns.str.contains('add_g_oil')].sum(axis=1)
+additions['ng'] = capa.loc[:, capa.columns.str.contains('add_g_ng')].sum(axis=1) - capa.loc[:,
+                                                                                   capa.columns.str.contains(
+                                                                                       'add_ng_boiler')].sum(axis=1)
+additions['bio'] = capa.loc[:, capa.columns.str.contains('add_g_bio')].sum(axis=1)
+additions['heatpump'] = capa.loc[:, capa.columns.str.contains('add_g_heatpump')].sum(axis=1)
+additions['pv'] = capa.loc[:, capa.columns.str.contains('add_g_pv')].sum(axis=1)
+additions['wind'] = capa.loc[:, capa.columns.str.contains('add_g_wind_on')].sum(axis=1)
+
+decomissions = pd.DataFrame()
+decomissions['lig'] = capa.loc[:, capa.columns.str.contains('deco_g_lig')].sum(axis=1)
+decomissions['coal'] = capa.loc[:, capa.columns.str.contains('deco_g_coal')].sum(axis=1)
+decomissions['oil'] = capa.loc[:, capa.columns.str.contains('deco_g_oil')].sum(axis=1)
+decomissions['ng'] = capa.loc[:, capa.columns.str.contains('deco_g_ng')].sum(axis=1) - capa.loc[:,
+                                                                                       capa.columns.str.contains(
+                                                                                           'deco_g_ng_boiler')].sum(
+    axis=1)
+decomissions['bio'] = capa.loc[:, capa.columns.str.contains('deco_g_bio')].sum(axis=1)
+decomissions['heatpump'] = capa.loc[:, capa.columns.str.contains('deco_g_heatpump')].sum(axis=1)
+# decomissions['pv'] = capa.loc[:, capa.columns.str.contains('dec_pv')].sum(axis=1)
+# decomissions['wind'] = capa.loc[:, capa.columns.str.contains('dec_wind_on')].sum(axis=1)
+
+netadds = additions - decomissions
+
+# %% total capacities (initial + added), and utilisation
+
+# initial capacities
+cap_init_at = {
+    'ng_stm': 0.13932,
+    'ng_stm_chp': 0.606472,
+    'ng_cbt_lo': 0.1282346,
+    'ng_cbt_lo_chp': 0.27724938,
+    'ng_cc_lo': 0.15136,
+    'ng_cc_lo_chp': 0.32938,
+    'ng_cc_hi_chp': 2.286138,
+    'oil_stm': 0.08584,
+    'oil_cbt': 0.003915,
+    'oil_cbt_chp': 0.04756,
+    'oil_cc': 0.0348,
+    'bio': 0.354965,
+    'bio_chp': 0.369499,
+    'ng_boiler_chp': 3.87,
+    'heatpump_pth': 0.1
+}
+
+ciat = pd.DataFrame.from_dict(cap_init_at, orient='index', columns=['base'])
+ciat.columns.name = 'scenario'
+ciat.index.name = 'variable'
+
+caat = capa.loc[:, capa.columns.str.contains('add_g_')].copy()
+caat.columns = caat.columns.str.replace('add_g_', '')
+caat.columns.name = 'variable'
+caat.index = caat.index.rename(['scenario', 'co2price', 'wind_lim', 'pv_cost'])
+
+cdat = capa.loc[:, capa.columns.str.contains('deco_g_')].copy()
+cdat.columns = cdat.columns.str.replace('deco_g_', '')
+cdat.columns.name = 'variable'
+cdat.index = cdat.index.rename(['scenario', 'co2price', 'wind_lim', 'pv_cost'])
+
+ctat = ciat.T + caat - cdat
+ctat.dropna(axis=1, how='all', inplace=True)
+
+# %% # generation time series
+g_tec = results.loc[idx['base', :, :, 36715], idx['AT', :]].copy()
+g_tec.columns = g_tec.columns.droplevel(0)
+g_tec = g_tec.loc[:, g_tec.columns.str.contains('AnnGByTec_')]
+g_tec.columns = g_tec.columns.str.replace('AnnGByTec_', '')
+g_tec_mix = pd.MultiIndex.from_tuples(
+    [(j.replace('(', '').replace(')', '').replace("'", "").replace(' ', '').split(',')) for j in g_tec.columns])
+g_tec.columns = g_tec_mix
+# drop heat generation
+g_tec = g_tec.loc[:, idx[:, 'el', :]]
+g_tec.columns = g_tec.columns.droplevel([1, 2])
+
+util = g_tec / ctat / 8784
+util.dropna(axis=1, how='all', inplace=True)
+
+util.loc[idx['base', 60, :, 36715], :].plot()
+plt.show()
