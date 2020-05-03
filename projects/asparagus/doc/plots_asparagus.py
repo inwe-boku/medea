@@ -196,7 +196,7 @@ wind_add.index = wind_add.index.droplevel([0, 2])
 
 undisturbed_marginal = undisturbed_base.iloc[::-1].diff().divide(wind_add.iloc[::-1].diff().round(8), axis=0) * -1
 undisturbed_marginal_share = undisturbed_marginal.copy()
-undisturbed_marginal.columns = [f'CO2 Price: {p} €/t' for p in undisturbed_marginal.columns]
+undisturbed_marginal.columns = [rf'CO$_2$ Price: {p} €/t' for p in undisturbed_marginal.columns]
 
 plot_lines(undisturbed_marginal / 1000, os.path.join(FPATH, 'undisturbed_base.pdf'), xlim=[18, 0], ylim=[0, 75],
            xlabel='Added Capacity of Wind [GW]', ylabel='thousand € / MW', color=REFUEL_COLORS)
@@ -297,3 +297,50 @@ axs[1].set_title('Winter week')
 plt.tight_layout()
 plt.savefig(os.path.join(FPATH, 'wind_not_pv.pdf'))
 plt.close()
+
+# %% data analysis
+
+# % response of capacity additions to \Phi
+capa = results.loc[idx['base', :, :, 36715], idx['AT', :]]
+capa.columns = capa.columns.droplevel(0)
+additions = pd.DataFrame()
+additions['lig'] = capa.loc[:, capa.columns.str.contains('add_lig')].sum(axis=1)
+additions['coal'] = capa.loc[:, capa.columns.str.contains('add_coal')].sum(axis=1)
+additions['oil'] = capa.loc[:, capa.columns.str.contains('add_oil')].sum(axis=1)
+additions['ng'] = capa.loc[:, capa.columns.str.contains('add_ng')].sum(
+    axis=1)  # - capa.loc[:, capa.columns.str.contains('add_ng_boiler')]
+additions['bio'] = capa.loc[:, capa.columns.str.contains('add_bio')].sum(axis=1)
+additions['heatpump'] = capa.loc[:, capa.columns.str.contains('add_heatpump')].sum(axis=1)
+additions['pv'] = capa.loc[:, capa.columns.str.contains('add_pv')].sum(axis=1)
+additions['wind'] = capa.loc[:, capa.columns.str.contains('add_wind_on')].sum(axis=1)
+
+# %% total capacities (initial + added), and utilisation
+
+# initial capacities
+cap_init_at = {
+    'ng_stm': 0.13932,
+    'ng_stm_chp': 0.606472,
+    'ng_cbt_lo': 0.1282346,
+    'ng_cbt_lo_chp': 0.27724938,
+    'ng_cc_lo': 0.15136,
+    'ng_cc_lo_chp': 0.32938,
+    'ng_cc_hi_chp': 2.286138,
+    'oil_stm': 0.08584,
+    'oil_cbt': 0.003915,
+    'oil_cbt_chp': 0.04756,
+    'oil_cc': 0.0348,
+    'bio': 0.354965,
+    'bio_chp': 0.369499,
+    'ng_boiler_chp': 3.87,
+    'heatpump_pth': 0.1
+}
+
+ciat = pd.DataFrame.from_dict(cap_init_at, orient='index', columns=['base'])
+ciat.columns.name = 'scenario'
+ciat.index.name = 'variable'
+
+caat = capa.loc[:, capa.columns.str.contains('add_')].copy()
+caat.columns = caat.columns.str.replace('add_', '')
+
+ctat = ciat.T + caat
+ctat.dropna(axis=1, how='all', inplace=True)
