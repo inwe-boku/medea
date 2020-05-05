@@ -31,7 +31,7 @@ PWD = credentials['entsoe']['pwd']
 # ======================================================================================================================
 # %% sFTP data download
 # ----------------------------------------------------------------------------------------------------------------------
-def get_entsoe(connection_string, user, pwd, category, dir):
+def get_entsoe(connection_string, user, pwd, category, directory):
     """
     downloads dataset from ENTSO-E's transparency data sftp server.
     contact ENTSO-E to receive login credentials.
@@ -39,11 +39,11 @@ def get_entsoe(connection_string, user, pwd, category, dir):
     :param user: user name required for connecting with sftp server
     :param pwd: password required for connecting with sftp server
     :param category: ENTSO-E data category to be downloaded
-    :param dir: directory where downloaded data is saved to. A separate subdirectory is created for each category
+    :param directory: directory where downloaded data is saved to. A separate subdirectory is created for each category
     :return: downloaded dataset(s) in dir
     """
     # check if local_dir exists and create if it doesn't
-    local_dir = os.path.join(dir, category)
+    local_dir = os.path.join(directory, category)
     if not os.path.exists(local_dir):
         os.makedirs(local_dir)
     #
