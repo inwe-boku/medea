@@ -30,6 +30,7 @@
 \DeclareSIUnit{\thermal}{th}
 \DeclareSIUnit{\electric}{el}
 \DeclareSIUnit{\year}{a}
+\DeclareSIUnit{\wattpeak}{Wp}
 
 % Euro symbol
 \usepackage[gen]{eurosym}
@@ -542,183 +543,109 @@
     For each step, we observe system cost, total \COO emissions and other variables of interest.
     By relating the change in generated wind energy to the change in system cost (or other variables of interest), we
     derive a measure of the (approximate) marginal impact of wind power expansion (or contraction).
+    A detailed discussion of model results is provided in \ref{sec:detailedresults}.
 
-    \subsection{Baseline} \label{subsec:baseline}
-    As a point of reference for our analysis, we determine the least cost power system configuration when addition of
-    wind turbines and solar PV is unconstrained.
-    Given the policy goal of generating \SI{21}{\tera\watt\hour} of electricity either from wind or solar power (with
-    the remainder coming from hydro power and biomass), required capacity expansion amounts to \SI{10.4}{\giga\watt}
-    wind power or \SI{24.1}{\giga\watt} of solar power if the policy is to be fulfilled with one technology only.
-
-    In the baseline scenario, we assume capacity-weighted average capital cost of solar PV of $630$ \EUR per kW
-    installed.
-    This corresponds to about 56\% of PV installations being mounted on roof tops, while the remainder (44\%) is
-    realized as open-space solar PV at utility scale.
-    In section~\ref{subsec:sensitivity} we analyze the sensitivity of our results with respect to capital cost of solar
-    PV\@.
-    Moreover, we assume efficient pricing of \COO emissions, i.e.\ all otherwise external cost of \COO emissions are
-    internalized through \COO pricing.
-    In the baseline scenario, we presume \COO prices as low as $30$ \EUR per tonne, as there is no incentive to add
-    carbon-free generation capacities above the policy target.
-    As future \COO prices are uncertain but do impact renewables deployment ~\citep{Brown2020, Kirchner2019}, we
-    extend the analysis to \COO prices of $60$, $90$, and $120$ \EUR per tonne.
-
-    Given these baseline assumptions, the cost-minimizing system set-up that is consistent with policy objectives, adds
-    \SI{10.4}{\giga\watt} wind power and \SI{0}{\giga\watt} solar PV to initially available capacities in Austria.
-    Further, \SI{2.63}{\giga\watt} of natural gas fired capacity are added, while \SI{0.42}{\giga\watt} are decommissioned.
-    \SI{0.08}{\giga\watt} off oil-fired capacity are decommissioned.
-    In effect, \SI{6.23}{\giga\watt} of fossil thermal generation capacities remain active, giving rise to
-    \SI{10.5}{\mega\tonne} of \COO emissions per year.
-    As Austria has ample hydro storage capacity in place, no further storage (e.g. from batteries) is added.
-    However, the addition of \SI{1.23}{\giga\watt} of compression heat pumps allows to use electricity for heat
-    generation and to limit curtailment to \SI{1.5}{\tera\watt\hour\per\year}.
-    Annual system cost in Austria amount to $2.9$ billon \EUR in this scenario.
-    Net earnings from exports total $0.7$ billion \EUR, so that net system cost amounts to $2.2$ billion \EUR.
-
-    \subsection{The opportunity cost of wind power in Austria}\label{subsec:opportunity-cost-wind}
-    %Effect of \COO prices on opportunity cost of wind power:
-    %- lower \COO price means less 'voluntary' RET installed
-    %- more PV means more ancillary capacities installed (?)
-    %- more PV means more fuel used in dispatchable plant
-    %- more PV means more curtailment (?)
-    %- more PV means lower exports -- large dependency on \COO price. At price of 60-120, exports fall as less wind.
-    %For low \COO price exports increase as less wind. -->> Need to look at capacities in Germany!
-    %- more PV means
-    %* PV capacity at full wind substitution is (almost) invariant to \COO price and comes in at 24.11-24.26 GW
-    %* wind onshore capacity is sensitive to \COO price. At 120 \EUR \COO, 17.07 GW wind on added, at 0 \EUR \COO10.43 GW added
-    %* absolutely no heatpump added. why?
-    %
-    %+ No bio added in Germany (proly restriction)
-    %+ Germany adds PV and wind only with \COO price at 120
-    With a gradual restriction of wind power potentials, the system must increasingly rely on solar PV to generate a
-    sufficient amount of electricity from renewable sources.
-    Consequently, each \SI{}{\giga\watt} of wind power not installed needs to be replaced by \SI{2.35}{\giga\watt} of
-    solar PV\@.
-    As generation profiles of wind and solar power differ, the substitution of wind power with solar PV brings about
-    changes in system operation, investment, and, consequently, system cost.
-
-    At baseline \COO prices of $30$ \EUR per tonne,
-
-    At higher \COO prices, wind power installation in Austria increases, as low emission generation is valued higher
-    and because of the favorable complementarity of Austrian wind to (northern) German wind.
-
-
-    As the admissible addition of wind power is reduced, electricity exports to Germany are being scaled back.
-    This is reinforced by the similarities in generation profiles of solar PV across both countries.
-
-    Due to the concentration of solar PV generation in time (both on a daily and on a seasonal scale), installing solar
-    PV instead of wind power leads to an increase in dispatchable thermal generation.
-    As thermal generation in Austria is predominantly fossil thermal, this induces an increase in \COO emissions due
-    to the increased use of PV\@.
-
-    Curtailment in Austria is declining up to
-
-    \begin{figure*}
+    \begin{figure*}[h!t]
         \centering
-        \includegraphics[width=0.8 \textwidth]{./figures/sysops.pdf}
+        \begin{subfigure}[b]{0.475\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{./figures/undisturbed_base_share.pdf}
+            \caption{Relative substitution}
+            \label{fig:rel_substitution}
+        \end{subfigure}
+        \hfill
+        \begin{subfigure}[b]{0.475\textwidth}
+            \centering
+            \includegraphics[width=\textwidth]{./figures/undisturbed_base.pdf}
+            \caption{Absolute substitution}
+            \label{fig::abs_substitution}
+        \end{subfigure}
         \caption{Opportunity cost of wind power assuming PV overnight cost of 630 EUR/kWp}
-        \label{figure:system-operation-base}
+        \label{figure:opportunity-cost-base}
     \end{figure*}
 
-    \todo[inline]{describe changes in system configuration}
+    With a gradual restriction of deployable wind power capacities, we find an opportunity costs of wind power
+    to increase by about $3\,900$ \EUR for each \SI{}{\mega\watt} wind power substituted by solar PV across all scenarios
+    that we studied.
+    At PV overnight cost of $630$ \EUR per MWp (corresponding to a mix of 55\% rooftop and 45\% open space
+    installations), the opportunity cost of the last \SI{}{\mega\watt} wind power replaced reaches close to $62\,500$ \EUR.
+    At a wind power capacity consistent with the policy goal of generating \SI{21}{\tera\watt\hour} of electricity
+    from renewable sources, opportunity cost for wind power are in close to $20\,000$ \EUR per MW, with a notable
+    exception for \COO prices of $60$ \EUR per tonne.
+    In this case, opportunity cost of wind power are estimated at close to $10\,000$ \EUR per MW, about half the size of
+    opportunity cost estimated for all other \COO price scenarios.
+    \todo[inline]{investigate why this happens}
+    \todo[inline]{add brief explanation for why opportunity cost increase -- more thermal dispatch \& capacity etc.}
 
-    \todo[inline]{describe marginal change in system cost due to less wind deployed}
+    \subsection{Sensitivity Analysis} \label{subsec:sensitivity}
+    A major factor of influence for our results are the assumed capital cost of wind turbines and solar PV\@.
+    Therefore, we complement our baseline scenario with a sensitivity analysis on overnight investment cost of solar
+    photovoltaics.
+    We gradually lower the capital cost of solar PV from our baseline assumption of \SI{630}[\$]{\per\kilo\wattpeak}
+    (corresponding to \SI{55}{\percent} of rooftop and \SI{45}{\percent} open space capacity) to
+    \EUR~\SI{275}{\per\kilo\wattpeak}, which Vartiainen et al.~\cite{Vartiainen2019} project for open-space,
+    utility-scale solar PV in the year 2030.
 
-    \todo[inline]{insert table with key scenario results}
-    \begin{table}
-        \caption{Key scenario results}
-        \begin{tabulary}{\textwidth}{LLC}
-            \toprule
-            column & column & column \\
-\midrule
-AAA & BBB & CCC \\
-\bottomrule
-\end{tabulary}
-\end{table}
+    \begin{figure*}[h!t]
+        \centering
+        \includegraphics[width=0.8 \textwidth]{./figures/undisturbed_low.pdf}
+        \caption{Opportunity cost of wind power}
+    \end{figure*}
 
-\begin{figure*}
-\centering
-\begin{subfigure}[b]{0.475\textwidth}
-\centering
-\includegraphics[width=\textwidth]{./figures/undisturbed_base_share.pdf}
-\caption{Relative substitution}
-\label{fig:rel_substitution}
-\end{subfigure}
-\hfill
-\begin{subfigure}[b]{0.475\textwidth}
-\centering
-\includegraphics[width=\textwidth]{./figures/undisturbed_base.pdf}
-\caption{Absolute substitution}
-\label{fig::abs_substitution}
-\end{subfigure}
-\caption{Opportunity cost of wind power assuming PV overnight cost of 630 EUR/kWp}
-\label{figure:opportunity-cost-base}
-\end{figure*}
+    Under these assumptions, the impact of \COO prices on the opportunity cost of wind power increases.
+    If all additional PV is realized as open-space, utility-scale installation (i.e.\ PV capital cost of
+    \EUR~\SI{275}{\per\kilo\wattpeak}), the optimal deployment of wind power declines and approaches zero at \COO prices
+    of \EUR~\SI{30}{\per\tonne} or below.
+    In consequence, we can not determine opportunity cost of wind power given that both \COO prices and capital cost of
+    solar PV are very low.
+    For higher \COO prices, the optimal deployment of wind power is strictly positive, even at low capital cost of solar
+    PV and we find opportunity cost to increase by about $2\,550$ \EUR for each MW wind power foregone.
+    The last MW of wind power substituted with solar PV comes at opportunity cost between $20\,000$ and $56\,000$ \EUR,
+    depending on the \COO price prevailing.
 
-\subsection{Sensitivity Analysis} \label{subsec:sensitivity}
-A major factor of influence for our results are the assumed capital cost of wind turbines and solar PV.
-Thus, we complement our baseline scenario with a sensitivity analysis on investment cost.
-For this purpose, we vary the investment cost of solar PV between our baseline assumption of 630 EUR/kW and 275
-EUR/kW that \cite{Vartiainen2019} project for utility-scale solar PV in the year 2030.
+    \subsection{Limitations of the Analysis}
+    To little surprise, the optimal deployment of renewable energy technologies heavily depends on underlying capital
+    cost.
+    Alas, uncertainty regarding future capital cost is high.
+    \todo[inline]{write about impact of cost assumptions on total system cost}
 
-\begin{figure*}
-\centering
-\includegraphics[width=0.8 \textwidth]{./figures/undisturbed_low.pdf}
-\caption{Opportunity cost of wind power}
-\end{figure*}
-
-%    Further uncertainty surrounds
-%    •	Storage prices
-%    •	Weather / full-load hours
-%    •	LOOK AT WHAT HAPPENS WHEN GERMANY BUILDS MORE PV THAN ANTICIPATED (particularly in the low pv-cost scenario)
-
-\subsection{Limitations of the Analysis}
-To little surprise, the optimal deployment of renewable energy technologies heavily depends on underlying capital
-cost.
-Alas, uncertainty regarding future capital cost is high.
-\todo[inline]{WRITE SOMETHING ON THE IMPACT OF DIFFERENT COST ASSUMPTIONS ON TOTAL SYSTEM COST.}
-
-Nevertheless, several findings are remarkably robust to changing capital cost.
-A higher penetration level of PV leads to increasing emissions of CO2 in the least-cost systems we investigated.
-Due to the strong seasonal differences in electricity generation from solar PV, systems relying heavily on this technology either need to deploy excess PV capacity to boost generation in winter (resulting in heavy curtailment in summer) or, alternatively, add additional capacity to make up for the winter shortfall in electricity generation from solar PV.
-This additional capacity could be storage capacity to transfer summer excesses to winter.
-However, storages would have to balance seasonal differences in this case, implying the need for very high storage capacities, which are costly to realize.
-Typically, it will be cheapest to add (at least some) fossil-fueled backup plants, even at \COO prices of EUR 70 per ton.
-\todo[inline]{HERE, WE COULD INVESTIGATE AT WHICH CO2-PRICE FOSSIL BACKUP VANISHES.}
-
-Moreover, the observed increase in producer surplus in line with higher CO2 penetration is robust to capital cost uncertainty.
-Higher levels of PV penetration require more efforts for system integration.
-\todo[inline]{THIS CAN'T BE THE FULL EXPLANATION AS PROD SURPLUS DECREASES AT VERY HIGH LEVELS OF PV}
+    Nevertheless, several findings are remarkably robust to changing capital cost.
+    A higher penetration level of PV leads to increasing emissions of CO2 in the least-cost systems we investigated.
+    Due to the strong seasonal differences in electricity generation from solar PV, systems relying heavily on this technology either need to deploy excess PV capacity to boost generation in winter (resulting in heavy curtailment in summer) or, alternatively, add additional capacity to make up for the winter shortfall in electricity generation from solar PV.
+    This additional capacity could be storage capacity to transfer summer excesses to winter.
+    However, storages would have to balance seasonal differences in this case, implying the need for very high storage capacities, which are costly to realize.
+    Typically, it will be cheapest to add (at least some) fossil-fueled backup plants, even at \COO prices of EUR 70 per ton.
+    \todo[inline]{do we know if there is a co2-price at which fossil backup vanishes? -> at 120 eur / t fossil backup is about halved.}
 
 
-\section{Conclusions and Policy Implication} \label{sec:conclusions-policy-implication}
-We have analyzed the social willingness-to-pay for wind power (versus solar PV).
+    \section{Conclusions and Policy Implication} \label{sec:conclusions-policy-implication}
+    We have analyzed the social willingness-to-pay for wind power (versus solar PV).
 
-By combining estimates of the social willingness-to-pay for wind power with (spatially resolved) estimates of the negative externalities of wind turbines, we can determine the socially optimal deployment of wind turbines in Austria.
-This opens up several possibilities for evidence-based policy making.
+    By combining estimates of the social willingness-to-pay for wind power with (spatially resolved) estimates of the negative externalities of wind turbines, we can determine the socially optimal deployment of wind turbines in Austria.
+    This opens up several possibilities for evidence-based policy making.
 
-First, these estimates can inform compensation schemes for residents accepting wind turbines nearby.
-Compensation might be an economically efficient measure to increase wind turbines acceptance.
+    First, these estimates can inform compensation schemes for residents accepting wind turbines nearby.
+    Compensation might be an economically efficient measure to increase wind turbines acceptance.
 
-Second, energy policies could be evaluated based on their impact on the opportunity cost of wind turbines.
-This would allow to include otherwise unaccounted negative externalities of wind turbines in decision making, for example through a direct measure of opportunity cost, or an indirect measure of avoided wind turbines in social optimum.
+    Second, energy policies could be evaluated based on their impact on the opportunity cost of wind turbines.
+    This would allow to include otherwise unaccounted negative externalities of wind turbines in decision making, for example through a direct measure of opportunity cost, or an indirect measure of avoided wind turbines in social optimum.
 
-Finally, our analysis also sheds some light on the distributional consequences of energy system design.
-
-
-\section{Data Availability}\label{sec:data-availability}
-Data and model is avaliable on github \url{}. Raw data is sourced from danish Energy Agency \url{}, ENTSO-E's
-transparency database \url{},
-
-\newpage
-\bibliography{asparagus}
-\bibliographystyle{elsarticle-harv}
-
-\newpage
-\appendix
+    Finally, our analysis also sheds some light on the distributional consequences of energy system design.
 
 
-\section{Description of the power system model \emph{medea}} \label{sec:medea}
+    \section{Data Availability}\label{sec:data-availability}
+    Data and model is avaliable on github \url{}. Raw data is sourced from danish Energy Agency \url{}, ENTSO-E's
+    transparency database \url{},
+
+    \newpage
+    \bibliography{asparagus}
+    \bibliographystyle{elsarticle-harv}
+
+    \newpage
+    \appendix
+
+
+    \section{Description of the power system model \emph{medea}} \label{sec:medea}
 
 \subsection{Sets} \label{sets}
 Sets are denoted by upper-case latin letters, while set elements are denoted by lower-case latin letters.
@@ -1019,5 +946,130 @@ $j \in J \subset I$     & \texttt{j(i)}    & CHP technologies & \texttt{lig\_stm
     \begin{align}
         q^{+}_{z,t} \leq \sum_{n} r_{z,t,n} \qquad \qquad \forall z, t
     \end{align}
+
+
+    \section{Detailed Description of scenario results} \label{sec:detailedresults}
+
+    \subsection{Baseline} \label{subsec:baseline}
+    As a point of reference for our analysis, we determine the least cost power system configuration when addition of
+    wind turbines and solar PV is unconstrained.
+    Given the policy goal of generating \SI{21}{\tera\watt\hour} of electricity either from wind or solar power (with
+    the remainder coming from hydro power and biomass), required capacity expansion amounts to \SI{10.4}{\giga\watt}
+    wind power or \SI{24.1}{\giga\watt} of solar power if the policy is to be fulfilled with one technology only.
+
+    In the baseline scenario, we assume capacity-weighted average capital cost of solar PV of $630$ \EUR per kW
+    installed.
+    This corresponds to about 56\% of PV installations being mounted on roof tops, while the remainder (44\%) is
+    realized as open-space solar PV at utility scale.
+    In section~\ref{subsec:sensitivity} we analyze the sensitivity of our results with respect to capital cost of solar
+    PV\@.
+    Moreover, we assume efficient pricing of \COO emissions, i.e.\ all otherwise external cost of \COO emissions are
+    internalized through \COO pricing.
+
+    Future \COO prices impact renewables deployment ~\citep{Brown2020, Kirchner2019} and affect the results of our
+    analysis.
+    As we can not foresee \COO prices in the year 2030, we have conducted our analysis for \COO prices in the range of
+    $0$ and $120$ \EUR per tonne.
+    In this context, it is worth noting that within the framework of our analysis a \COO price of $30$ \EUR per tonne
+    would be consistent with RET expansion goals stated by the Austrian government.
+    At \COO price above $30$ \EUR per tonne, there is incentive to invest in \COO emission-free generation beyond
+    government targets.
+
+    Given these baseline assumptions, the cost-minimizing system set-up that is consistent with policy objectives, adds
+    \SI{10.4}{\giga\watt} wind power and \SI{0}{\giga\watt} solar PV to initially available capacities in Austria.
+    Further, \SI{2.63}{\giga\watt} of natural gas fired capacity are added, while \SI{0.42}{\giga\watt} are decommissioned.
+    \SI{0.08}{\giga\watt} off oil-fired capacity are decommissioned.
+    In effect, \SI{6.23}{\giga\watt} of fossil thermal generation capacities remain active, giving rise to
+    \SI{10.5}{\mega\tonne} of \COO emissions per year.
+    As Austria has ample hydro storage capacity in place, no further storage (e.g. from batteries) is added.
+    However, the addition of \SI{1.23}{\giga\watt} of compression heat pumps allows to use electricity for heat
+    generation and to limit curtailment to \SI{1.5}{\tera\watt\hour\per\year}.
+    Annual system cost in Austria amount to $2.9$ billon \EUR in this scenario.
+    Net earnings from exports total $0.7$ billion \EUR, so that net system cost amounts to $2.2$ billion \EUR.
+
+    \subsection{The opportunity cost of wind power in Austria}\label{subsec:opportunity-cost-wind}
+    %Effect of \COO prices on opportunity cost of wind power:
+    %- lower \COO price means less 'voluntary' RET installed
+    %- more PV means more ancillary capacities installed (?)
+    %- more PV means more fuel used in dispatchable plant
+    %- more PV means more curtailment (?)
+    %- more PV means lower exports -- large dependency on \COO price. At price of 60-120, exports fall as less wind.
+    %For low \COO price exports increase as less wind. -->> Need to look at capacities in Germany!
+    %- more PV means
+    %* PV capacity at full wind substitution is (almost) invariant to \COO price and comes in at 24.11-24.26 GW
+    %* wind onshore capacity is sensitive to \COO price. At 120 \EUR \COO, 17.07 GW wind on added, at 0 \EUR \COO10.43 GW added
+    %* absolutely no heatpump added. why?
+    %
+    %+ No bio added in Germany (proly restriction)
+    %+ Germany adds PV and wind only with \COO price at 120
+    With a gradual restriction of wind power potentials, the system must increasingly rely on solar PV to generate a
+    sufficient amount of electricity from renewable sources.
+    Consequently, each \SI{}{\giga\watt} of wind power not installed needs to be replaced by \SI{2.35}{\giga\watt} of
+    solar PV\@.
+    As generation profiles of wind and solar power differ, the substitution of wind power with solar PV brings about
+    changes in system operation, investment, and, consequently, system cost.
+
+    \subsubsection{Changes in system configuration}
+    \todo[inline]{describe changes in system configuration}
+    Consistent across all \COO price scenarios, the few existing, small oil-fired units in Austria are shut down.
+    Conversely, natural gas-fired co-generation capacities are expanded.
+    Additions of natural-gas fired capacities are lower at high \COO prices and at high wind power installations.
+    However, there are huge differences in fossil capacity additions between \COO prices of $60$ \EUR per ton and $90$
+    \EUR per ton.
+    In the former case, there is very little difference to capacity addition at zero \COO price, while in the latter case
+    fossil capacity additions are more than halved at high wind shares.
+    Further heat generation is taking place in newly added compression heat pumps, of which between \SI{1.2}{\giga\watt}
+    and \SI{2.9}{\giga\watt} are active in Austria.
+    Generally, higher \COO prices are leading to higher installed capacities of heat pumps.
+    Similarly, optimally installed heatpump capacities tends to fall as wind power is substituted with solar PV.
+    This effect is more pronounced at high \COO prices and lower in magnitude than the level effect of \COO prices.
+
+    \subsubsection{Changes in system operation}
+    Curtailment of renewable electricity generation in Austria is the highest when \COO prices are high and the system
+    relies on large shares of wind power.
+    Curtailment reaches its minimum at intermediate \COO prices of $60$ \EUR per tonne and wind power installations of
+    \SI{8}{\giga\watt}.
+    At \COO prices of $30$ \EUR per tonne or lower curtailment tends to increase as wind power is substituted by
+    photovoltaics.
+
+
+    At baseline \COO prices of $30$ \EUR per tonne,
+
+    At higher \COO prices, wind power installation in Austria increases, as low emission generation is valued higher
+    and because of the favorable complementarity of Austrian wind to (northern) German wind.
+
+
+    As the admissible addition of wind power is reduced, electricity exports to Germany are being scaled back.
+    This is reinforced by the similarities in generation profiles of solar PV across both countries.
+
+    Due to the concentration of solar PV generation in time (both on a daily and on a seasonal scale), installing solar
+    PV instead of wind power leads to an increase in dispatchable thermal generation.
+    As thermal generation in Austria is predominantly fossil thermal, this induces an increase in \COO emissions due
+    to the increased use of PV\@.
+
+    Curtailment in Austria is declining up to
+
+    \begin{figure*}
+        \centering
+        \includegraphics[width=0.8 \textwidth]{./figures/sysops.pdf}
+        \caption{Opportunity cost of wind power assuming PV overnight cost of 630 EUR/kWp}
+        \label{figure:system-operation-base}
+    \end{figure*}
+
+    \todo[inline]{describe marginal change in system cost due to less wind deployed}
+    \todo[inline]{insert table with key scenario results}
+
+    \begin{table}
+        \centering
+        \caption{Key scenario results}
+        \begin{tabulary}{\textwidth}{LLC}
+            \toprule
+            column & column & column \\
+\midrule
+AAA & BBB & CCC \\
+\bottomrule
+\end{tabulary}
+\end{table}
+
 
 \end{document}
