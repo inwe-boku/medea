@@ -9,6 +9,7 @@ import config as cfg
 from logging_config import setup_logging
 
 # TODO: check file size and download larger files from ftp
+# TODO: download zipped csv and unpack after download
 
 setup_logging()
 
@@ -26,29 +27,47 @@ credentials = yaml.load(open(os.path.join(cfg.MEDEA_ROOT_DIR, 'credentials.yml')
 USER = credentials['entsoe']['user']
 PWD = credentials['entsoe']['pwd']
 
-# ======================================================================================================================
-# sFTP data download
-# ----------------------------------------------------------------------------------------------------------------------
 
-cnopts = pysftp.CnOpts()
-cnopts.hostkeys = None
-# connect to entsoe server via sFTP
-for cat in CATEGORIES:
-    ENTSOE_DIR = '/TP_export/' + cat
-    LOCAL_DIR = os.path.join(RAW_DATA_DIR, cat)
-    logging.info(f'connecting to {SERVER}')
-    with pysftp.Connection(SERVER, username=USER, password=PWD, cnopts=cnopts) as sftp:
-        sftp.chdir(ENTSOE_DIR)
+# ======================================================================================================================
+# %% sFTP data download
+# ----------------------------------------------------------------------------------------------------------------------
+def get_entsoe(connection_string, user, pwd, category, dir):
+    """
+    downloads dataset from ENTSO-E's transparency data sftp server.
+    contact ENTSO-E to receive login credentials.
+    :param connection_string: url of ENTSO-E transparency server, as of May 1, 2020: 'sftp-transparency.entsoe.eu'
+    :param user: user name required for connecting with sftp server
+    :param pwd: password required for connecting with sftp server
+    :param category: ENTSO-E data category to be downloaded
+    :param dir: directory where downloaded data is saved to. A separate subdirectory is created for each category
+    :return: downloaded dataset(s) in dir
+    """
+    # check if local_dir exists and create if it doesn't
+    local_dir = os.path.join(dir, category)
+    if not os.path.exists(local_dir):
+        os.makedirs(local_dir)
+    #
+    cnopts = pysftp.CnOpts()
+    cnopts.hostkeys = None
+    # connect to entsoe server via sFTP
+    entsoe_dir = f'/TP_export/{category}'
+    logging.info(f'connecting to {connection_string}')
+    with pysftp.Connection(connection_string, username=user, password=pwd, cnopts=cnopts) as sftp:
+        sftp.chdir(entsoe_dir)
         files_entsoe = sftp.listdir()
-        os.chdir(LOCAL_DIR)
-        files_local = set(os.listdir(LOCAL_DIR))
+        os.chdir(local_dir)
+        files_local = set(os.listdir(local_dir))
         # compare to files on disk
         to_download = list(compress(files_entsoe, [item not in files_local for item in files_entsoe]))
-
         # download files not on disk
         for file in to_download:
             logging.info(f'starting download of {file}...')
-            sftp.get(ENTSOE_DIR + '/' + file, os.path.join(RAW_DATA_DIR, cat, file))
+            sftp.get(f'{entsoe_dir}/{file}', os.path.join(RAW_DATA_DIR, category, file))
             logging.info(f'download of {file} successful')
 
     sftp.close()
+
+
+# %% download data
+for cat in CATEGORIES:
+    get_entsoe(SERVER, USER, PWD, cat, RAW_DATA_DIR)
