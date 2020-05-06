@@ -1,4 +1,4 @@
-\documentclass[final, 3p, times]{elsarticle} %review, twocolumn, 5p, 12pt, authoryear, twocolumn, 5p,
+\documentclass[review, 3p, times]{elsarticle} %final, twocolumn, 5p, 12pt, authoryear, twocolumn, 5p,
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -30,6 +30,7 @@
 \DeclareSIUnit{\thermal}{th}
 \DeclareSIUnit{\electric}{el}
 \DeclareSIUnit{\year}{a}
+\DeclareSIUnit{\wattpeak}{Wp}
 
 % Euro symbol
 \usepackage[gen]{eurosym}
@@ -77,35 +78,75 @@
 
 
     \section{Introduction} \label{sec:introduction}
-    Future, low carbon electricity systems should largely rely on renewable energy technologies (RET), such as solar
-    photovoltaics (PV) or wind turbines, according to a substantial body of literature~\citep{Rodriguez2015}.\todo{references}
-    For central Europe, it is typically found that system-cost\footnote{System cost are the sum of fuel and emission
-    cost,operation and maintenance cost, and investment cost} minimizing systems to rely on large shares of onshore
-    wind power~\citep{Rodriguez2015}\todo{references}.
-    Such undertakings frequently implement upper bounds on the deployment of RET, which are thought to reflect the
-    available potential for RET erection~\citep{references}\todo{references}.
-    These potentials, in turn, are usually derived from surveys of land available and suitable for the erection of RET\@.
-    The typical methodology is to exclude areas that are considered not suited because of insufficient resource
-    availability or because of technical or legal restrictions such as minimum distances to settlements.
-    Areas not excluded are then considered as feasible for RET deployment \citep[e.g.][]{McKenna2015, Bosch2017, Ryberg2020}.
-    \todo[inline]{refer to excluded areas as black, feasible areas as white}
-    However, researchers are increasingly aware that such a 'black-or-white'-approach fails to account for more nuanced
-    issues such as the social acceptance of interference with landscapes.
-    Indeed, several contributions sought to improve on such shortcomings, for example by participatory
-    modelling~\citep{Hoeltinger2016}, by xxx~\citep{Jaeger2016} or xxx~\citep{Harper2019}\todo[inline]{add mini review paragraph}
+    Future, low carbon energy systems are likely to largely rely on electricity from renewable energy technologies
+    (RET), such as solar photovoltaics (PV) or wind turbines, according to a substantial body of
+    literature~\citep[e.g.][]{Becker2014,Delucchi2011,Fernandes2014,Gils2017,Jacobson2011,Schmidt2016}.
+    \todo{references not good for statement}
+    A broad stream of papers~\citep[e.g.][]{Brown2018,Rodriguez2015,Schlachtberger2018,Scholz2017} investigates
+    conditions under which total system cost, conceived as the sum of fuel and emission cost, operation and maintenance
+    cost, and investment cost, can be minimized.
+    In this context, available resource potentials are an important boundary condition for the determination of such
+    least-cost system configurations.
+    Fortunately, such resource potentials are assessed by numerous scholars at various levels.
+    Frequently, these assessments combine indicators of the wind resource with technical or legal restrictions on land
+    available for RET deployment~\citep[e.g.][]{Bosch2017,McKenna2015,Ryberg2020}.
+    However, there is an increasing awareness that such approaches are not a proper reflection of deployable RET
+    capacites, as a more nuanced analysis would have to account for the social acceptance of RET.
+    Opposition to wind turbines, for example, is often based on perceived negative interference with
+    landscapes~\cite{Mattmann2016}, potential harm to wildlife~\cite{Loss2013, Voigt2015, Wang2015}, or
+    noise~\cite{Wang2015a}.
+    Zerrahn~\cite{Zerrahn2017} provides an excellent survey of the literature on wind power externalities.
 
-    In contrast, the work of~\cite{Drechsler2011} % Drechsler et al. 2011: Combining spatial modelling and choice experiments ...
-    \todo[inline]{mention later paper by Drechsler} \cite{Drechsler2017}
-    \todo[inline]{refer to negative externalities not included in system cost}
+    Based on this insight, several contributions sought to take social acceptance into account when assessing RET
+    potentials.
+    Höltinger et al.\ \cite{Hoeltinger2016}, for example, relied on participatory modeling to identify uncontested wind
+    power potentials in Austria.
+    Jäger et al.\ \cite{Jaeger2016} \todo[inline]{brief description of paper}
+    Harper et al.\ \cite{Harper2019} develop a spatially resolved multi-criteria analysis including technological, legal,
+    and social constraints to determine sites suitable for wind turbine erection.
+    % mention minimum distances to settlements
 
-    We improve on this work by xxx. \todo[inline]{explain what we do also in contrast to Drechsler et al.}
+    In contrast to the determination of such `augmented potentials' trying to identify sites that are certainly suited
+    for RET deployment, Drechsler et al.\ \cite{Drechsler2011} argue that a welfare-optimal spatial allocation of RET
+    needs to consider social costs and benefits.
+    Social conflict would then be mitigated by selecting sites with the lowest welfare loss.
+    To demonstrate their approach, Drechsler et al.\ conduct a case study for a region in Germany, where they survey
+    preferences of inhabitants to explicitly consider the trade-off between \emph{social cost} arising from negative
+    externalities of wind power and electricity generation cost of wind power due to spatially varying wind conditions.
+    Some of the authors studied implications of welfare optimal allocation of wind turbines also in more recent
+    contributions.
+    Salomon et al. (2020)~\citep{Salomon2020} study welfare-optimal rules on minimum distances between wind turbines and
+    human settlements.
+    Drechsler et al. (2017)~\citep{Drechsler2017} study welfare-optimal allocation of wind turbines and solar PV.\todo[inline]{expand on this}
 
-    \subsection{Framework}
+    We expand on this work by conceptualising welfare optimal RET deployment in more general settings, so that we can
+    account for the opportunity cost of RET substitution (arising from different system integration cost of RET), as
+    well as spatial differences in endowments with renewable resources and negative externalities from RET depending on
+    spatially diverse characteristics, as we lay out in section~\ref{subsec:framework} below.
+    \todo[inline]{how? accounting for everything could be done by spatially resolved model that has info on resource
+    availability and on negative impact for each location.
+    Alternatively, use model for opportunity cost only and calc deviation against mean resource?}
+
+    To undergird our proposed methodology, we use a numerical power system model (see
+    section~\ref{sec:data-and-methods}) to investigate the trade-off between deploying different renewable energy
+    technologies in terms of system cost, which constitute an important, though incomplete part of social cost.
+    We do this to underline the importance of RET substitution and the corresponding opportunity costs in the
+    identification of spatial allocations of RET as well as in power system planning in general.
+    In the latter context, we also contribute to the analysis of near-optimal power system
+    configurations~\citep[see e.g.][]{Neumann2019,Schlachtberger2017}.
+
+    % What do we want to show?
+    % We embed our demonstration in a wider framework suited to expand renewable energy technologies at minimal social cost,
+    % thereby mitigating potential social conflict over the transition towards low-carbon energy systems.
+    % The current contribution demonstrates that:
+    % - there is a tradeoff between different RET
+
+    \subsection{Framework} \label{subsec:framework}
     Similar to~\cite{Drechsler2011}, we regard the problem as one of welfare optimization, in which we seek to minimize
     the social cost (including, but not limited to system cost) of low carbon energy systems.
     Our framework is best understood by considering a benevolent social planner who is to decide on the deployment of
     RET\@.
-    Such a social planner faces a trade-off between
+    The social planner faces a trade-off between
     (i) (potential) negative externalities of a RET at the local level (recall that externalities from emissions are
     already included in system cost), such as the visual impact on landscapes and
     (ii) (potential) positive impact of a RET through lowering system cost (compared to its best alternative).
@@ -138,7 +179,7 @@
     \end{figure}
 
     For illustration, consider figure~\ref{figure:social-optimum}, which depicts the effect of deviating from a
-    system-cost minimizing RET allocation by substituting some share of technology $A$ with its best alternative,
+    system-cost minimizing RET allocation by substituting some share $\alpha$ of technology $A$ with its best alternative,
     technology $B$.\footnote{Here, we consider the interesting case in which in system-cost minimum a RET causes higher
     external cost than it saves in system cost.}
     We let $\alpha$ denote the share of technology $A$ substituted by the best available alternative technology $B$.
@@ -147,27 +188,28 @@
     Now suppose that we can lower external cost by substituting $A$ with $B$, i.e.\ harm $h$ is decreasing in $\alpha$.
     A benevolent social planner will substitute $A$ with $B$ as long as the resulting increase in system cost is lower
     than the corresponding decline in harm.
-    \bigskip
-    \todo[inline]{the following subsection must be overhauled}
-    Within this framework, we quantify the opportunity cost of wind power ($s$ in Figure~\ref{figure:social-optimum})
-    for the case of Austria in the work at hand.
-    We chose Austria as our case study, as the government has comitted itself to meeting \SI{100}{\percent} of
+
+    \subsection{Case study}
+    Based on this framework, we use the case of Austria to quantify the opportunity cost of wind power (line $s$ in
+    figure~\ref{figure:social-optimum}).
+    We do not set out to quantify harm (i.e.\ negative external effects) induced by wind power.
+    While such an endeavor is beyond the scope of this paper, it is a frequent undertaking in the
+    literature~\citep[e.g.][]{Droees2016, Gibbons2015, Heintzelmann2017, Jensen2018, Kussel2019, Lang2014, Sims2008, Sunak2016, Vyn2014},
+    even though an assessment of negative wind turbine externalities has to the best of our knowledge not been conducted
+    for Austria yet.
+
+    We chose Austria as our case to study, as the government has committed itself to meeting \SI{100}{\percent} of
     electricity consumption from renewable sources (on annual balance, excluding industry own-consumption and system
     services) by 2030.
     This policy makes Austria an ideal case for studying the substitution of RET while keeping total renewable
     electricity generation constant.
-    Moreover, the bulk of additional renewable electricity must come either from wind power or solar photovoltaics, as
-    the other renewables potentials are largely exploited already (see section~\ref{section:}), which simplifies our
-    analysis further.
-    In the context of Austria, as in many other European countries, least-cost renewable electricity systems are largely
-    based on wind power~\citep{Rodriguez2015}. \todo[inline]{references}
-    Harm is inflicted by local external effects of wind turbines, such as flickering, noise, negative impacts on
-    wildlife, or (perceived) disturbance of landscapes.
-    \cite{Mattmann2016} identifies the latter as a main trigger of opposition against wind power at the local level.
-    For a review of wind power externalities, see~\cite{Zerrahn2017}.
-    \todo[inline]{1) motivate Austrian case, 2) make clear that paper only looks at opportunity cost of wind power --
-    cost of undisturbed landscapes, NOT at harm, which is assessed in various ways by many papers, though not for
-    Austria}
+    Moreover, in Austria the bulk of additional renewable electricity must come either from wind power or solar
+    photovoltaics, as other renewables potentials are largely exploited already (see
+    section~\ref{subsubsec:assumptions-austria:}), which simplifies our analysis further.
+
+    In the context of Austria, we find a least-cost renewable electricity system to be largely based on wind power,
+    which allows us to quantify the opportunity cost of wind power in terms of its best alternative solar PV.
+    Corresponding results are given in section~\ref{sec:results-discussion}.
 
 % %%%%% %%%%% %%%%% DATA AND METHODS %%%%% %%%%% %%%%% %%%%%
 
@@ -175,8 +217,7 @@
     \section{Data and Methods} \label{sec:data-and-methods}
     To investigate the cost of undisturbed landscapes (i.e. the opportunity cost of wind power) we use the power system
     model \emph{medea}, summarized in section~\ref{subsec:medea}, which we instantiate with scenario assumptions
-    (see section~\ref{subsec:data}) and observed data of the year 2016 (see section~\ref{subsec:scenarios}).
-
+    and observed data of the year 2016 (see section~\ref{subsec:data}).
     For determining the opportunity cost of wind power, we proceed as follows:
     \begin{enumerate}
         \item We derive the unrestricted system cost-minimizing deployment of wind and solar power,
@@ -191,14 +232,14 @@
     \end{enumerate}
 
 % ***** medea *****
-
     \subsection{Power system model \emph{medea}} \label{subsec:medea}
     We make use of the power system model \emph{medea} to simulate (dis)investment in and hourly operation of the
     prospective Austrian (and German) power system.
-
     The model is cast as a linear optimization seeking to minimize total system cost, which consist of fuel and emission
     cost, quasi-fixed and variable operation and maintenance (O\&M) cost, the costs of investment in energy generation,
     storage, and transmission assets, and (potential) cost of non-served load.
+    In terms of economics, the model reflects a perfectly competitive energy-only market with fully price-inelastic
+    demand and perfect foresight of all actors.
 
     The system is required to meet exogenous and inelastic demand for electricity and heat in any hour of the modeled
     year.
@@ -206,33 +247,32 @@
     transmission units.
     Co-generation units convert fuel to heat and power subject to a feasible operating region defined by the unit's
     electrical efficiency, the electricity loss per unit of heat production, and the back pressure coefficient.
-    Electricity generation from intermittent sources (wind, water, solar) is subject to exogenous hourly generation
-    profiles, which are scaled according to total installed capacities.
+    Electricity generation from intermittent sources (wind, run-of-river hydro, solar) is subject to exogenous hourly
+    generation profiles, which are scaled according to total installed capacities.
     Electricity from these sources can be curtailed at no additional cost (free disposal).
 
-    \todo{Energy storage}
     Electricity can be stored in reservoir and pumped hydro storages or batteries.
-    Generation from hydro storage plants is constrained by turbine capacity and energy contained in reservoirs of
-    limited size.
-    Hydro reservoirs are filled by inflows or by pumping (pumped storages only).
-    To better capture operational differences, we model daily, weekly and seasonal reservoir and pumped storage plants
-    separately.
-
-    \todo{Electricity exchange}
-    Electricity can be exchanged between Austria and Germany.
-
-    \todo{Ancillary services}
-    To ensure a stable and secure operation of the electricity system, power plants must provide ancillary services
-    (e.g. frequency control, voltage support).
-    We assume that this requires generators with an installed capacity of at least 21 GW2 to be operational (either
-    generating or pumping in case of pumped hydro storages) at any point in time.
-
+    The capacity of hydro storages can not be expanded, as we assume existing potentials to be exhausted.
+    Battery capacity, on the other hand, can be added endogenously.
+    Generation from storages is constrained by installed capacity and energy contained in storage.
+    Hydro reservoirs are filled by exogenously given inflows.
+    Pumped hydro storages and batteries can actively store electricity for later use.
+    To better capture operational differences of hydro storage units, we model daily, weekly and seasonal reservoir and
+    pumped storage plants separately.
+    To ensure a stable and secure operation of the electricity system, ancillary services (e.g. frequency control,
+    voltage support) are required.
+    We model ancillary service needs as a minimum requirement on spinning reserves operating at any point in time.
+    Thus, we assume that ancillary services can be provided by thermal power plant, run-of-river hydro plant or any
+    type of storage technology.
+    We do not model transmission and distribution grids within Austria or Germany.
+    We do, however, account for the congestion management scheme introduced by German and Austrian authorities in 2018,
+    that limits cross-border electricity trade.
+    \todo[inline]{is this elegant? Should i mention that investment in x-border capacity is allowed but does not occur?}
     For a detailed, mathematical description please refer to \ref{sec:medea}.
 
-    Data processing is implemented in python, the optimization model is based on GAMS. Running the model on an Intel
-    i7-8700 machine with 16 GB RAM, using CPLEX 12.9 as a solver, takes 10--15 minutes, depending on the model
-    parameters.
-    \todo[inline]{perfect foresight, perfect competition, reflects energy-only market}
+    Data processing is implemented in python, while the optimization model is based on GAMS.
+    Running the model on an Intel i7-8700 machine with 16 GB RAM, using CPLEX 12.9 as a solver, takes 10--15 minutes,
+    depending on the model parameters.
 
 % ***** Data *****
 
@@ -247,39 +287,34 @@
     and summarized in table~\ref{tab:instcaps}.
 
     \subsubsection{Scenario Assumptions for Austria}\label{subsubsec:assumptions-austria}
-    Austria has set itself the goal of generating \SI{100}{\percent} of electricity consumption from renewable sources
-    on annual balance by 2030.
-    However, industry own consumption and system services, which currently account for \SI{10}{\percent} of annual
+    The Austrian government has set itself the goal of generating \SI{100}{\percent} of electricity consumption from
+    renewable sources on annual balance by 2030~\citep{Regierungsprogramm2020}.
+    However, industry own consumption and system services, which currently account for about \SI{10}{\percent} of annual
     electricity consumption, are exempt.
-    Hence, in our analysis we set the policy goal to generating at least \SI{90}{\percent} of annual electricity
-    consumption from renewable sources.\footnote{Please note that this policy goal does not imply that the generated
-    electricity must actually be consumed.
-    Hence, we consider curtailed electricity as contributing to the policy goal.}
     The government plans to achieve this goal by generating an additional \SI{27}{\tera\watt\hour} of electricity
-    annually from renewable sources.
-    Consequently, we have set prospective electricity consumption accordingly.
-
+    annually from renewable sources\footnote{Please note that this policy goal does not imply that the generated
+    electricity must actually be consumed. Hence, we count curtailed electricity as contributing to the policy goal.}.
     New hydro power plants are thought to contribute \SI{5}{\tera\watt\hour} annually, while additional electricity
     generation from biomass is envisaged to account for \SI{1}{\tera\watt\hour} annually.
     We add corresponding generation capacities to reach these targets.
-
-    The remainder is projected to come from solar PV (\SI{11}{\tera\watt\hour} annually) and onshore wind turbines
-    (\SI{10}{\tera\watt\hour} annually)~\cite{Regierungsprogramm2020}.
-
-    The latter two RET are the only low-carbon electricity generation technologies with significant expansion potential.
-    Austrians ruled out the use of nuclear power in a 1978 referendum~\citep{Pelinka1983}.
-    Biomass lacks ecological and economical sustainability~\citep{Erb2018}, while available hydro power potentials were
-    already largely exploited~\citep{Walder2014} even before adding another \SI{5}{\tera\watt\hour} of annual generation.
-
+    The government projects the remainder to come from solar PV (\SI{11}{\tera\watt\hour} annually) and onshore wind
+    turbines (\SI{10}{\tera\watt\hour} annually)~\cite{Regierungsprogramm2020}.
     As we are interested in determining the opportunity cost of wind power versus its best alternative, we allow for
     endogenous investment in wind and solar power, without enforcing announced targets.
+    Other low-carbon energy technologies are not feasible at large scale in the Austrian context.
+    The use of nuclear power was banned in a 1978 referendum~\citep{Pelinka1983}.
+    Biomass lacks ecological as well as economical sustainability~\citep{Erb2018}, and hydro power potentials were
+    already largely exploited~\citep{Walder2014} even before government plans of adding another \SI{5}{\tera\watt\hour}
+    in annual hydro power generation.
+    Initial generation capacities for Austria are given in table~\ref{tab:instcaps}.
 
     \subsubsection{Scenario Assumptions for Germany}\label{subsubsec:assumptions-germany}
     Germany has announced specific capacity targets for several power generation technologies.
     Following these announcements, we anticipate an end to nuclear power generation, a (partial) coal exit according to
-    recommendations by~\cite{WSB2019}, and a further expansion of renewable electricity generation in line
-    with the German Renewable Energy Sources Act~\cite{noauthor_renewable_2017}.
-    We do, however, expect a lifting of the \SI{52}{\giga\watt} limit on solar PV\@.
+    recommendations by the `coal commission'~\cite{WSB2019}, and a further expansion of renewable electricity generation
+    in line with the German Renewable Energy Sources Act~\cite{noauthor_renewable_2017}.
+    We do, however, expect the \SI{52}{\giga\watt} solar PV limit to be lifted.
+    The corresponding capacity assumptions are displayed in table~\ref{tab:instcaps}.
 
     \begin{table}[H]
         \caption{Initial Generation Capacities}
@@ -292,7 +327,7 @@
             Wind Onshore & $2.6$ & $90.8$ \\
             Wind Offshore & $0.0$ & $15.0$ \\
             Solar PV & $1.1$ & $73.0$ \\
-            Run-of-river Hydro & $6.7$ & $4.5$ \\
+            Run-of-river Hydro & $6.9$ & $4.5$ \\
             Biomass & $0.725$ & $8.4$ \\
             Lignite & $0.0$ & $11.4$ \\
             Coal & $0.0$ & $14.0$ \\
@@ -306,14 +341,13 @@
 
     \subsection{Energy supply}
     We represent 27\todo{compare with table!} dispatchable energy conversion and storage technologies that are expected
-    to be operational by 2030.
-    In addition to exogenously set, initally installed capacities (see~\ref{tab:instcaps}), the model can endogenously
-    add further generation capacities that are compatible with stated policy objectives.
+    to be operated in 2030.
+    In addition to given, initally installed capacities (see~\ref{tab:instcaps}), the model can endogenously add further
+    generation capacities that are compatible with stated policy objectives.
     All technologies can also be decommissioned, so that we adopt a long-run perspective on the power system.
+    Parameters of admissible technologies are summarized in Table~\ref{itm:techcost}.
 
-    Assumed technology parameters are summarized in Table~\ref{itm:techcost}.
-
-    \begin{table*}[h]
+    \begin{table*}[h!t]
         \centering
         \begin{threeparttable}
             \caption{Technology Input Parameters}\label{itm:techcost}
@@ -367,88 +401,103 @@
         \end{threeparttable}
     \end{table*}
 
-    Hourly generation from non-dispatchable technologies solar photovoltaics, wind turbines and run-of-river hydro is
-    assumed to follow hourly profiles as observed in 2016.
-    \todo[inline]{more details on derivation of load profiles for Austria, source for Germany, scaling}
+    Generation from non-dispatchable technologies solar photovoltaics, wind turbines and run-of-river hydro is assumed
+    to follow hourly generation profiles as observed in 2016.
+    German solar and wind power profiles are sourced from Open Power System Data~\citep{opsd2019}.
+    For Austria, solar and wind power generation profiles were derived by dividing solar and wind power generation
+    timeseries reported by Open Power System Data~\cite{opsd2019} by installed capacities published by \cite{Biermayr}.
+    Similarly, generation profiles for run-of-river hydro power were derived based on generation data reported by
+    \cite{ENTSOE2020}.
 
-    Similarly, hourly inflows into hydro reservoirs (including pumped storage reservoirs) are inferred from weekly
-    reservoir levels in combination with hourly generation and pumping time series published by~\cite{ENTSO-E2020}.
-    However, all storage technologies (including hydro reservoir and pumped storage plant) are charged and dispatched
-    endogenously.
-    \todo[inline]{improve description of methodology for inflow approximation}
+    Data on inflows into Austrian hydro reservoirs is not publicly available.
+    However, ENTSO-E's transparency platform~\cite{ENTSOE2020} reports data on hydro storage filling levels, electricity
+    generation from hydro reservoirs, and pumping by pumped hydro storages.
+    Based on this data, we have approximated inflows as the part of change in (weekly) hydro storage fill levels not
+    explained by (upsampled hourly) pumping or generation.
+    To arrive at hourly inflows, we have interpolated our weekly estimates by piecewise cubic hermite interpolation.
+    Although inflows to hydro reservoirs are given exogenous, all storage technologies (including hydro reservoir and
+    pumped storage plant) are charged and dispatched endogenously.
 
     \subsection{Energy demand}\label{subsec:energy-demand}
-    According to projections of the Austrian government, additional renewable electricity generation of
-    \SI{27.0}{\tera\watt\hour} will suffice to meet policy goals by 2030 \citep{Regierungsprogramm2020}.
-    However, official documents do neither provide any information about expected electricity consumption in 2030,
-    nor about expected prices for \COO emissions.
-    Absent these information, we chose to set 2030 electricity demand to a level that results in \SI{27.0}{\tera\watt\hour}
-    additional electricity generation from renewable sources at \COO prices of 60 \EUR per tonne in a setting without
-    restrictions on renewables deployment.
-    The corresponding annual electricity consumption is \SI{86.0}{\tera\watt\hour}, \SI{24}{\tera\watt\hour} above
-    electricity end use observed in our base year 2016.
-    The difference in annual electricity generation stems from
-
-    Please note that the demand level consistent with generating \SI{27.0}{\tera\watt\hour} additional renewable
-    electricity depends on the price of \COO.
-    To keep scenarios comparable, however, we keep annual electricity consumption constant at \SI{86.0}{\tera\watt\hour}
-    throughout all scenarios.
-    In effect, added RET capacities fluctuate with the \COO price.
+    Regarding future electricity demand, government plans reveal little detail.
+    According to official documents, additional renewable electricity generation of \SI{27.0}{\tera\watt\hour} will be
+    required to meet electricity consummption entirely from renewable sources.\citep{Regierungsprogramm2020}.
+    However, industry self generation and consumption, amounting to \SI{4.75}{\tera\watt\hour} in the base
+    year~\citep{StatistikAustria2020}, is exempt~\citep{mission2030}.
+    Knowing that electricity generation from renewable sources amounted to
+    \SI{51.1}{\tera\watt\hour}~\citep{StatistikAustria2020}, we can infer expected total electricity consumption of
+    \SI{82.85}{\tera\watt\hour} by 2030.\footnote{Balancing energy is also exempt from the renewables obligation.
+    As we do not model balancing energy supply, we also do not account for this in the calculation of total demand.}
+    On a side-note, expected demand in 2030 is \SI{10.45}{\tera\watt\hour} above levels observed in our base year, even
+    though electrification of further sectors, most notably transport, is envisioned.
+    An attempt to judge the feasibility of these plans is beyond the scope of this paper.
 
     For Germany, we assume electricity demand to remain at levels observed in 2016.
     In consequence, we scale reported hourly load to match annual electricity consumption published in national energy
-    balances \citep{AGEB}.
+    balances~\citep{AGEB}.
     \todo[inline]{cross-check code}
 
-    Annual heat consumption is derived from energy balances for Austria and Germany, respectively \citep{AGEB, OeSTAT2019}.
+    Annual heat consumption is derived from energy balances for Austria and Germany, respectively~\citep{AGEB, OeSTAT2019}.
     Subsequently, annual heat consumption is broken down to hourly heat consumption on the basis of standard natural gas
-    load profiles for space heating in the residential and commercial sectors \citep{Almbauer2008}.
+    load profiles for space heating in the residential and commercial sectors~\citep{Almbauer2008}.
     These load profiles make use of daily average temperatures to calculate daily heat demand.
-    We extract spatially resolved temperature data from ERA-5 climate data sets \citep{era-5} and compute a capacity-weighted
-    average of temperatures at locations of combined heat and power (CHP) generation units.
+    We extract spatially resolved temperature data from ERA-5 climate data sets~\citep{era-5} and compute a
+    capacity-weighted average of temperatures at locations of combined heat and power (CHP) generation units.
     Daily heat demand based on these weighted average temperatures is then broken down to hourly consumption on the
     basis of standardized factors accounting for weekday and time-of-day effects.
-    Descriptive statistics of electricity and heat consumption are provided in table \ref{tab:time-series}.
+    Descriptive statistics of electricity and heat consumption are provided in table~\ref{tab:time-series}.
 
-    \begin{table*}[ht]
+    \begin{table*}[h!t]
         \centering
         \caption{Descriptive data of time series used}\label{tab:time-series}
         \begin{tabular}{l c c c c c c l}
             \toprule
             Name & Area & Unit & mean & median & max & min & Source    \\
             \midrule
-            Electricity load & AT & GW & 7.15 & 7.14 & 10.5 & 4.21 & nose      \\
-            Electricity load & DE & GW & 60.2 & 59.6 & 82.8 & 34.6 & nose      \\
-            District heating load & AT & GW & 2.56 & 2.43 & 5.77 & 0.91 & bladder   \\
-            District heating load & DE & GW & 14.6 & 14.1 & 26.0 & 8.9 & bladder   \\
-            Wind onshore profile & AT & \%    & 0.229 & 0.142 & 0.929 & 0.000 &           \\
-            Wind onshore profile & DE & \%    & 0.176 & 0.133 & 0.764 & 0.003 &           \\
-            Wind offshore profile & DE & \%    & 0.371 & 0.327 & 0.900 & 0.000 &           \\
-            Solar PV profile & AT & \%    & 0.098 & 0.012 & 0.570 & 0.000 &           \\
-            Solar PV profile & DE & \%    & 0.099 & 0.003 & 0.661 & 0.000 &           \\
-            Run-of-river profile & AT & \%    & 0.564 & 0.538 & 0.971 & 0.202 &           \\
-            Run-of-river profile & DE & \%    & 0.437 & 0.420 & 0.637 & 0.208 &           \\
+            Electricity load & AT & GW & 7.15 & 7.14 & 10.5 & 4.21 & \cite{opsd2019}      \\
+            Electricity load & DE & GW & 60.2 & 59.6 & 82.8 & 34.6 & \cite{opsd2019}      \\
+            District heating load & AT & GW & 2.56 & 2.43 & 5.77 & 0.91 & own clculation based on \cite{era-5, OeSTAT}\\
+            District heating load & DE & GW & 14.6 & 14.1 & 26.0 & 8.9 & own calculation based on \cite{era-5, AGEB}  \\
+            Wind onshore profile & AT & \%    & 0.229 & 0.142 & 0.929 & 0.000 & \cite{opsd2019}          \\
+            Wind onshore profile & DE & \%    & 0.176 & 0.133 & 0.764 & 0.003 & \cite{opsd2019}          \\
+            Wind offshore profile & DE & \%    & 0.371 & 0.327 & 0.900 & 0.000 & \cite{opsd2019}          \\
+            Solar PV profile & AT & \%    & 0.098 & 0.012 & 0.570 & 0.000 & own calculation based on \cite{}          \\
+            Solar PV profile & DE & \%    & 0.099 & 0.003 & 0.661 & 0.000 & \cite{opsd2019}          \\
+            Run-of-river profile & AT & \%    & 0.564 & 0.538 & 0.971 & 0.202 & own calculation based on \cite{ENTSOE2020} \\
+            Run-of-river profile & DE & \%    & 0.437 & 0.420 & 0.637 & 0.208 & \cite{ENTSOE2020} \\
             \bottomrule
         \end{tabular}
     \end{table*}
 
 
-    Electricity transmission between the modelled market areas is constrained by net transfer capacities reported by
-    ENTSO-E for the year 20XX.
-    In addition, the model can expand transmission capacities at a cost of XXX EUR per MW and km.
+    Electricity transmission between the modelled market areas is limited to \SI{4.9}{\giga\watt}, in line with the
+    introduction of a congestion management scheme by German and Austrian authorities in 2018.
+    The congestion management scheme was put in place in response to so-called loop-flows from wind-rich Northern
+    Germany to demand centres in Southern Germany and Austria via Germany's eastern neighbors. \todo[inline]{we would
+    allow for an expansion of transmission capacities. This, however, does not happen. Shall we say we do not allow
+    transmission expansion (same outcome)? Or should we say we allow for expansio, but at highly unrealistic cost, as
+    the congestion scheme is artificial and removing it is a matter of a couple pieces of paper? Conduct a sensitivity run
+    with 10 GW transmission capacity (which is about physical capacity in place)?}
 
     Monthly prices for exchange-traded fuels (hard coal, crude oil (Brent), natural gas) are retrieved from the
     International Monetary Fund's Commodity Data Portal.
     We convert these prices to \EUR/MWh based on the fuel's energy content and market exchange rates obtained from the
-    European Central Bank \citep{ECB}.
-    Finally, we resample prices to hourly frequency using piecewis cubic hermite interpolation.
-    The price of lignite is assumed at $1.50 EUR / MWh_{th}$, as reported by \cite{OekoInstitut2017}.
-    Biomass is assumed to be subsidized such that the cost of fuel is reduced to 6.5 $EUR / MWh$, which results in
-    continuous operation of biomass plant in our scenarios.\footnote{Subsidies are not included in system cost, as the
-    required level is uncertain. The total sum of subsidies is, however, constant across scenarios as biomass capacity
-    can not be expanded.}
+    European Central Bank~\citep{ECB}.
+    Finally, we resample prices to hourly frequency using piecewise cubic hermite interpolation.
+    Due to its low energy density lignite is not transported over large distances and consequently also not traded on
+    markets.
+    Instead, lignite-fired power plants are situated in proximity to lignite mines.
+    According to estimates from \cite{OekoInstitut2017}, the price of lignite in Germany is close to 1.50 \EUR per
+    MWh$_{th}$.
+    Biomass-fired power plant run on a wide variety of solid and gaseous fuels, some of which are marketed.
+    However, continued operation of biomass-fired plant typically relies on sufficient subsidies\todo{reference}.
+    As a first-order approximation to complex subsidy schemes, we assume subsidized fuel cost of 6.50 \EUR per
+    MWh$_{th}$.
+    In consequence, biomass-fired plant are operating at or close to capacity throughout the scenarios considered.
+    \footnote{Subsidies are not included in system cost, as the required level is uncertain.
+    The total sum of subsidies is, however, constant across scenarios as biomass capacity can not be expanded.}
 
-    \begin{table*}[h!]
+    \begin{table*}[h!t]
         \centering
         \caption{Descriptive data of price time series}
         \begin{tabular}{l c r r r r l}
@@ -463,13 +512,11 @@
             \bottomrule
         \end{tabular}
     \end{table*}
-    All price as in our baseline year 2016.
-    Transport costs apply to different regions.
 
-    The carbon intensity of fossil fuels is displayed in Table~\ref{table:carbon-intensity}, and is based on an
+    The assumed carbon intensity of fossil fuels is displayed in Table~\ref{table:carbon-intensity}, and is based on an
     analysis by the German environmental agency~\citep{Juhrich2016}.
 
-    \begin{table}[h!]
+    \begin{table}[h!t]
         \centering
         \caption{\COO intensity of fossil fuels in tonnes \COO per MWh}
         \label{table:carbon-intensity}
@@ -496,68 +543,9 @@
     For each step, we observe system cost, total \COO emissions and other variables of interest.
     By relating the change in generated wind energy to the change in system cost (or other variables of interest), we
     derive a measure of the (approximate) marginal impact of wind power expansion (or contraction).
+    A detailed discussion of model results is provided in \ref{sec:detailedresults}.
 
-    \subsection{Baseline} \label{subsec:baseline}
-    As a point of reference for our analysis, we determine the least cost power system configuration when addition of
-    wind turbines and solar PV is unconstrained.
-
-    In our baseline scenario, we assume that about two thirds of solar PV installations are mounted on roof tops, while
-    the remainder is realized as open-space solar PV at utility scale.
-    This gives us capacity-weighted average capital cost for solar PV of $630$ \EUR per kW installed.
-    In section~\ref{subsec:sensitivity} we analyze the sensitivity of our results with respect to this assumption.
-    Moreover, we assume pricing of \COO emissions, i.e.\ all otherwise external cost of \COO emissions are
-    internalized through \COO pricing.
-    As future \COO prices are uncertain but impact renewables deployment ~\citep{Brown2020, Kirchner2019}, we conduct
-    our analysis for \COO prices of 30, 60, 90, and 120 \EUR per tonne.
-
-    Given our baseline assumptions, the cost-minimizing system set-up that is consistent with the stated policy
-    goal\footnote{Recall that the policy target is to generate at least 90\% of electricity demand from renewable sources, on annual balance}
-    adds \SI{16.5}{\giga\watt} wind power and \SI{0}{\giga\watt} solar PV to initially set capacities in Austria.
-    Overall, electricity generation from both sources totals \SI{38.5}{\tera\watt\hour} and
-    \SI{0.94}{\tera\watt\hour} annually, respectively.
-    For system services and heat generation, \SI{6.8}{\giga\watt} of fossil thermal co-generation capacities remain
-    active, giving rise to \SI{8.9}{} million tons of \COO emissions per year.
-    As Austria has ample hydro storage capacity in place, no further storage (e.g. from batteries) is added.
-    However, the addition of \SI{1.5}{\giga\watt} of compression heat pumps allows to use electricity for heat
-    generation and to limit curtailment to \SI{2.4}{\tera\watt\hour\per\year}.
-    System cost in Austria amount to $3.4$ billon \EUR in this scenario.\todo{add co2 emissions}
-
-    \subsection{The opportunity cost of wind power in Austria}\label{subsec:opportunity-cost-wind}
-    With a gradual restriction of wind power potentials, the system must increasingly rely on solar PV to generate the
-    amount of electricity from renewable sources that is required to meet policy goals.
-    Consequently, each \SI{}{\giga\watt} of wind power not installed needs to be replaced by \SI{2.35}{\giga\watt} of
-    solar PV\@.
-    Due to the different generation profiles of these technologies, this induces changes in system operation and least
-    cost system configuration.
-
-    \todo[inline]{describe changes in system operation}
-    Substitution of wind power with solar PV leads to a reduction of electricity exports to Germany.
-    Due to the favorable complementarity of Austrian and German wind, Austria adds wind energy generation above the level
-    required for its own consumption.
-    As the admissible addition of wind power is reduced, electricity exports to Germany are being scaled back.
-    This is reinforced by the similarities in generation profiles of solar PV across both countries.
-
-    Due to the concentration of solar PV generation in time (both on a daily and on a seasonal scale), installing solar
-    PV instead of wind power leads to an increase in dispatchable thermal generation.
-    As thermal generation in Austria is predominantly fossil thermal, this induces an increase in \COO emissions due
-    to the increased use of PV\@.
-
-    Curtailment in Austria is declining up to
-
-    \begin{figure*}
-        \centering
-        \includegraphics[width=0.8 \textwidth]{./figures/sysops.pdf}
-        \caption{Opportunity cost of wind power assuming PV overnight cost of 630 EUR/kWp}
-        \label{figure:system-operation-base}
-    \end{figure*}
-
-    \todo[inline]{describe changes in system configuration}
-
-    \todo[inline]{describe marginal change in system cost due to less wind deployed}
-
-    \todo[inline]{insert table with key scenario results}
-
-    \begin{figure*}
+    \begin{figure*}[h!t]
         \centering
         \begin{subfigure}[b]{0.475\textwidth}
             \centering
@@ -576,49 +564,50 @@
         \label{figure:opportunity-cost-base}
     \end{figure*}
 
-    \subsection{Sensitivity Analysis} \label{subsec:sensitivity}
-    A major factor of influence for our results are the assumed capital cost of wind turbines and solar PV.
-    Thus, we complement our baseline scenario with a sensitivity analysis on investment cost.
-    For this purpose, we vary the investment cost of solar PV between our baseline assumption of 630 EUR/kW and 275
-    EUR/kW that \cite{Vartiainen2019} project for utility-scale solar PV in the year 2030.
+    With a gradual restriction of deployable wind power capacities, we find an opportunity costs of wind power
+    to increase by about $3\,900$ \EUR for each \SI{}{\mega\watt} wind power substituted by solar PV across all scenarios
+    that we studied.
+    At PV overnight cost of $630$ \EUR per MWp (corresponding to a mix of 55\% rooftop and 45\% open space
+    installations), the opportunity cost of the last \SI{}{\mega\watt} wind power replaced reaches close to $62\,500$ \EUR.
+    At a wind power capacity consistent with the policy goal of generating \SI{21}{\tera\watt\hour} of electricity
+    from renewable sources, opportunity cost for wind power are in close to $20\,000$ \EUR per MW, with a notable
+    exception for \COO prices of $60$ \EUR per tonne.
+    In this case, opportunity cost of wind power are estimated at close to $10\,000$ \EUR per MW, about half the size of
+    opportunity cost estimated for all other \COO price scenarios.
+    \todo[inline]{investigate why this happens}
+    \todo[inline]{add brief explanation for why opportunity cost increase -- more thermal dispatch \& capacity etc.}
 
-    \begin{figure*}
+    \subsection{Sensitivity Analysis} \label{subsec:sensitivity}
+    A major factor of influence for our results are the assumed capital cost of wind turbines and solar PV\@.
+    Therefore, we complement our baseline scenario with a sensitivity analysis on overnight investment cost of solar
+    photovoltaics.
+    We gradually lower the capital cost of solar PV from our baseline assumption of \SI{630}[\$]{\per\kilo\wattpeak}
+    (corresponding to \SI{55}{\percent} of rooftop and \SI{45}{\percent} open space capacity) to
+    \EUR~\SI{275}{\per\kilo\wattpeak}, which Vartiainen et al.~\cite{Vartiainen2019} project for open-space,
+    utility-scale solar PV in the year 2030.
+
+    \begin{figure*}[h!t]
         \centering
         \includegraphics[width=0.8 \textwidth]{./figures/undisturbed_low.pdf}
         \caption{Opportunity cost of wind power}
     \end{figure*}
 
-%    Further uncertainty surrounds
-%    •	Storage prices
-%    •	Weather / full-load hours
-%    •	LOOK AT WHAT HAPPENS WHEN GERMANY BUILDS MORE PV THAN ANTICIPATED (particularly in the low pv-cost scenario)
-    Effect of \COO prices on opportunity cost of wind power:
-    - lower \COO price means less 'voluntary' RET installed
-    - more PV means more ancillary capacities installed (?)
-    - more PV means more fuel used in dispatchable plant
-    - more PV means more curtailment (?)
-    - more PV means lower exports -- large dependency on \COO price. At price of 60-120, exports fall as less wind.
-    For low \COO price exports increase as less wind. -->> Need to look at capacities in Germany!
-    - more PV means
-    * PV capacity at full wind substitution is (almost) invariant to \COO price and comes in at 24.11-24.26 GW
-    * wind on capacity is sensitive to \COO price. At 120 \EUR \COO, 17.07 GW wind on added, at 0 \EUR \COO10.43 GW added
-    * austria builds coal plants -- this should be impossible! --> correct in re-run
-    * austria builds oil instead of nat gas plants. --> check and potentially correct cost versus HAt gas
-    * absolutely no heatpump added. why?
-
-    + Germany add lignite and coal. With rising \COO price more coal is added. (!)
-    + Germany adds oil. At lower \COO price more oil, less ng added
-    + No bio added in Germany (proly restriction)
-    + No heatpumps added --> Why???
-    + Germany adds PV and wind only with \COO price at 120
-
-    Need to re-run model with restricted additions
+    Under these assumptions, the impact of \COO prices on the opportunity cost of wind power increases.
+    If all additional PV is realized as open-space, utility-scale installation (i.e.\ PV capital cost of
+    \EUR~\SI{275}{\per\kilo\wattpeak}), the optimal deployment of wind power declines and approaches zero at \COO prices
+    of \EUR~\SI{30}{\per\tonne} or below.
+    In consequence, we can not determine opportunity cost of wind power given that both \COO prices and capital cost of
+    solar PV are very low.
+    For higher \COO prices, the optimal deployment of wind power is strictly positive, even at low capital cost of solar
+    PV and we find opportunity cost to increase by about $2\,550$ \EUR for each MW wind power foregone.
+    The last MW of wind power substituted with solar PV comes at opportunity cost between $20\,000$ and $56\,000$ \EUR,
+    depending on the \COO price prevailing.
 
     \subsection{Limitations of the Analysis}
     To little surprise, the optimal deployment of renewable energy technologies heavily depends on underlying capital
     cost.
     Alas, uncertainty regarding future capital cost is high.
-    \todo[inline]{WRITE SOMETHING ON THE IMPACT OF DIFFERENT COST ASSUMPTIONS ON TOTAL SYSTEM COST.}
+    \todo[inline]{write about impact of cost assumptions on total system cost}
 
     Nevertheless, several findings are remarkably robust to changing capital cost.
     A higher penetration level of PV leads to increasing emissions of CO2 in the least-cost systems we investigated.
@@ -626,11 +615,7 @@
     This additional capacity could be storage capacity to transfer summer excesses to winter.
     However, storages would have to balance seasonal differences in this case, implying the need for very high storage capacities, which are costly to realize.
     Typically, it will be cheapest to add (at least some) fossil-fueled backup plants, even at \COO prices of EUR 70 per ton.
-    \todo[inline]{HERE, WE COULD INVESTIGATE AT WHICH CO2-PRICE FOSSIL BACKUP VANISHES.}
-
-    Moreover, the observed increase in producer surplus in line with higher CO2 penetration is robust to capital cost uncertainty.
-    Higher levels of PV penetration require more efforts for system integration.
-    \todo[inline]{THIS CAN'T BE THE FULL EXPLANATION AS PROD SURPLUS DECREASES AT VERY HIGH LEVELS OF PV}
+    \todo[inline]{do we know if there is a co2-price at which fossil backup vanishes? -> at 120 eur / t fossil backup is about halved.}
 
 
     \section{Conclusions and Policy Implication} \label{sec:conclusions-policy-implication}
@@ -662,26 +647,26 @@
 
     \section{Description of the power system model \emph{medea}} \label{sec:medea}
 
-    \subsection{Sets} \label{sets}
-    Sets are denoted by upper-case latin letters, while set elements are denoted by lower-case latin letters.
+\subsection{Sets} \label{sets}
+Sets are denoted by upper-case latin letters, while set elements are denoted by lower-case latin letters.
 
-    \begin{table}
-        \caption{Sets}
-        \begin{tabulary}{\textwidth}{LLLp{6cm}}
-            \toprule
-            mathematical symbol & programming symbol & description & elements                                                      \\
-            \midrule
-            $f \in F$             & \texttt{f}         & fuels & \texttt{nuclear, lignite, coal, gas, oil, biomass, power}     \\
-            $i \in I$             & \texttt{i}         & power generation technologies & \texttt{nuc, lig\_stm, lig\_stm\_chp, lig\_boa, lig\_boa\_chp,
-            coal\_sub, coal\_sub\_chp, coal\_sc, coal\_sc\_chp, coal\_usc,
-            coal\_usc\_chp, coal\_igcc, ng\_stm, ng\_stm\_chp, ng\_ctb\_lo,
-            ng\_ctb\_lo\_chp, ng\_ctb\_hi, ng\_ctb\_hi\_chp, ng\_cc\_lo,
-            ng\_cc\_lo\_chp, ng\_cc\_hi, ng\_cc\_hi\_chp, ng\_mtr,
-            ng\_mtr\_chp, ng\_boiler\_chp, oil\_stm, oil\_stm\_chp,
-            oil\_ctb, oil\_ctb\_chp, oil\_cc, oil\_cc\_chp, bio,
-            bio\_chp, heatpump\_pth}                                        \\
-            $h \in H \subset I$     & \texttt{h(i)}    & power to heat technologies & \texttt{heatpump\_pth}                                        \\
-            $j \in J \subset I$     & \texttt{j(i)}    & CHP technologies & \texttt{lig\_stm\_chp, lig\_boa\_chp, coal\_sub\_chp,
+\begin{table}
+\caption{Sets}
+\begin{tabulary}{\textwidth}{LLLp{6cm}}
+\toprule
+mathematical symbol & programming symbol & description & elements                                                      \\
+\midrule
+$f \in F$             & \texttt{f}         & fuels & \texttt{nuclear, lignite, coal, gas, oil, biomass, power}     \\
+$i \in I$             & \texttt{i}         & power generation technologies & \texttt{nuc, lig\_stm, lig\_stm\_chp, lig\_boa, lig\_boa\_chp,
+coal\_sub, coal\_sub\_chp, coal\_sc, coal\_sc\_chp, coal\_usc,
+coal\_usc\_chp, coal\_igcc, ng\_stm, ng\_stm\_chp, ng\_ctb\_lo,
+ng\_ctb\_lo\_chp, ng\_ctb\_hi, ng\_ctb\_hi\_chp, ng\_cc\_lo,
+ng\_cc\_lo\_chp, ng\_cc\_hi, ng\_cc\_hi\_chp, ng\_mtr,
+ng\_mtr\_chp, ng\_boiler\_chp, oil\_stm, oil\_stm\_chp,
+oil\_ctb, oil\_ctb\_chp, oil\_cc, oil\_cc\_chp, bio,
+bio\_chp, heatpump\_pth}                                        \\
+$h \in H \subset I$     & \texttt{h(i)}    & power to heat technologies & \texttt{heatpump\_pth}                                        \\
+$j \in J \subset I$     & \texttt{j(i)}    & CHP technologies & \texttt{lig\_stm\_chp, lig\_boa\_chp, coal\_sub\_chp,
             coal\_sc\_chp, coal\_usc\_chp, ng\_stm\_chp, ng\_ctb\_lo\_chp,
             ng\_ctb\_hi\_chp, ng\_cc\_lo\_chp, ng\_cc\_hi\_chp,
             ng\_mtr\_chp, ng\_boiler\_chp,
@@ -961,5 +946,130 @@
     \begin{align}
         q^{+}_{z,t} \leq \sum_{n} r_{z,t,n} \qquad \qquad \forall z, t
     \end{align}
+
+
+    \section{Detailed Description of scenario results} \label{sec:detailedresults}
+
+    \subsection{Baseline} \label{subsec:baseline}
+    As a point of reference for our analysis, we determine the least cost power system configuration when addition of
+    wind turbines and solar PV is unconstrained.
+    Given the policy goal of generating \SI{21}{\tera\watt\hour} of electricity either from wind or solar power (with
+    the remainder coming from hydro power and biomass), required capacity expansion amounts to \SI{10.4}{\giga\watt}
+    wind power or \SI{24.1}{\giga\watt} of solar power if the policy is to be fulfilled with one technology only.
+
+    In the baseline scenario, we assume capacity-weighted average capital cost of solar PV of $630$ \EUR per kW
+    installed.
+    This corresponds to about 56\% of PV installations being mounted on roof tops, while the remainder (44\%) is
+    realized as open-space solar PV at utility scale.
+    In section~\ref{subsec:sensitivity} we analyze the sensitivity of our results with respect to capital cost of solar
+    PV\@.
+    Moreover, we assume efficient pricing of \COO emissions, i.e.\ all otherwise external cost of \COO emissions are
+    internalized through \COO pricing.
+
+    Future \COO prices impact renewables deployment ~\citep{Brown2020, Kirchner2019} and affect the results of our
+    analysis.
+    As we can not foresee \COO prices in the year 2030, we have conducted our analysis for \COO prices in the range of
+    $0$ and $120$ \EUR per tonne.
+    In this context, it is worth noting that within the framework of our analysis a \COO price of $30$ \EUR per tonne
+    would be consistent with RET expansion goals stated by the Austrian government.
+    At \COO price above $30$ \EUR per tonne, there is incentive to invest in \COO emission-free generation beyond
+    government targets.
+
+    Given these baseline assumptions, the cost-minimizing system set-up that is consistent with policy objectives, adds
+    \SI{10.4}{\giga\watt} wind power and \SI{0}{\giga\watt} solar PV to initially available capacities in Austria.
+    Further, \SI{2.63}{\giga\watt} of natural gas fired capacity are added, while \SI{0.42}{\giga\watt} are decommissioned.
+    \SI{0.08}{\giga\watt} off oil-fired capacity are decommissioned.
+    In effect, \SI{6.23}{\giga\watt} of fossil thermal generation capacities remain active, giving rise to
+    \SI{10.5}{\mega\tonne} of \COO emissions per year.
+    As Austria has ample hydro storage capacity in place, no further storage (e.g. from batteries) is added.
+    However, the addition of \SI{1.23}{\giga\watt} of compression heat pumps allows to use electricity for heat
+    generation and to limit curtailment to \SI{1.5}{\tera\watt\hour\per\year}.
+    Annual system cost in Austria amount to $2.9$ billon \EUR in this scenario.
+    Net earnings from exports total $0.7$ billion \EUR, so that net system cost amounts to $2.2$ billion \EUR.
+
+    \subsection{The opportunity cost of wind power in Austria}\label{subsec:opportunity-cost-wind}
+    %Effect of \COO prices on opportunity cost of wind power:
+    %- lower \COO price means less 'voluntary' RET installed
+    %- more PV means more ancillary capacities installed (?)
+    %- more PV means more fuel used in dispatchable plant
+    %- more PV means more curtailment (?)
+    %- more PV means lower exports -- large dependency on \COO price. At price of 60-120, exports fall as less wind.
+    %For low \COO price exports increase as less wind. -->> Need to look at capacities in Germany!
+    %- more PV means
+    %* PV capacity at full wind substitution is (almost) invariant to \COO price and comes in at 24.11-24.26 GW
+    %* wind onshore capacity is sensitive to \COO price. At 120 \EUR \COO, 17.07 GW wind on added, at 0 \EUR \COO10.43 GW added
+    %* absolutely no heatpump added. why?
+    %
+    %+ No bio added in Germany (proly restriction)
+    %+ Germany adds PV and wind only with \COO price at 120
+    With a gradual restriction of wind power potentials, the system must increasingly rely on solar PV to generate a
+    sufficient amount of electricity from renewable sources.
+    Consequently, each \SI{}{\giga\watt} of wind power not installed needs to be replaced by \SI{2.35}{\giga\watt} of
+    solar PV\@.
+    As generation profiles of wind and solar power differ, the substitution of wind power with solar PV brings about
+    changes in system operation, investment, and, consequently, system cost.
+
+    \subsubsection{Changes in system configuration}
+    \todo[inline]{describe changes in system configuration}
+    Consistent across all \COO price scenarios, the few existing, small oil-fired units in Austria are shut down.
+    Conversely, natural gas-fired co-generation capacities are expanded.
+    Additions of natural-gas fired capacities are lower at high \COO prices and at high wind power installations.
+    However, there are huge differences in fossil capacity additions between \COO prices of $60$ \EUR per ton and $90$
+    \EUR per ton.
+    In the former case, there is very little difference to capacity addition at zero \COO price, while in the latter case
+    fossil capacity additions are more than halved at high wind shares.
+    Further heat generation is taking place in newly added compression heat pumps, of which between \SI{1.2}{\giga\watt}
+    and \SI{2.9}{\giga\watt} are active in Austria.
+    Generally, higher \COO prices are leading to higher installed capacities of heat pumps.
+    Similarly, optimally installed heatpump capacities tends to fall as wind power is substituted with solar PV.
+    This effect is more pronounced at high \COO prices and lower in magnitude than the level effect of \COO prices.
+
+    \subsubsection{Changes in system operation}
+    Curtailment of renewable electricity generation in Austria is the highest when \COO prices are high and the system
+    relies on large shares of wind power.
+    Curtailment reaches its minimum at intermediate \COO prices of $60$ \EUR per tonne and wind power installations of
+    \SI{8}{\giga\watt}.
+    At \COO prices of $30$ \EUR per tonne or lower curtailment tends to increase as wind power is substituted by
+    photovoltaics.
+
+
+    At baseline \COO prices of $30$ \EUR per tonne,
+
+    At higher \COO prices, wind power installation in Austria increases, as low emission generation is valued higher
+    and because of the favorable complementarity of Austrian wind to (northern) German wind.
+
+
+    As the admissible addition of wind power is reduced, electricity exports to Germany are being scaled back.
+    This is reinforced by the similarities in generation profiles of solar PV across both countries.
+
+    Due to the concentration of solar PV generation in time (both on a daily and on a seasonal scale), installing solar
+    PV instead of wind power leads to an increase in dispatchable thermal generation.
+    As thermal generation in Austria is predominantly fossil thermal, this induces an increase in \COO emissions due
+    to the increased use of PV\@.
+
+    Curtailment in Austria is declining up to
+
+    \begin{figure*}
+        \centering
+        \includegraphics[width=0.8 \textwidth]{./figures/sysops.pdf}
+        \caption{Opportunity cost of wind power assuming PV overnight cost of 630 EUR/kWp}
+        \label{figure:system-operation-base}
+    \end{figure*}
+
+    \todo[inline]{describe marginal change in system cost due to less wind deployed}
+    \todo[inline]{insert table with key scenario results}
+
+    \begin{table}
+        \centering
+        \caption{Key scenario results}
+        \begin{tabulary}{\textwidth}{LLC}
+            \toprule
+            column & column & column \\
+\midrule
+AAA & BBB & CCC \\
+\bottomrule
+\end{tabulary}
+\end{table}
+
 
 \end{document}

@@ -13,6 +13,7 @@ PRICE_CO2 = 60
 REFUEL_COLORS = ['#c72321', '#0d8085', '#f0c220', '#595959', '#3b68f9', '#7794dd']
 RES_COLORS = ['#d69602', '#ffd53d', '#3758ba', '#7794dd']
 RES_COLORS3 = ['#d69602', '#e5b710', '#ffd53d', '#3758ba', '#3b68f9', '#7794dd']
+RES_COLORS2 = ['#ffd53d', '#3758ba']
 
 ANNUITY_FACTOR = 0.05827816
 FLH_PV = 857.4938
@@ -73,7 +74,7 @@ def plot_subn(df, fname, width=2, xlim=None, ylim=None, xlabel=None, ylabel=None
 
         axis[a, b].grid()
         axis[a, b].set_title(df.columns[col])
-    plt.rcParams.update({'font.size': 16})
+    # plt.rcParams.update({'font.size': 16})
     plt.tight_layout()
     plt.savefig(fname)
     plt.close()
@@ -120,7 +121,60 @@ def plot_lines(df, fname, xlim=None, ylim=None, xlabel=None, ylabel=None, color=
     axis.set_ylim(ylim)
     axis.set_xlim(xlim)
     axis.grid()
-    plt.rcParams.update({'font.size': 16})
+    # plt.rcParams.update({'font.size': 16})
+    plt.tight_layout()
+    plt.savefig(fname)
+    plt.close()
+
+
+def plot_sublines(df, fname, width=2, midx_level=0, subtitle=True, xlim=None, ylim=None, xlabel=None, ylabel=None,
+                  color=None):
+    """
+    plots multiindex pd.DataFrame to multiple line-subplots
+    :param df: Pandas MultiIndex DataFrame
+    :param fname: name of output file generated
+    :param width: number of subplots in a horizontal row
+    :param midx_level: MultiIndex level to group plots by
+    :param subtitle: boolean, if True generate title for each subplot; False: generate long legend entries instead
+    :param xlim:
+    :param ylim:
+    :param xlabel:
+    :param ylabel:
+    :param color:
+    :return: file with subplots
+    """
+    # determine length and width of subfigures
+    idx_to_group = list(df.columns.get_level_values(midx_level).unique())
+    num_subfigures = len(idx_to_group)
+    sub_length = np.ceil(num_subfigures / width).astype(int)
+
+    fig = plt.figure(figsize=(8, 5))
+    for subplot in range(0, num_subfigures):
+        data_to_plot = df.xs(idx_to_group[subplot], axis=1, level=midx_level)
+        _, num_lines = data_to_plot.shape
+        ax = fig.add_subplot(width, sub_length, subplot + 1)
+
+        if not color:
+            ax.plot(data_to_plot, linewidth=2)
+        elif len(color) == num_lines:
+            for c in range(0, num_lines):
+                ax.plot(data_to_plot.iloc[:, c], linewidth=2, color=color[c])
+        else:
+            raise TypeError(f'Colors misspecified. Should be {num_lines} colors')
+
+        if subtitle:
+            ax.set_title(idx_to_group[subplot])
+            ax.legend(data_to_plot.columns)
+        if not subtitle:
+            legend_entries = [", ".join(i) for i in itertools.product(list(data_to_plot.columns),
+                                                                      [idx_to_group[subplot]])]
+            ax.legend(legend_entries)
+        ax.set_ylabel(ylabel)
+        ax.set_xlabel(xlabel)
+        ax.set_ylim(ylim)
+        ax.set_xlim(xlim)
+        ax.grid()
+
     plt.tight_layout()
     plt.savefig(fname)
     plt.close()
@@ -134,25 +188,25 @@ results = results.unstack(-1)
 # net electricity generation, net electricity exports, fossil thermal generation, CO2 emissions from energy generation
 
 # prepare data
-restrict_sysops = results.loc[idx['base', PRICE_CO2, :, 36715], idx['AT', ['gen_el', 'gen_biomass', 'gen_storages',
-                                                                           'in_storages', 'gen_renew', 'co2emission']]]
-restrict_sysops[('AT', 'exports')] = results.loc[idx['base', PRICE_CO2, :, 36715], idx['DE', 'exports']]
+restrict_sysops = results.loc[idx['base', PRICE_CO2, :, 36715], idx['AT', ['AnnG_el', 'AnnGBiomass', 'AnnSOut',
+                                                                           'AnnSIn', 'AnnR', 'AnnCO2Emissions']]]
+restrict_sysops[('AT', 'AnnX')] = results.loc[idx['base', PRICE_CO2, :, 36715], idx['DE', 'AnnX']]
 restrict_sysops.index = restrict_sysops.index.droplevel([0, 1, 3])
 restrict_sysops.columns = restrict_sysops.columns.droplevel(0)
-restrict_sysops['Net electricity generation'] = (restrict_sysops[['gen_el', 'gen_storages', 'gen_renew']].sum(axis=1)
-                                                 - restrict_sysops['in_storages'])
-restrict_sysops['Fossil thermal generation'] = restrict_sysops['gen_el'] - restrict_sysops['gen_biomass']
-restrict_sysops = restrict_sysops.drop(['gen_biomass', 'gen_el', 'gen_renew', 'gen_storages', 'in_storages'], axis=1)
-restrict_sysops = restrict_sysops.rename(columns={'co2emission': 'CO2 emissions from energy generation',
-                                                  'exports': 'Net electricity exports'})
+restrict_sysops['Net electricity generation'] = (restrict_sysops[['AnnG_el', 'AnnSOut', 'AnnR']].sum(axis=1)
+                                                 - restrict_sysops['AnnSIn'])
+restrict_sysops['Fossil thermal generation'] = restrict_sysops['AnnG_el'] - restrict_sysops['AnnGBiomass']
+restrict_sysops = restrict_sysops.drop(['AnnGBiomass', 'AnnG_el', 'AnnR', 'AnnSOut', 'AnnSIn'], axis=1)
+restrict_sysops = restrict_sysops.rename(columns={'AnnCO2Emissions': rf'CO$_2$ emissions from energy generation',
+                                                  'AnnX': 'Net electricity exports'})
 restrict_sysops = restrict_sysops[['Net electricity generation', 'Net electricity exports',
-                                   'Fossil thermal generation', 'CO2 emissions from energy generation']]
+                                   'Fossil thermal generation', rf'CO$_2$ emissions from energy generation']]
 
 # plot data
 plot_subn(restrict_sysops / 1000, os.path.join(FPATH, 'sysops.pdf'), xlim=[18, 0], color=REFUEL_COLORS,
           xlabel='Added Capacity of Wind [GW]', ylabel=['TWh', 'TWh', 'TWh', 'million t'])
 
-plot_lines(restrict_sysops['CO2 emissions from energy generation'] / 1000, os.path.join(FPATH, 'co2emissions.pdf'),
+plot_lines(restrict_sysops[rf'CO$_2$ emissions from energy generation'] / 1000, os.path.join(FPATH, 'co2emissions.pdf'),
            xlim=[18, 0], color=REFUEL_COLORS, xlabel='Added Capacity of Wind [GW]', ylabel='million t')
 
 plot_lines(restrict_sysops['Fossil thermal generation'] / 1000, os.path.join(FPATH, 'thermal_generation.pdf'),
@@ -160,14 +214,14 @@ plot_lines(restrict_sysops['Fossil thermal generation'] / 1000, os.path.join(FPA
 
 # %% ----- ----- ----- plot wind restriction: changes in cost ----- ----- -----
 # system cost, electricity trade balance, system cost net of trade, cost of air pollution (SOx, NOx, PM)
-undisturbed_cost = results.loc[idx['base', :, :, 36715], idx['AT', ['syscost', 'export_value', 'import_value',
+undisturbed_cost = results.loc[idx['base', :, :, 36715], idx['AT', ['cost_zonal', 'AnnValueX', 'AnnValueI',
                                                                     'cost_airpol']]]
 undisturbed_cost.index = undisturbed_cost.index.droplevel([0, 3])
 undisturbed_cost.columns = undisturbed_cost.columns.droplevel(0)
-undisturbed_cost['trade_balance'] = undisturbed_cost[['export_value', 'import_value']].sum(axis=1)
-undisturbed_cost['syscost_net'] = undisturbed_cost['syscost'] - undisturbed_cost['trade_balance']
-undisturbed_cost = undisturbed_cost.drop(['export_value', 'import_value'], axis=1)
-undisturbed_cost = undisturbed_cost.rename(columns={'syscost': 'System Cost',
+undisturbed_cost['trade_balance'] = undisturbed_cost[['AnnValueX', 'AnnValueI']].sum(axis=1)
+undisturbed_cost['syscost_net'] = undisturbed_cost['cost_zonal'] - undisturbed_cost['trade_balance']
+undisturbed_cost = undisturbed_cost.drop(['AnnValueX', 'AnnValueI'], axis=1)
+undisturbed_cost = undisturbed_cost.rename(columns={'cost_zonal': 'System Cost',
                                                     'trade_balance': 'Electricity trade balance',
                                                     'syscost_net': 'System cost net of trade',
                                                     'cost_airpol': 'Cost of air pollution (SOx, NOx, PM)'})
@@ -191,18 +245,18 @@ plot_lines(restrict_cost.loc[:, 'Cost of air pollution (SOx, NOx, PM)'] / 1000,
 # %% line plot of cost of undisturbed landscapes - baseline capital cost of pv
 undisturbed_base = undisturbed_cost[['System cost net of trade',
                                      'Cost of air pollution (SOx, NOx, PM)']].sum(axis=1).unstack(0)
-wind_add = results.loc[idx['base', :, :, 36715], idx['AT', 'add_wind_on']].unstack(1)
+wind_add = results.loc[idx['base', :, :, 36715], idx['AT', 'add_r_wind_on']].unstack(1)
 wind_add.index = wind_add.index.droplevel([0, 2])
 
 undisturbed_marginal = undisturbed_base.iloc[::-1].diff().divide(wind_add.iloc[::-1].diff().round(8), axis=0) * -1
 undisturbed_marginal_share = undisturbed_marginal.copy()
-undisturbed_marginal.columns = [f'CO2 Price: {p} €/t' for p in undisturbed_marginal.columns]
+undisturbed_marginal.columns = [rf'CO$_2$ Price: {p} €/t' for p in undisturbed_marginal.columns]
 
 plot_lines(undisturbed_marginal / 1000, os.path.join(FPATH, 'undisturbed_base.pdf'), xlim=[18, 0], ylim=[0, 75],
            xlabel='Added Capacity of Wind [GW]', ylabel='thousand € / MW', color=REFUEL_COLORS)
 
 # %% ------ ----- ----- plot opportunity cost of wind with SHARE of deployment
-uplim = results.loc[idx['base', PRICE_CO2, :, 36715], idx['AT', 'add_wind_on']].max()
+uplim = results.loc[idx['base', PRICE_CO2, :, 36715], idx['AT', 'add_r_wind_on']].max()
 # divide index by uplim, delete indices larger than one except for the smallest and set the smallest to 1
 
 lgnd = []
@@ -223,39 +277,40 @@ axis.legend(lgnd)
 # axis.set_ylim(ylim)
 axis.set_xlim([1, 0])
 axis.grid()
-plt.rcParams.update({'font.size': 16})
+# plt.rcParams.update({'font.size': 16})
 plt.tight_layout()
 plt.savefig(os.path.join(FPATH, 'undisturbed_base_share.pdf'))
 plt.close()
 
 # %% line plot of cost of undisturbed landscapes - low capital cost of pv
-undisturbed_cost_low = results.loc[idx['base', :, :, 16715], idx['AT', ['syscost', 'export_value', 'import_value',
+undisturbed_cost_low = results.loc[idx['base', :, :, 16715], idx['AT', ['cost_zonal', 'AnnValueX', 'AnnValueI',
                                                                         'cost_airpol']]]
 undisturbed_cost_low.index = undisturbed_cost_low.index.droplevel([0, 3])
 undisturbed_cost_low.columns = undisturbed_cost_low.columns.droplevel(0)
-undisturbed_cost_low['trade_balance'] = undisturbed_cost_low[['export_value', 'import_value']].sum(axis=1)
-undisturbed_cost_low['syscost_net'] = undisturbed_cost_low['syscost'] - undisturbed_cost_low['trade_balance']
+undisturbed_cost_low['trade_balance'] = undisturbed_cost_low[['AnnValueX', 'AnnValueI']].sum(axis=1)
+undisturbed_cost_low['syscost_net'] = undisturbed_cost_low['cost_zonal'] - undisturbed_cost_low['trade_balance']
 undisturbed_cost_low['total_cost'] = undisturbed_cost_low[['syscost_net', 'cost_airpol']].sum(axis=1)
 
-wind_add_low = results.loc[idx['base', :, :, 16715], idx['AT', 'add_wind_on']].unstack(1)
+wind_add_low = results.loc[idx['base', :, :, 16715], idx['AT', 'add_r_wind_on']].unstack(1)
 wind_add_low.index = wind_add_low.index.droplevel([0, 2])
 
 undisturbed_marginal_low = (undisturbed_cost_low['total_cost'].unstack(0).iloc[::-1].diff().divide(
     wind_add_low.iloc[::-1].diff().round(8), axis=0)) * -1
 
-undisturbed_marginal_low.columns = [f'CO2 Price: {p} €/t' for p in undisturbed_marginal_low.columns]
+undisturbed_marginal_low.columns = [rf'CO$_2$ Price: {p} €/t' for p in undisturbed_marginal_low.columns]
 
 plot_lines(undisturbed_marginal_low / 1000, os.path.join(FPATH, 'undisturbed_low.pdf'), xlim=[18, 0], ylim=[0, 75],
            xlabel='Added Capacity of Wind [GW]', ylabel='thousand € / MW', color=REFUEL_COLORS)
 
 # %% plot sensitivity of optimal res capacity deployment to capital cost of pv
-sensitivity = results.loc[idx['cheappv', :, 18, :], idx['AT', ['add_pv', 'add_wind_on']]].copy()
+sensitivity = results.loc[idx['pv_sens', [30, 60, 90], 18, :], idx['AT', ['add_r_pv', 'add_r_wind_on']]].copy()
 sensitivity.index = sensitivity.index.droplevel([0, 2])
 sensitivity.columns = sensitivity.columns.droplevel(0)
 sensitivity = sensitivity.unstack(0)
 sensitivity.index = np.round(sensitivity.index / ANNUITY_FACTOR / 1000, decimals=2)
-sensitivity = sensitivity.rename(mapper={'add_pv': 'Solar PV', 'add_wind_on': 'Wind Onshore',
-                                         30: '30 €/t CO2', 60: '60 €/t CO2', 120: '120 €/t CO2'}, axis=1)
+sensitivity = sensitivity.rename(mapper={'add_r_pv': 'Solar PV', 'add_r_wind_on': 'Wind Onshore',
+                                         0: r'0 €/t CO$_2$', 30: r'30 €/t CO$_2$', 60: r'60 €/t CO$_2$',
+                                         90: r'90 €/t CO$_2$', 120: r'120 €/t CO$_2$'}, axis=1)
 sensitivity_nrg = sensitivity.copy()
 sensitivity.columns = sensitivity.columns.map(', '.join)
 
@@ -265,10 +320,14 @@ plot_lines(sensitivity, os.path.join(FPATH, 'sens_cap.pdf'),
 # %% plot sensitivity of optimal res generation to capital cost of pv
 sensitivity_nrg.loc[:, idx['Solar PV', :]] = sensitivity_nrg.loc[:, idx['Solar PV', :]] * FLH_PV / 1000
 sensitivity_nrg.loc[:, idx['Wind Onshore', :]] = sensitivity_nrg.loc[:, idx['Wind Onshore', :]] * FLH_WINDON / 1000
-sensitivity_nrg.columns = sensitivity_nrg.columns.map(', '.join)
+# sensitivity_nrg.columns = sensitivity_nrg.columns.map(', '.join)
 
 plot_lines(sensitivity_nrg, os.path.join(FPATH, 'sens_nrg.pdf'),
            xlim=[650, 250], ylim=None, xlabel='Capital cost of solar PV [€/kWp]', ylabel='TWh', color=RES_COLORS3)
+
+plot_sublines(sensitivity_nrg, os.path.join(FPATH, 'sens_nrg_sub.pdf'),
+              width=2, midx_level=1, subtitle=True, xlim=[650, 250], xlabel='Capital cost of solar PV [€/kWp]',
+              ylabel='TWh', color=RES_COLORS2)
 
 # %% plot why wind is not pv
 # plot generation profile in one summer week and one winter week
@@ -368,6 +427,20 @@ cdat.index = cdat.index.rename(['scenario', 'co2price', 'wind_lim', 'pv_cost'])
 ctat = ciat.T + caat - cdat
 ctat.dropna(axis=1, how='all', inplace=True)
 
+# heat pump capacity by added wind power for all co2 prices
+ctat_htpmp = ctat.loc[:, 'heatpump_pth'].copy()
+ctat_htpmp = ctat_htpmp.unstack(1)
+ctat_htpmp.index = ctat_htpmp.index.droplevel([0, 2])
+
+plot_lines(ctat_htpmp, os.path.join(FPATH, 'heatpumps.pdf'), xlim=[18, 0], xlabel='wind addition', color=REFUEL_COLORS)
+
+# nat gas fired capacity added for all co2 prices
+ngadd = netadds.loc[:, 'ng'].copy()
+ngadd = ngadd.unstack(1)
+ngadd.index = ngadd.index.droplevel([0, 2])
+
+plot_lines(ngadd, os.path.join(FPATH, 'ng_additions.pdf'), xlim=[18, 0], xlabel='wind addition', color=REFUEL_COLORS)
+
 # %% # generation time series
 g_tec = results.loc[idx['base', :, :, 36715], idx['AT', :]].copy()
 g_tec.columns = g_tec.columns.droplevel(0)
@@ -385,3 +458,59 @@ util.dropna(axis=1, how='all', inplace=True)
 
 util.loc[idx['base', 60, :, 36715], :].plot()
 plt.show()
+
+# %% curtailment
+curt = results.loc[idx['base', :, :, 36715], idx[:, 'AnnCurtail']]
+curt.columns = curt.columns.droplevel(1)
+curt = curt.unstack(1)
+curt.index = curt.index.droplevel([0, 2])
+
+plot_lines(curt.loc[:, idx['AT', :]], os.path.join(FPATH, 'curt_AT.pdf'), xlim=[18, 0], xlabel='wind addition',
+           color=REFUEL_COLORS)
+plot_lines(curt.loc[:, idx['DE', :]], os.path.join(FPATH, 'curt_DE.pdf'), xlim=[18, 0], xlabel='wind addition',
+           color=REFUEL_COLORS)
+
+# %% CO2 emissions
+carb = results.loc[idx['base', :, :, 36715], idx[:, 'AnnCO2Emissions']]
+carb.columns = carb.columns.droplevel(1)
+carb = carb.unstack(1)
+carb.index = carb.index.droplevel([0, 2])
+
+plot_lines(carb.loc[:, idx['AT', :]], os.path.join(FPATH, 'emissions_AT.pdf'), xlim=[18, 0], xlabel='wind addition',
+           color=REFUEL_COLORS)
+plot_lines(carb.loc[:, idx['DE', :]], os.path.join(FPATH, 'emissions_DE.pdf'), xlim=[18, 0], xlabel='wind addition',
+           color=REFUEL_COLORS)
+
+# %% system cost
+syscost = results.loc[idx['base', :, :, 36715], idx[:, 'AnnCO2Emissions']]
+syscost.columns = syscost.columns.droplevel(1)
+syscost = syscost.unstack(1)
+syscost.index = syscost.index.droplevel([0, 2])
+
+plot_lines(syscost.loc[:, idx['AT', :]], os.path.join(FPATH, 'syscost_AT.pdf'), xlim=[18, 0], xlabel='wind addition',
+           color=REFUEL_COLORS)
+plot_lines(syscost.loc[:, idx['DE', :]], os.path.join(FPATH, 'syscost_DE.pdf'), xlim=[18, 0], xlabel='wind addition',
+           color=REFUEL_COLORS)
+
+# %% electricity and heat prices
+# AvgPriceEl, AvgPriceHt
+
+pel = results.loc[idx['base', :, :, 36715], idx[:, 'AvgPriceEl']]
+pel.columns = pel.columns.droplevel(1)
+pel = pel.unstack(1)
+pel.index = pel.index.droplevel([0, 2])
+
+plot_lines(pel.loc[:, idx['AT', :]], os.path.join(FPATH, 'priceel_AT.pdf'), xlim=[18, 0], xlabel='wind addition',
+           color=REFUEL_COLORS)
+plot_lines(pel.loc[:, idx['DE', :]], os.path.join(FPATH, 'priceel_DE.pdf'), xlim=[18, 0], xlabel='wind addition',
+           color=REFUEL_COLORS)
+
+pht = results.loc[idx['base', :, :, 36715], idx[:, 'AvgPriceHt']]
+pht.columns = pht.columns.droplevel(1)
+pht = pht.unstack(1)
+pht.index = pht.index.droplevel([0, 2])
+
+plot_lines(pht.loc[:, idx['AT', :]], os.path.join(FPATH, 'priceht_AT.pdf'), xlim=[18, 0], xlabel='wind addition',
+           color=REFUEL_COLORS)
+plot_lines(pht.loc[:, idx['DE', :]], os.path.join(FPATH, 'priceht_DE.pdf'), xlim=[18, 0], xlabel='wind addition',
+           color=REFUEL_COLORS)

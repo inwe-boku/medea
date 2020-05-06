@@ -1,14 +1,19 @@
-matplotlib
-cdsapi
-scipy
-netCDF4
-urllib3
+matplotlib~=3.1.1
+cdsapi~=0.2.5
+scipy~=1.1.0
+netCDF4~=1.4.1
+urllib3~=1.23
 #
 ### requirements for medea
 os
 sys
-numpy
-pandas
+numpy~=1.16.4
+pandas~=0.24.2
 platform
 itertools
 subprocess
+
+pysftp~=0.2.9
+PyYAML~=5.3.1
+GAMS~=1.0
+certifi~=2018.8.24
