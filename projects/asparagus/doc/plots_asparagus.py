@@ -18,7 +18,7 @@ ANNUITY_FACTOR = 0.05827816
 FLH_PV = 857.4938
 FLH_WINDON = 2015.0359
 
-RPATH = os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', 'asparagus', 'results', 'results_200501.csv')
+RPATH = os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', 'asparagus', 'results', 'results_200503.csv')
 FPATH = os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', 'asparagus', 'doc', 'figures')
 
 if not os.path.exists(FPATH):

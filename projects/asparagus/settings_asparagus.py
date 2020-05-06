@@ -24,10 +24,10 @@ For sensitivity analysis, we also vary the capital cost of solar PV.
 # campaigns
 dict_campaigns = {
     'base': {
-        'co2_price': [0],  # range(120, -1, -30),
-        'wind_cap': range(8, -1, -2),  # range(18, -1, -2),
+        'co2_price': range(120, -1, -30),
+        'wind_cap': range(18, -1, -2),
         'pv_cost': [36715, 16715]
-    },  # ,
+    },
     'pv_sens': {
         'co2_price': range(120, -1, -30),
         'wind_cap': [18],
