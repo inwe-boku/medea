@@ -56,12 +56,33 @@ capa = results.loc[idx['base', :, :, 36715], idx['AT', :]]
 capa.columns = capa.columns.droplevel(0)
 capa = capa.loc[:, (capa.columns.str.contains('add_g') | capa.columns.str.contains('deco'))]
 capa.columns = pd.MultiIndex.from_tuples(list(capa.columns.str.split('_g_')))
+capa.loc[:, idx['deco', :]] = - capa.loc[:, idx['deco', :]]
 capa = capa.groupby(level=1, axis=1).sum()
 capa.columns.name = 'variable'
 capa.index = capa.index.rename(['scenario', 'co2price', 'wind_lim', 'pv_cost'])
 capa = (capa + capi.T).dropna(axis=1, how='all')
+capa = capa.replace(0, np.nan).dropna(axis=1, how='all').replace(np.nan, 0)
 
-# plot_lines(capa, os.path.join(FPATH, 'capacity.pdf'),color=REFUEL_COLORS)
+plot_lines(capa, os.path.join(FPATH, 'capacity.pdf'), color=REFUEL_COLORS)
+
+# %% analyze system operation (net exports, curtailment, generation)
+var_of_interest = ['AnnCO2Emissions', 'AnnCurtail', 'AnnCurtailShare', 'AnnGBiomass', 'AnnGFossil_el', 'AnnG_el',
+                   'AnnR', 'AnnSIn', 'AnnSOut', 'AnnX']
+
+oper = results.loc[idx['base', :, :, 36715], idx['AT', :]]
+oper.loc[:, idx['AT', 'AnnX']] = results.loc[:, idx['DE', 'AnnX']]
+oper.columns = oper.columns.droplevel(0)
+oper['AnnGFossil_el'] = oper['AnnG_el'] - oper['AnnGBiomass']
+oper['AnnCurtailShare'] = oper['AnnCurtail'] / oper['AnnR']
+oper.index = oper.index.droplevel([0, 3])
+
+for var in var_of_interest:
+    plot_lines(oper.loc[:, var].unstack(0), os.path.join(FPATH, f'oper_{var}.pdf'), color=REFUEL_COLORS)
+
+# oper = oper.loc[:, oper.columns.str.contains('AnnGByTec')]
+# oper.columns = oper.columns.str.replace('AnnGByTec_', '')  #.str.replace('(', '').str.replace(')', '')
+# oper.columns = pd.MultiIndex.from_tuples(list(oper.columns.str.split('_g_')))
+
 
 # %% ----- ----- ----- plot wind restriction: changes in system operation ----- ----- -----
 # net electricity generation, net electricity exports, fossil thermal generation, CO2 emissions from energy generation
@@ -175,11 +196,38 @@ wind_add_low.index = wind_add_low.index.droplevel([0, 2])
 
 undisturbed_marginal_low = (undisturbed_cost_low['total_cost'].unstack(0).iloc[::-1].diff().divide(
     wind_add_low.iloc[::-1].diff().round(8), axis=0)) * -1
-
+undisturbed_marginal_sens_share = undisturbed_marginal_low.copy()
 undisturbed_marginal_low.columns = [rf'CO$_2$ Price: {p} €/t' for p in undisturbed_marginal_low.columns]
 
 plot_lines(undisturbed_marginal_low / 1000, os.path.join(FPATH, 'undisturbed_low.pdf'), xlim=[18, 0], ylim=[0, 75],
            xlabel='Added Capacity of Wind [GW]', ylabel='thousand € / MW', color=REFUEL_COLORS)
+
+# %% ------ ----- ----- plot sensitivity of opportunity cost of wind with SHARE of deployment
+# uplim_sens = results.loc[idx['base', PRICE_CO2, :, 16715], idx['AT', 'add_r_wind_on']].max()
+# divide index by uplim, delete indices larger than one except for the smallest and set the smallest to 1
+
+lgnd = []
+
+figure, axis = plt.subplots(1, 1, figsize=(8, 5))
+axis.set_ylabel('thousand € / MW')
+axis.set_xlabel(r'$\phi$')
+i = 0
+for p in undisturbed_marginal_sens_share.columns:
+    oc_by_share = undisturbed_marginal_sens_share.loc[:, p]
+    oc_by_share.index = undisturbed_marginal_sens_share.index / wind_add.loc[:, p].max()
+
+    axis.plot(oc_by_share / 1000, color=REFUEL_COLORS[i])
+    i = i + 1
+    lgnd.append(rf'CO$_2$ Price: {p} €/t')
+
+axis.legend(lgnd)
+# axis.set_ylim(ylim)
+axis.set_xlim([1, 0])
+axis.grid()
+# plt.rcParams.update({'font.size': 16})
+plt.tight_layout()
+plt.savefig(os.path.join(FPATH, 'undisturbed_sens_share.pdf'))
+plt.close()
 
 # %% plot sensitivity of optimal res capacity deployment to capital cost of pv
 sensitivity = results.loc[idx['pv_sens', [30, 60, 90], 18, :], idx['AT', ['add_r_pv', 'add_r_wind_on']]].copy()
