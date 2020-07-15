@@ -1,9 +1,7 @@
 # %% imports
 import os
-
 import numpy as np
 import pandas as pd
-
 import config as cfg
 from src.tools.data_processing import hours_in_year
 
@@ -13,55 +11,35 @@ from src.tools.data_processing import hours_in_year
 STATIC_FNAME = os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'processed', 'data_static.xlsx')
 idx = pd.IndexSlice
 
-### ### ### processes data and writes: dict_sets, dict_instantiate, static_data, plant_data, ts_data, invest_limits
-###
-### dict_sets includes: f, i, l, m, n, k, t, z
-### dict_instantiate includes:  'efficiency', 'DISTANCE', 'tec_props', 'ancil',
-#
-### static_data includes:       'potentials', 'tec', 'feasops', 'cost_transport',
-#
-### plant_data includes:        'hydro', 'conventional', 'active', 'hydro_clusters', 'storage_clusters'
-### ts_data includes:           'timeseries', 'zonal', 'price', 'inflows'
-### invest_limits includes:     'thermal', 'intermittent', 'storage', 'atc'
 
-# 'CAP_G', 'CAP_R', 'CAP_S_OUT', 'CAP_S_IN', 'CAP_V', 'CAP_X', 'CAPCOST_R', 'CAPCOST_K', 'CAPCOST_X',
-# 'EFFICIENCY_G', 'EFFICIENCY_S_OUT', 'EFFICIENCY_S_IN'
-#
-# 'FEASIBLE_INPUT', 'FEASIBLE_OUTPUT'
-#
-# 'OM_COST_G_QFIX', 'OM_COST_G_VAR', 'OM_COST_R_QFIX', 'OM_COST_R_VAR'
-#
-# 'AIR_POLLUTION', 'VALUE_NSE', 'LAMBDA', 'SIGMA', 'CO2_INTENSITY', 'PEAK_LOAD', 'PEAK_PROFILE', VALUE_NSE
-#
-# 'DEMAND', 'GEN_PROFILE', 'INFLOWS',
-
-# INITIAL_CAP_G, INITIAL_CAP_R, INITIAL_CAP_S_OUT, INITIAL_CAP_S_IN, INITIAL_CAP_V, INITIAL_CAP_X
-
-# OM_COST_G_QFIX, OM_COST_G_VAR, OM_COST_R_QFIX, OM_COST_R_VAR,
-# AIR_POL_COST_FIX, AIR_POL_COST_VAR
-# PRICE_CO2, PRICE_FUEL, PRICE_DA,
 # --------------------------------------------------------------------------- #
 # %% Read Data
 plant_data = {
     'technology': pd.read_excel(STATIC_FNAME, 'Technologies', header=[2], index_col=[2]),
     'chp': pd.read_excel(STATIC_FNAME, 'FEASIBLE_INPUT-OUTPUT', header=[0], index_col=[0, 1, 2]),
-    'installed': pd.read_excel(STATIC_FNAME, 'Capacities', header=[0], index_col=[0, 1, 2], skiprows=[0, 1, 2])
+    'installed': pd.read_excel(STATIC_FNAME, 'Capacities', header=[0], index_col=[0, 1, 2], skiprows=[0, 1, 2]),
+    'CAP_X': pd.read_excel(STATIC_FNAME, 'ATC', index_col=[0]),
+    'DISTANCE': pd.read_excel(STATIC_FNAME, 'KM', index_col=[0])
 }
 
-# technology_data = pd.read_excel(STATIC_FNAME, 'Technologies', header=[2], index_col=[2])
-# chp_data = pd.read_excel(STATIC_FNAME, 'FEASIBLE_INPUT-OUTPUT', header=[0], index_col=[0, 1])
 ts_data = {
     'timeseries': pd.read_csv(os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'processed', 'medea_regional_timeseries.csv'))
 }
 
+estimates = {
+    'ESTIMATES': pd.read_excel(STATIC_FNAME, 'ESTIMATES', index_col=[0]),
+    'AIR_POLLUTION': pd.read_excel(STATIC_FNAME, 'AIR_POLLUTION', index_col=[0]),
+    'CO2_INTENSITY': pd.read_excel(STATIC_FNAME, 'CO2_INTENSITY', index_col=[0]),
+    'COST_TRANSPORT': pd.read_excel(STATIC_FNAME, 'COST_TRANSPORT', index_col=[0])
+}
+
 # --------------------------------------------------------------------------- #
 # %% create dict_sets
-### dict_sets includes: f, i, l, m, n, k, t, z
 
 dict_sets = {
     'f': {fuel: [True] for fuel in plant_data['technology'].loc[:, 'fuel'].unique()},
     'i': {plant: [True] for plant in plant_data['technology'].loc[
-        plant_data['technology']['intermittent'] == 0].index.unique()},
+        plant_data['technology']['conventional'] == 1].index.unique()},
     'k': {storage: [True] for storage in plant_data['technology'].loc[
         plant_data['technology']['storage'] == 1].index.unique()},
     'l': {f'l{x}': [True] for x in range(1, 5)},
@@ -71,6 +49,10 @@ dict_sets = {
     't': {f't{hour}': [True] for hour in range(1, hours_in_year(cfg.year) + 1)},
     'z': {zone: [True] for zone in cfg.zones}
 }
+
+# convert to DataFrames
+for key, value in dict_sets.items():
+    dict_sets.update({key: pd.DataFrame.from_dict(dict_sets[key], orient='index', columns=['Value'])})
 
 # --------------------------------------------------------------------------- #
 # %% chp fuel need
@@ -84,51 +66,87 @@ plant_data['chp']['fuel_need'] = plant_data['chp']['fuel'] / plant_data['technol
 
 
 # --------------------------------------------------------------------------- #
+# %% transmission capacities and distances
+# --------------------------------------------------------------------------- #
+plant_data.update({'CAP_X': plant_data['CAP_X'].loc[
+                                plant_data['CAP_X'].index.str.contains('|'.join(cfg.zones)),
+                                plant_data['CAP_X'].columns.str.contains('|'.join(cfg.zones))] / 1000})
+
+plant_data.update({'DISTANCE': plant_data['DISTANCE'].loc[
+    plant_data['DISTANCE'].index.str.contains('|'.join(cfg.zones)),
+    plant_data['DISTANCE'].columns.str.contains('|'.join(cfg.zones))]})
+
+# --------------------------------------------------------------------------- #
 # %% process time series data
 # --------------------------------------------------------------------------- #
-# ts_medea = pd.read_csv(os.path.join(cfg.folder, 'medea', 'data', 'processed', 'medea_regional_timeseries.csv'))
 ts_data['timeseries']['DateTime'] = pd.to_datetime(ts_data['timeseries']['DateTime'])
 ts_data['timeseries'].set_index('DateTime', inplace=True)
 # constrain data to scenario year
 ts_data['timeseries'] = ts_data['timeseries'].loc[
-    (pd.Timestamp(cfg.year, 1, 1, 0, 0).tz_localize('UTC') <= ts_data['timeseries'].index) & (
-            ts_data['timeseries'].index <= pd.Timestamp(cfg.year, 12, 31, 23, 0).tz_localize('UTC'))]
+    (pd.Timestamp(cfg.year, 1, 1, 0, 0).tz_localize('UTC') <= ts_data['timeseries'].index) &
+    (ts_data['timeseries'].index <= pd.Timestamp(cfg.year, 12, 31, 23, 0).tz_localize('UTC'))]
+
 # drop index and set index of df_time instead
 if len(ts_data['timeseries']) == len(dict_sets['t']):
     ts_data['timeseries'].set_index(dict_sets['t'].index, inplace=True)
 else:
     raise ValueError('Mismatch of time series data and model time resolution. Is cfg.year wrong?')
+
 ts_data['timeseries']['DE-power-load'] = ts_data['timeseries']['DE-power-load'] / 0.91
+# TODO: re-check scaling factor
 # for 0.91 scaling factor see
 # https://www.entsoe.eu/fileadmin/user_upload/_library/publications/ce/Load_and_Consumption_Data.pdf
 
 # create price time series incl transport cost
-ts_data['timeseries']['Nuclear'] = 3.5
-ts_data['timeseries']['Lignite'] = 4.5
-ts_data['timeseries']['Biomass'] = 6.5
+ts_data['timeseries'].loc[:, 'Nuclear'] = 3.5
+ts_data['timeseries'].loc[:, 'Lignite'] = 4.5
+ts_data['timeseries'].loc[:, 'Biomass'] = 6.5
 
 # subset of zonal time series
-ts_data['zonal'] = ts_data['timeseries'].loc[:, ts_data['timeseries'].columns.str.startswith(('AT', 'DE'))].copy()
-ts_data['zonal'].columns = ts_data['zonal'].columns.str.split('-', expand=True)
+ts_data['ZONAL'] = ts_data['timeseries'].loc[:, ts_data['timeseries'].columns.str.startswith(tuple(cfg.zones))].copy()
+ts_data['ZONAL'].columns = ts_data['ZONAL'].columns.str.split('-', expand=True)
 # adjust column naming to reflect proper product names ('el' and 'ht')
-ts_data['zonal'] = ts_data['zonal'].rename(columns={'power': 'el', 'heat': 'ht'})
+ts_data['ZONAL'] = ts_data['ZONAL'].rename(columns={'power': 'el', 'heat': 'ht'})
 
 model_prices = ['Coal', 'Oil', 'Gas', 'EUA', 'Nuclear', 'Lignite', 'Biomass', 'price_day_ahead']
-
 ts_data['price'] = pd.DataFrame(index=ts_data['timeseries'].index,
                                 columns=pd.MultiIndex.from_product([model_prices, cfg.zones]))
+
 for zone in cfg.zones:
     for fuel in model_prices:
-        if fuel in static_data['cost_transport'].index:
-            ts_data['price'][(fuel, zone)] = ts_data['timeseries'][fuel] + static_data['cost_transport'].loc[fuel, zone]
+        if fuel in estimates['COST_TRANSPORT'].index:
+            ts_data['price'][(fuel, zone)] = ts_data['timeseries'][fuel] + estimates['COST_TRANSPORT'].loc[fuel, zone]
         else:
             ts_data['price'][(fuel, zone)] = ts_data['timeseries'][fuel]
 
-ts_inflows = pd.DataFrame(index=list(ts_data['zonal'].index),
+# Inflows to hydro storage plant
+hydro_storage = plant_data['technology'].loc[(plant_data['technology']['storage'] == 1) &
+                                             (plant_data['technology']['fuel'] == 'Water')].index
+ts_inflows = pd.DataFrame(index=list(ts_data['ZONAL'].index),
                           columns=pd.MultiIndex.from_product([cfg.zones, dict_sets['k'].index]))
 for zone in list(cfg.zones):
-    for strg in dict_sets['k'].index:
-        if 'battery' not in strg:
-            ts_inflows.loc[:, (zone, strg)] = ts_data['zonal'].loc[:, idx[zone, 'inflows', 'reservoir']] * \
-                                              plant_data['storage_clusters'].loc[(strg, zone), 'inflow_factor']
-ts_data.update({'inflows': ts_inflows})
+    for strg in hydro_storage:
+        ts_inflows.loc[:, (zone, strg)] = ts_data['ZONAL'].loc[:, idx[zone, 'inflows', 'reservoir']] * \
+                                          plant_data['storage_clusters'].loc[(strg, zone), 'inflow_factor']
+ts_data.update({'INFLOWS': ts_inflows})
+
+# --------------------------------------------------------------------------- #
+# %% peak load and profiles
+# --------------------------------------------------------------------------- #
+ts_data.update({'PEAK_LOAD': ts_data['ZONAL'].loc[:, idx[:, 'el', 'load']].max().unstack((1, 2)).squeeze()})
+ts_data.update({'PEAK_PROFILE': ts_data['ZONAL'].loc[:, idx[:, :, 'profile']].max().unstack(2).drop(
+    'ror', axis=0, level=1)})
+
+# --------------------------------------------------------------------------- #
+# %% limits on investment - long-run vs short-run
+# TODO: set limits to potentials -- requires potentials first
+# --------------------------------------------------------------------------- #
+invest_limits = {
+    'thermal': pd.DataFrame([float('inf') if cfg.invest_conventionals else 0]),
+    'intermittent': pd.DataFrame(data=[float('inf') if cfg.invest_renewables else 0][0],
+                                 index=cfg.zones, columns=dict_sets['n'].index),
+    'storage': pd.DataFrame(data=[float('inf') if cfg.invest_storage else 0][0],
+                            index=cfg.zones, columns=dict_sets['k'].index),
+    'atc': pd.DataFrame(data=[1 if cfg.invest_tc else 0][0],
+                        index=cfg.zones, columns=cfg.zones)
+}
