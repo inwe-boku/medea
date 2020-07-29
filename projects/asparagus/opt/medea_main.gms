@@ -32,14 +32,15 @@ $EoLCom #
 * SYMBOL DECLARATIONS
 * ------------------------------------------------------------------------------
 Sets
+         all_tec                 all energy technologies
          f                       fuels
-         i                       dispatchable energy generation technologies
+         i(all_tec)              dispatchable energy generation technologies
          h(i)                    power-to-heat technologies
          j(i)                    combined heat and power (CHP) generation technologies
-         k                       energy storage technologies
+         k(all_tec)              energy storage technologies
          l                       corners of feasible operating regions of CHPs
          m                       energy products (heat and electricity)
-         n                       intermittent electricity generators
+         n(all_tec)              intermittent electricity generators
          t                       time periods (hours)
          z                       market zones
 ;
@@ -48,17 +49,20 @@ alias(z,zz);
 Parameters
          AIR_POL_COST_FIX(f)     fixed air pollution cost [EUR per MW]
          AIR_POL_COST_VAR(f)     variable air pollution cost [EUR per MWh]
-         CAPITALCOST_G(i)        specific annualized capital cost of dispatchable generators [EUR per MW]
+         CAPITALCOST_P(all_tec)  specific capital cost of dispatchable generators (power) [EUR per MW]
+         CAPITALCOST_E(all_tec)  specific capital cost of storage (energy) [EUR per MW]
+         CAPITALCOST_G(z,i)      specific annualized capital cost of dispatchable generators [EUR per MW]
          CAPITALCOST_R(z,n)      specific annualized capital cost of intermittent generators [EUR per MW]
          CAPITALCOST_S(z,k)      specific annualized capital cost of storage power (in and out) [EUR per MW]
          CAPITALCOST_V(z,k)      specific annualized capital cost of storage volume [EUR per MWh]
          CAPITALCOST_X(z)        specific annualized capital cost of electricity transmission [EUR per MW]
          CO2_INTENSITY(f)        CO2 intensitiy of fuels burned [t CO2 per MWh_th]
          DEMAND(z,t,m)           energy demand [GW]
+         DISCOUNT_RATE(z)        discount rate (WACC)
          DISTANCE(z,zz)          distance between centers of gravity of market areas [km]
          EFFICIENCY_G(i,m,f)     generation efficiency of dispatchable power plants [MWh_el per MWh_th]
-         EFFICIENCY_S_OUT(z,k)   generation efficiency of storages
-         EFFICIENCY_S_IN(z,k)    storing-in efficiency of storages
+         EFFICIENCY_S_OUT(k)     generation efficiency of storages
+         EFFICIENCY_S_IN(k)    storing-in efficiency of storages
          FEASIBLE_INPUT(i,l,f)   relative fuel requirement at corners of feasible operating region
          FEASIBLE_OUTPUT(i,l,m)  relative energy production at corners of feasible operating region
          GEN_PROFILE(z,t,n)      generation profile of intermittent sources
@@ -69,23 +73,25 @@ Parameters
          INITIAL_CAP_S_IN(z,k)   intial installed capacity to store-in [GW]
          INITIAL_CAP_V(z,k)      initial installed storage volume [GWh]
          INITIAL_CAP_X(z,zz)     initial installed transmission capacity [GW]
-         LAMBDA                  load scaling factor for system service requirement
+         LAMBDA(z)               load scaling factor for system service requirement
+         LIFETIME(all_tec)       technology lifetime
          MAP_FUEL_G(i,f)         maps fuels to dispatchable plants
          MAP_FUEL_R(n,f)         maps fuels to renewable generators
          OM_COST_G_QFIX(i)       quasi-fixed operation and maintenance cost [EUR per MW]
          OM_COST_G_VAR(i)        variable operation and maintenance cost [EUR per MWh]
-         OM_COST_R_QFIX(z,n)     quasi-fixed operation and maintenance cost [EUR per MW]
-         OM_COST_R_VAR(z,n)      variable operation and maintenance cost [EUR per MWh]
+         OM_COST_R_QFIX(n)     quasi-fixed operation and maintenance cost [EUR per MW]
+         OM_COST_R_VAR(n)      variable operation and maintenance cost [EUR per MWh]
          PEAK_LOAD(z)            maximum electricity demand [GW]
          PEAK_PROFILE(z,n)       maximum relative generation from intermittent sources
          PRICE_CO2(z,t)          CO2 price [EUR per t CO2]
          PRICE_FUEL(z,t,f)       fuel price [EUR per MWh]
-         SIGMA                   intermittent generation scaling factor for system service requirement
+         SIGMA(z)                intermittent generation scaling factor for system service requirement
          VALUE_NSE(z)            value of non-served energy [EUR]
          SWITCH_INVEST_THERM     abc
          SWITCH_INVEST_ITM       abc
          SWITCH_INVEST_STORAGE   abc
          SWITCH_INVEST_ATC       cdf
+         SWITCH_ANCILLARY        boolean switch for (de)activating the ancillary services equation
 ;
 
 * ------------------------------------------------------------------------------
@@ -97,9 +103,9 @@ $if %PROJECT% == test $gdxin
 $if NOT exist MEDEA_%scenario%_data.gdx  $gdxin medea_main_data
 $if     exist MEDEA_%scenario%_data.gdx  $gdxin medea_%scenario%_data
 $if NOT %PROJECT% == test $load t
-$load    f i h j k l m n z
+$load    all_tec f i h j k l m n z
 $load    AIR_POL_COST_FIX AIR_POL_COST_VAR
-$load    CAPITALCOST_R CAPITALCOST_G CAPITALCOST_S CAPITALCOST_V CAPITALCOST_X
+$load    CAPITALCOST_P CAPITALCOST_E DISCOUNT_RATE LIFETIME
 $load    CO2_INTENSITY DEMAND DISTANCE EFFICIENCY_G EFFICIENCY_S_OUT
 $load    EFFICIENCY_S_IN FEASIBLE_INPUT FEASIBLE_OUTPUT GEN_PROFILE INFLOWS
 $load    INITIAL_CAP_G INITIAL_CAP_R INITIAL_CAP_S_OUT INITIAL_CAP_S_IN
@@ -107,14 +113,24 @@ $load    INITIAL_CAP_V INITIAL_CAP_X LAMBDA OM_COST_G_QFIX OM_COST_G_VAR
 $load    OM_COST_R_QFIX OM_COST_R_VAR PRICE_CO2
 $load    PEAK_LOAD PEAK_PROFILE PRICE_FUEL SIGMA VALUE_NSE
 $load    SWITCH_INVEST_THERM SWITCH_INVEST_ITM SWITCH_INVEST_STORAGE
-$load    SWITCH_INVEST_ATC
+$load    SWITCH_INVEST_ATC SWITCH_ANCILLARY
 $gdxin
 
 MAP_FUEL_G(i,f)$(sum(m,EFFICIENCY_G(i,m,f))) = yes;
-MAP_FUEL_R('ror','Hydro') = yes;
+MAP_FUEL_R('ror','Water') = yes;
 MAP_FUEL_R('pv','Solar') = yes;
 MAP_FUEL_R('wind_on','Wind') = yes;
 MAP_FUEL_R('wind_off','Wind') = yes;
+
+* ------------------------------------------------------------------------------
+* calculate annualized capital cost
+CAPITALCOST_G(z,i) = DISCOUNT_RATE(z)*(1+DISCOUNT_RATE(z))**LIFETIME(i) / ((1+DISCOUNT_RATE(z))**LIFETIME(i)-1)*CAPITALCOST_P(i) * 1000;
+CAPITALCOST_R(z,n) = DISCOUNT_RATE(z)*(1+DISCOUNT_RATE(z))**LIFETIME(n) / ((1+DISCOUNT_RATE(z))**LIFETIME(n)-1)*CAPITALCOST_P(n) * 1000;
+CAPITALCOST_S(z,k) = DISCOUNT_RATE(z)*(1+DISCOUNT_RATE(z))**LIFETIME(k) / ((1+DISCOUNT_RATE(z))**LIFETIME(k)-1)*CAPITALCOST_P(k) * 1000;
+CAPITALCOST_V(z,k) = DISCOUNT_RATE(z)*(1+DISCOUNT_RATE(z))**LIFETIME(k) / ((1+DISCOUNT_RATE(z))**LIFETIME(k)-1)*CAPITALCOST_E(k) * 1000;
+CAPITALCOST_X(z) = DISCOUNT_RATE(z)*(1+DISCOUNT_RATE(z))**LIFETIME('transmission') / ((1+DISCOUNT_RATE(z))**LIFETIME('transmission')-1)*CAPITALCOST_P('transmission') * 1000;
+
+display CAPITALCOST_G;
 
 * ------------------------------------------------------------------------------
 * enable the use of synthetic gas in natural gas-fired plant
@@ -231,13 +247,13 @@ bal_om_g(z,i)..
 bal_om_r(z,n)..
                  cost_om_r(z,n)
                  =E=
-                 OM_COST_R_QFIX(z,n) * (INITIAL_CAP_R(z,n) + add_r(z,n) - deco_r(z,n) )
-                 + sum((t,m), OM_COST_R_VAR(z,n) * r(z,t,n) )
+                 OM_COST_R_QFIX(n) * (INITIAL_CAP_R(z,n) + add_r(z,n) - deco_r(z,n) )
+                 + sum((t,m), OM_COST_R_VAR(n) * r(z,t,n) )
                  ;
 bal_inv_g(z)..
                  cost_invest_g(z)
                  =E=
-                 sum(i, CAPITALCOST_G(i) * add_g(z,i) )
+                 sum(i, CAPITALCOST_G(z,i) * add_g(z,i) )
                  ;
 bal_inv_r(z)..
                  cost_invest_r(z)
@@ -344,12 +360,12 @@ uplim_store_vol(z,t,k)..
                  =L=
                  INITIAL_CAP_V(z,k) + add_v(z,k)
                  ;
-bal_store(z,t,k)$(ord(t) > 1 AND EFFICIENCY_S_OUT(z,k))..
+bal_store(z,t,k)$(ord(t) > 1 AND EFFICIENCY_S_OUT(k))..
                  v(z,t,k)
                  =E=
                  INFLOWS(z,t,k)
-                 + EFFICIENCY_S_IN(z,k) * s_in(z,t,k)
-                 - (1 / EFFICIENCY_S_OUT(z,k))  * s_out(z,t,k)
+                 + EFFICIENCY_S_IN(k) * s_in(z,t,k)
+                 - (1 / EFFICIENCY_S_OUT(k))  * s_out(z,t,k)
                  + v(z,t-1,k)
                  ;
 lolim_add_v(z,k)..
@@ -357,6 +373,8 @@ lolim_add_v(z,k)..
                  =G=
                  add_s(z,k)
                  ;
+v.FX(z,t,k)$(ord(t)=1) = 0.6 * INITIAL_CAP_V(z,k);
+v.FX(z,t,k)$(ord(t) eq card(t)) = 0.6 * INITIAL_CAP_V(z,k);
 * ------------------------------------------------------------------------------
 * CO2 ACCOUNTING
 
@@ -400,8 +418,8 @@ bal_add_x(z,zz)..
                  =E=
                  add_x(zz,z)
                  ;
-x.FX(z,zz,t)$(not INITIAL_CAP_X(z,zz))   = 0;
-x.FX(zz,z,t)$(not INITIAL_CAP_X(zz,z))   = 0;
+x.FX(z,zz,t)$(not INITIAL_CAP_X(z,zz)) = 0;
+x.FX(zz,z,t)$(not INITIAL_CAP_X(zz,z)) = 0;
 * ------------------------------------------------------------------------------
 * DECOMMISSIONING
 
@@ -418,13 +436,13 @@ uplim_deco_r(z,n)..
 * ------------------------------------------------------------------------------
 * ANCILLARY SERVICES
 
-lolim_ancservices(z,t)..
+lolim_ancservices(z,t)$(SWITCH_ANCILLARY)..
                  sum((i,f)$(MAP_FUEL_G(i,f) ), g(z,t,i,'el',f) )
                  + r(z,t,'ror')
                  + sum(k, s_out(z,t,k) + s_in(z,t,k) )
                  =G=
-                 LAMBDA * PEAK_LOAD(z)
-                 + SIGMA * sum(n$(NOT SAMEAS(n,'ror')), PEAK_PROFILE(z,n) * (INITIAL_CAP_R(z,n) + add_r(z,n) ) )
+                 LAMBDA(z) * PEAK_LOAD(z)
+                 + SIGMA(z) * sum(n$(NOT SAMEAS(n,'ror')), PEAK_PROFILE(z,n) * (INITIAL_CAP_R(z,n) + add_r(z,n) ) )
                  ;
 * ------------------------------------------------------------------------------
 * CURTAILMENT
@@ -532,14 +550,14 @@ HourlyPriceSystemServices(z,t)   hourly price of system services
 ;
 * ------------------------------------------------------------------------------
 * parameter calculation
-AnnRenShare(z) = (sum((t,n), r.L(z,t,n) ) + sum((t,k), s_out.L(z,t,k) ) - sum((t,k), s_in.L(z,t,k) ) + sum((t,i), g.L(z,t,i,'el','Biomass') ) + sum((t,i), g.L(z,t,i,'el','Syngas') ) ) / sum(t, DEMAND(z,t,'el') );
+AnnRenShare(z) = (sum((t,n), r.L(z,t,n) ) + sum((t,k), s_out.L(z,t,k) ) - sum((t,k), s_in.L(z,t,k) ) + sum((t,i), g.L(z,t,i,'el','Biomass') ) ) / sum(t, DEMAND(z,t,'el') );  # + sum((t,i), g.L(z,t,i,'el','Syngas') ) ) / sum(t, DEMAND(z,t,'el') );
 AnnG(z,m) = sum((t,i,f), g.L(z, t, i, m, f));
 AnnGByTec(z,i,m,f) = sum(t, g.L(z, t, i, m, f));
-AnnGSyngas(z) = sum((t,i), g.L(z,t,i,'el','Syngas') );
+*AnnGSyngas(z) = sum((t,i), g.L(z,t,i,'el','Syngas') );
 AnnGBiomass(z) = sum((t,i), g.L(z,t,i,'el','Biomass') );
-AnnGFossil(z) = sum(m, AnnG(z,m)) - AnnGSyngas(z) - AnnGBiomass(z);
+AnnGFossil(z) = sum(m, AnnG(z,m)) - AnnGBiomass(z);  # - AnnGSyngas(z)
 AnnR(z) = sum((t,n), r.L(z,t,n) );
-AnnRenew(z) = AnnR(z) + AnnGBiomass(z) + sum((t,k), INFLOWS(z,t,k)*EFFICIENCY_S_OUT(z,k));
+AnnRenew(z) = AnnR(z) + AnnGBiomass(z) + sum((t,k), INFLOWS(z,t,k)*EFFICIENCY_S_OUT(k));
 AnnSIn(z) = sum((t,k), s_in.L(z,t,k));
 AnnSOut(z) = sum((t,k), s_out.L(z,t,k));
 AnnCons(z,m) = sum(t, DEMAND(z,t,m));
@@ -563,7 +581,7 @@ AnnProfitG(z,i) = AnnRevenueG(z,i) - AnnCostG(z,i);
 AnnProfitS(z,k) = sum(t, bal_el.M(z,t) * s_out.L(z,t,k) - bal_el.M(z,t) * s_in.L(z,t,k) );
 AnnProfitR(z,n) = sum(t, bal_el.M(z,t) * r.L(z,t,n) ) - cost_om_r.L(z,n);
 AnnSurplusG(z,i) = AnnRevenueG(z,i) - sum(t, cost_fuel.L(z,t,i) + cost_co2.L(z,t,i) ) - sum((t,m,f), OM_COST_G_VAR(i) * g.L(z,t,i,m,f) );
-AnnProdSurplus(z) = sum(i, AnnSurplusG(z,i)) + sum(k, AnnProfitS(z,k)) + sum((t,n), bal_el.M(z,t) * r.L(z,t,n)) - sum((t,n), OM_COST_R_VAR(z,n) * r.L(z,t,n) );
+AnnProdSurplus(z) = sum(i, AnnSurplusG(z,i)) + sum(k, AnnProfitS(z,k)) + sum((t,n), bal_el.M(z,t) * r.L(z,t,n)) - sum((t,n), OM_COST_R_VAR(n) * r.L(z,t,n) );
 AnnSpendingEl(z) =  sum(t, bal_el.M(z,t) * DEMAND(z,t,'el') );
 AnnSpendingHt(z) =  sum(t, bal_ht.M(z,t) * DEMAND(z,t,'ht') );
 AnnSpending(z) =  AnnSpendingEl(z) + AnnSpendingHt(z);

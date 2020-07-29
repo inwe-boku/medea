@@ -23,15 +23,53 @@ For sensitivity analysis, we also vary the capital cost of solar PV.
 
 # campaigns
 dict_campaigns = {
-    'base': {
-        'co2_price': range(120, -1, -30),
-        'wind_cap': range(18, -1, -2),
-        'pv_cost': [36715, 16715]
-    },
-    'pv_sens': {
-        'co2_price': range(120, -1, -30),
+    #    'base': {
+    #        'must_run': [1],
+    #        'co2_price': range(100, -1, -25),
+    #        'wind_cap': range(18, -1, -2),
+    #        'pv_cost': [36424, 16026],
+    #        'transmission': [4.9],
+    #        'xpansion': [0]
+    #        },
+    #    'pv_sens': {
+    #        'must_run': [1],
+    #        'co2_price': range(100, -1, -25),
+    #        'wind_cap': [18],
+    #        'pv_cost': range(36424, 15026, -1500),
+    #        'transmission': [4.9],
+    #        'xpansion': [0]
+    #        },
+    #    'no_mustrun': {
+    #        'must_run': [0],
+    #        'co2_price': [50],  # range(100, -1, -25)
+    #        'wind_cap': range(18, -1, -2),
+    #        'pv_cost': [36424],
+    #        'transmission': [4.9],
+    #        'xpansion': [0]
+    #    },
+    #    'no_bottleneck': {
+    #        'must_run': [1],
+    #        'co2_price': [50],  # range(100, -1, -25)
+    #        'wind_cap': range(18, -1, -2),
+    #        'pv_cost': [36424],
+    #        'transmission': [10],
+    #        'xpansion': [0]
+    #    },
+    #    'xpand': {
+    #        'must_run': [1],
+    #        'co2_price': [50],  # range(100, -1, -25)
+    #        'wind_cap': range(18, -1, -2),
+    #        'pv_cost': [36424],
+    #        'transmission': [10],
+    #        'xpansion': [50]
+    #    },
+    'pv_upscale': {
+        'must_run': [1],
+        'co2_price': [25, 100],
         'wind_cap': [18],
-        'pv_cost': range(36715, 16026, -1000)
+        'pv_cost': [36424],
+        'transmission': [4.9],
+        'xpansion': [0]
     }
 }
 
@@ -54,13 +92,15 @@ CAPACITY ASSUMPTIONS
 
 scenario_2030 = {
     'AT': {
-        'bio': [5.59],
+        'bio': [1],
         'coal': [0],
         'heatpump': [1],
+        'hpa': [1],
+        'eboi': [1],
         'lig': [0],
         'ng': [0.86],
         'nuc': [0],
-        'oil': [0.29],
+        'oil': [0.5],
         'wind_on': [2.6],
         'wind_off': [0],
         'pv': [1.1],
@@ -71,6 +111,8 @@ scenario_2030 = {
         'bio': [1.3],
         'coal': [0.56],
         'heatpump': [1.0],
+        'hpa': [0],
+        'eboi': [1],
         'lig': [0.56],
         'ng': [1.0],
         'nuc': [0.0],

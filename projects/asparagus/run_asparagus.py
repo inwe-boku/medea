@@ -5,8 +5,9 @@ import pandas as pd
 from gams import *
 
 import config as cfg
+from projects.asparagus.preprocess_asparagus import pv_upscaled
 from projects.asparagus.settings_asparagus import *
-from src.tools.gams_io import reset_symbol, gdx2df, df2gdx, run_medea_project
+from src.tools.gams_io import reset_symbol, gdx2df, df2gdx, run_medea_project, timesort
 
 # path to main medea model to use
 GMS_MODEL = os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', PROJECT_NAME, 'opt', 'medea_main.gms')
@@ -39,6 +40,7 @@ FEASIBLE_INPUT = gdx2df(db_input, 'FEASIBLE_INPUT', ['i', 'l', 'f'], [])
 INITIAL_CAP_G = gdx2df(db_input, 'INITIAL_CAP_G', ['z', 'i'], [])
 INITIAL_CAP_R = gdx2df(db_input, 'INITIAL_CAP_R', ['z', 'n'], [])
 DEMAND = gdx2df(db_input, 'DEMAND', ['z', 't', 'm'], [])
+GEN_PROFILE = gdx2df(db_input, 'GEN_PROFILE', ['z', 't', 'n'], [])
 
 # %% generate 'static' parameter variations (modifications that remain the same across all scenarios)
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -91,13 +93,30 @@ os.chdir(os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', PROJECT_NAME, 'opt'))
 CO2_SCENARIO = df2gdx(db_input, pd.DataFrame(data=[0]), 'CO2_SCENARIO', 'par', 0, 'CO2 price scenario')
 WIND_ON_LIMIT = df2gdx(db_input, pd.DataFrame(data=[0]), 'WIND_ON_LIMIT', 'par', 0, 'max wind_on capacity addition')
 PV_CAPEX = df2gdx(db_input, pd.DataFrame(data=[0]), 'PV_CAPEX', 'par', 0, 'capex for solar PV at 5.5% interest')
-
-# electricity flows freely in coupled markets (constrained only by installed transmission cap)
-FLOW_LIMIT = df2gdx(db_input, pd.DataFrame(data=[float('inf')]), 'FLOW_LIMIT', 'par', 0, 'max electricity transmission')
-
+SWITCH_ANCILLARY = df2gdx(db_input, pd.DataFrame(data=[0]), 'SWITCH_ANCILLARY', 'par', 0, 'CO2 price scenario')
+INITIAL_CAP_X = pd.DataFrame(data=0, columns=['Value'], index=pd.MultiIndex.from_product([cfg.zones, cfg.zones]))
+FLOW_LIMIT = df2gdx(db_input, pd.DataFrame(data=[0]), 'FLOW_LIMIT', 'par', 0,
+                    'max transmission expansion')
 # iterate over scenario dictionary
 for campaign in dict_campaigns.keys():
     # modify scenario parameter and solve medea for each scenario (i.e. for each parameter modification)
+    reset_symbol(db_input, 'SWITCH_ANCILLARY', pd.DataFrame(data=dict_campaigns[campaign]['must_run']))
+
+    INIT_CAP_X = INITIAL_CAP_X
+    for z in cfg.zones:
+        for zz in cfg.zones:
+            if z != zz:
+                INIT_CAP_X.loc[idx[z, zz]] = dict_campaigns[campaign]['transmission'][0]
+    reset_symbol(db_input, 'INITIAL_CAP_X', INIT_CAP_X)
+
+    if campaign == 'pv_upscale':
+        GEN_PROFILE = GEN_PROFILE.unstack(['z', 'n'])
+        GEN_PROFILE = timesort(GEN_PROFILE)
+        pv_upscaled.index = GEN_PROFILE.index
+        GEN_PROFILE.loc[:, idx['Value', 'AT', 'pv']] = pv_upscaled.values
+        GEN_PROFILE = GEN_PROFILE.stack(['z', 'n']).reorder_levels(['z', 't', 'n'])
+        reset_symbol(db_input, 'GEN_PROFILE', GEN_PROFILE)
+
     for price_co2 in dict_campaigns[campaign]['co2_price']:
         # modify scenario parameter in GAMS database
         # example: change CO2 price

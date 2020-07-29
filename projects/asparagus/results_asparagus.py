@@ -34,6 +34,9 @@ symbols_to_read = {
     'add_r': (['n'], ['z']),
     'add_g': (['i'], ['z']),
     'deco_g': (['i'], ['z']),
+    'add_s': (['k'], ['z']),
+    'add_v': (['k'], ['z']),
+    'add_x': (['z'], ['z']),
     'AnnGByTec': (['i', 'm', 'f'], ['z'])
 }
 # cost_air_pol(z,f)
@@ -50,6 +53,7 @@ for campaign in dict_campaigns.keys():
 
                 identifier = f'{PROJECT_NAME}_{campaign}_{price_co2}_{cap_wind}_{pv_cost}'
                 FNAME = os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', PROJECT_NAME, 'opt', f'medea_out_{identifier}.gdx')
+                # FNAME = os.path.join('C:/Users', 'Sebastian', 'asparagus_gdx', f'medea_out_{identifier}.gdx')
 
                 db_output = ws.add_database_from_gdx(FNAME)
 
@@ -79,5 +83,40 @@ for campaign in dict_campaigns.keys():
 
 # %% write results to csv
 df_result.index = pd.MultiIndex.from_tuples(df_result.index)
-df_result.to_csv(os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', PROJECT_NAME, 'results', 'results_200503.csv'),
+df_result.to_csv(os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', PROJECT_NAME, 'results', 'annual_results_h2.csv'),
                  sep=';', decimal=',', encoding='utf-8-sig')
+
+# %% retrieve hourly results
+hourly_to_read = {
+    'v': (['t', ], ['z', 'k'])
+}
+
+df_hourly = pd.DataFrame()
+
+for campaign in dict_campaigns.keys():
+    # mix = pd.MultiIndex.from_product([dict_campaigns[campaign]['wind_cap'], cfg.zones])
+    for price_co2 in dict_campaigns[campaign]['co2_price']:
+        for cap_wind in dict_campaigns[campaign]['wind_cap']:
+            for pv_cost in dict_campaigns[campaign]['pv_cost']:
+
+                identifier = f'{PROJECT_NAME}_{campaign}_{price_co2}_{cap_wind}_{pv_cost}'
+                FNAME = os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', PROJECT_NAME, 'opt', f'medea_out_{identifier}.gdx')
+
+                db_output = ws.add_database_from_gdx(FNAME)
+
+                df_collect = pd.DataFrame()
+                for symbol, sets in hourly_to_read.items():
+                    df = gdx2df(db_output, symbol, sets[0], sets[1])
+                    # if sets[0]:
+                    #    strix = [f'{symbol}_{ix}' for ix in df.index]
+                    # else:
+                    #    strix = [symbol]
+                    # df.index = strix
+                    # collect results
+                    df_collect = df_collect.append(df, ignore_index=False)
+
+                df_collect.index = pd.MultiIndex.from_product(
+                    [[campaign], [price_co2], [cap_wind], [pv_cost], df_collect.index],
+                    names=('campaign', 'co2_price', 'wind_cap', 'pv_cost', 'variable'))
+
+                df_result = df_result.append(df_collect)

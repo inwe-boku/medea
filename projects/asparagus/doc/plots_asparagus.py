@@ -1,16 +1,18 @@
 # %% imports
 import os
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+
 import config as cfg
 from src.tools.visualize_data import plot_lines, plot_sublines, plot_subn
 
 # %% ----- ----- ----- ----- settings ----- ----- ----- -----
 idx = pd.IndexSlice
-PRICE_CO2 = 60
+PRICE_CO2 = 50
 
-scenario = 'no_mustrun'  # 'base'
+scenario = 'base'
 
 REFUEL_COLORS = ['#c72321', '#0d8085', '#f0c220', '#595959', '#3b68f9', '#7794dd']
 RES_COLORS = ['#d69602', '#ffd53d', '#3758ba', '#7794dd']
@@ -21,15 +23,38 @@ ANNUITY_FACTOR = 0.05827816
 FLH_PV = 857.4938
 FLH_WINDON = 2015.0359
 
-RPATH = os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', 'asparagus', 'results', 'results_200620.csv')
+RPATH = os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', 'asparagus', 'results')
 FPATH = os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', 'asparagus', 'doc', 'figures')
 
 if not os.path.exists(FPATH):
     os.makedirs(FPATH)
 
 # %% ----- ----- ----- ----- read results ----- ----- ----- -----
-results = pd.read_csv(RPATH, decimal=',', delimiter=';', index_col=[0, 1, 2, 3, 4], header=[0])
+# results_h2stack = pd.read_csv(os.path.join(RPATH, 'results_h2stack.csv'), decimal=',', delimiter=';', index_col=[0, 1, 2, 3, 4], header=[0])
+# results_sens = pd.read_csv(os.path.join(RPATH, 'results_h2_pvsens.csv'), decimal=',', delimiter=';', index_col=[0, 1, 2, 3, 4], header=[0])
+# results = results_h2stack.append(results_sens)
+
+results = pd.read_csv(os.path.join(RPATH, 'results_h2.csv'), decimal=',', delimiter=';', index_col=[0, 1, 2, 3, 4],
+                      header=[0])
 results = results.unstack(-1)
+
+# %% plot annual system cost in Austria for scenarios with co2-price > 0
+
+
+# %% plot annual system cost less trade balance and financial trade balance in Austria
+
+
+# %% plot annual CO2 emissions in Austria for each scenario
+
+
+# %% annual plot renewable generation, curtailment and net trade volume in Austria
+
+
+# %% plot seasonal (monthly) variation in ror, inflows, wind, pv resources
+
+
+# %% plot filling of reservoirs v over year for each scenario in baseline
+
 
 # %% analyze system configuration (capacities added and decommissioned)
 cap_init_at = {
@@ -54,7 +79,7 @@ capi = pd.DataFrame.from_dict(cap_init_at, orient='index', columns=['base'])
 capi.columns.name = 'scenario'
 capi.index.name = 'variable'
 
-capa = results.loc[idx['base', :, :, 36715], idx['AT', :]]
+capa = results.loc[idx[scenario, PRICE_CO2, :, 36715], idx['AT', :]]
 capa.columns = capa.columns.droplevel(0)
 capa = capa.loc[:, (capa.columns.str.contains('add_g') | capa.columns.str.contains('deco'))]
 capa.columns = pd.MultiIndex.from_tuples(list(capa.columns.str.split('_g_')))
@@ -64,14 +89,15 @@ capa.columns.name = 'variable'
 capa.index = capa.index.rename(['scenario', 'co2price', 'wind_lim', 'pv_cost'])
 capa = (capa + capi.T).dropna(axis=1, how='all')
 capa = capa.replace(0, np.nan).dropna(axis=1, how='all').replace(np.nan, 0)
+capa.index = capa.index.get_level_values(2)
 
-plot_lines(capa, os.path.join(FPATH, 'capacity.pdf'), color=REFUEL_COLORS)
+plot_lines(capa, os.path.join(FPATH, 'capacity.pdf'))  #, color=REFUEL_COLORS)
 
 # %% analyze system operation (net exports, curtailment, generation)
 var_of_interest = ['AnnCO2Emissions', 'AnnCurtail', 'AnnCurtailShare', 'AnnGBiomass', 'AnnGFossil_el', 'AnnG_el',
                    'AnnR', 'AnnSIn', 'AnnSOut', 'AnnX']
 
-oper = results.loc[idx['base', :, :, 36715], idx['AT', :]]
+oper = results.loc[idx[scenario, :, :, 36715], idx['AT', :]]
 oper.loc[:, idx['AT', 'AnnX']] = results.loc[:, idx['DE', 'AnnX']]
 oper.columns = oper.columns.droplevel(0)
 oper['AnnGFossil_el'] = oper['AnnG_el'] - oper['AnnGBiomass']
@@ -232,14 +258,14 @@ plt.savefig(os.path.join(FPATH, 'undisturbed_sens_share.pdf'))
 plt.close()
 
 # %% plot sensitivity of optimal res capacity deployment to capital cost of pv
-sensitivity = results.loc[idx['pv_sens', [30, 60, 90], 18, :], idx['AT', ['add_r_pv', 'add_r_wind_on']]].copy()
+sensitivity = results.loc[idx['pv_sens', [25, 50, 75], 16, :], idx['AT', ['add_r_pv', 'add_r_wind_on']]].copy()
 sensitivity.index = sensitivity.index.droplevel([0, 2])
 sensitivity.columns = sensitivity.columns.droplevel(0)
 sensitivity = sensitivity.unstack(0)
 sensitivity.index = np.round(sensitivity.index / ANNUITY_FACTOR / 1000, decimals=2)
 sensitivity = sensitivity.rename(mapper={'add_r_pv': 'Solar PV', 'add_r_wind_on': 'Wind Onshore',
-                                         0: r'0 €/t CO$_2$', 30: r'30 €/t CO$_2$', 60: r'60 €/t CO$_2$',
-                                         90: r'90 €/t CO$_2$', 120: r'120 €/t CO$_2$'}, axis=1)
+                                         0: r'0 €/t CO$_2$', 25: r'25 €/t CO$_2$', 50: r'50 €/t CO$_2$',
+                                         75: r'75 €/t CO$_2$', 100: r'100 €/t CO$_2$'}, axis=1)
 sensitivity_nrg = sensitivity.copy()
 sensitivity.columns = sensitivity.columns.map(', '.join)
 
