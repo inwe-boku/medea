@@ -1,7 +1,8 @@
 # %% imports
 import os
-import numpy as np
+
 import pandas as pd
+
 import config as cfg
 from src.tools.data_processing import hours_in_year
 
@@ -30,13 +31,15 @@ estimates = {
     'ESTIMATES': pd.read_excel(STATIC_FNAME, 'ESTIMATES', index_col=[0]),
     'AIR_POLLUTION': pd.read_excel(STATIC_FNAME, 'AIR_POLLUTION', index_col=[0]),
     'CO2_INTENSITY': pd.read_excel(STATIC_FNAME, 'CO2_INTENSITY', index_col=[0]),
-    'COST_TRANSPORT': pd.read_excel(STATIC_FNAME, 'COST_TRANSPORT', index_col=[0])
+    'COST_TRANSPORT': pd.read_excel(STATIC_FNAME, 'COST_TRANSPORT', index_col=[0]),
+    'DISCOUNT_RATE': pd.read_excel(STATIC_FNAME, 'WACC', index_col=[0])
 }
 
 # --------------------------------------------------------------------------- #
 # %% create dict_sets
 
 dict_sets = {
+    'all_tec': {all_tec: [True] for all_tec in plant_data['technology'].index},
     'f': {fuel: [True] for fuel in plant_data['technology'].loc[:, 'fuel'].unique()},
     'i': {plant: [True] for plant in plant_data['technology'].loc[
         plant_data['technology']['conventional'] == 1].index.unique()},
@@ -122,13 +125,21 @@ for zone in cfg.zones:
 # Inflows to hydro storage plant
 hydro_storage = plant_data['technology'].loc[(plant_data['technology']['storage'] == 1) &
                                              (plant_data['technology']['fuel'] == 'Water')].index
+
+inflow_factor = plant_data['installed'].loc[idx['Installed Capacity Out', :, cfg.year], hydro_storage].T / \
+                plant_data['installed'].loc[idx['Installed Capacity Out', :, cfg.year], hydro_storage].T.sum()
+inflow_factor.columns = inflow_factor.columns.droplevel([0, 2])
+
 ts_inflows = pd.DataFrame(index=list(ts_data['ZONAL'].index),
                           columns=pd.MultiIndex.from_product([cfg.zones, dict_sets['k'].index]))
+
 for zone in list(cfg.zones):
     for strg in hydro_storage:
         ts_inflows.loc[:, (zone, strg)] = ts_data['ZONAL'].loc[:, idx[zone, 'inflows', 'reservoir']] * \
-                                          plant_data['storage_clusters'].loc[(strg, zone), 'inflow_factor']
+                                          inflow_factor.loc[strg, zone]
 ts_data.update({'INFLOWS': ts_inflows})
+
+
 
 # --------------------------------------------------------------------------- #
 # %% peak load and profiles
@@ -142,6 +153,7 @@ ts_data.update({'PEAK_PROFILE': ts_data['ZONAL'].loc[:, idx[:, :, 'profile']].ma
 # TODO: set limits to potentials -- requires potentials first
 # --------------------------------------------------------------------------- #
 invest_limits = {
+    'potentials': pd.read_excel(STATIC_FNAME, 'potentials', index_col=[0]),
     'thermal': pd.DataFrame([float('inf') if cfg.invest_conventionals else 0]),
     'intermittent': pd.DataFrame(data=[float('inf') if cfg.invest_renewables else 0][0],
                                  index=cfg.zones, columns=dict_sets['n'].index),

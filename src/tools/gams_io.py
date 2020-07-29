@@ -8,6 +8,25 @@ from gams import *
 import config as cfg
 
 
+def timesort(df, index_sets='t', timeindex_name='t', timeindex_string='t'):
+    """
+    Sorts a pandas dataframe indexed by a string-float combination by float (ignoring string) in decending order.
+    Useful for sorting GAMS-time-set-indexed data.
+    :param df: A dataframe indexed by a float-string combination
+    :param index_sets: column name(s) to be used as index
+    :param timeindex_name: name of df's index. Defaults to 't'
+    :param timeindex_pattern: string part of the index to be ignored in sorting
+    :return:
+    """
+
+    df.reset_index(inplace=True)
+    df['tix'] = pd.to_numeric(df[timeindex_name].str.split(pat=timeindex_string).str.get(1))
+    df.sort_values(by=['tix'], inplace=True)
+    df.set_index(index_sets, drop=True, inplace=True)
+    df.drop(columns=['tix'], inplace=True)
+    return df
+
+
 def reset_symbol(db_gams, symbol_name, df):
     """
     writes values in df to the already existing symbol "symbol name" in GAMS-database gams_db
@@ -54,15 +73,17 @@ def gdx2df(db_gams, symbol, index_list, column_list):
     elif isinstance(sym, GamsSet):
         gdx_df = pd.DataFrame(data=True, index=gdx_dict, columns=['Value'])
     else:
-        gdx_df = pd.DataFrame(list(gdx_dict.values()), index=pd.MultiIndex.from_tuples(gdx_dict.keys()), columns=['Value'])
+        gdx_df = pd.DataFrame(list(gdx_dict.values()), index=pd.MultiIndex.from_tuples(gdx_dict.keys()),
+                              columns=['Value'])
         gdx_df.index.names = db_gams.get_symbol(symbol).domains_as_strings
         gdx_df = pd.pivot_table(gdx_df, values='Value', index=index_list, columns=column_list)
     if 't' in index_list:
-        gdx_df.reset_index(inplace=True)
-        gdx_df['tix'] = pd.to_numeric(gdx_df['t'].str.split(pat='t').str.get(1))
-        gdx_df.sort_values(by=['tix'], inplace=True)
-        gdx_df.set_index(index_list, drop=True, inplace=True)
-        gdx_df.drop(columns=['tix'], inplace=True)
+        gdx_df = timesort(gdx_df, index_sets=index_list)
+        # gdx_df.reset_index(inplace=True)
+        # gdx_df['tix'] = pd.to_numeric(gdx_df['t'].str.split(pat='t').str.get(1))
+        # gdx_df.sort_values(by=['tix'], inplace=True)
+        # gdx_df.set_index(index_list, drop=True, inplace=True)
+        # gdx_df.drop(columns=['tix'], inplace=True)
     gdx_df = gdx_df.fillna(0)
     return gdx_df
 

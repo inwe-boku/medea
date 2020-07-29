@@ -1,7 +1,9 @@
 # %% imports
 import os
+
 import numpy as np
 import pandas as pd
+
 import config as cfg
 
 # --------------------------------------------------------------------------- #
@@ -71,7 +73,8 @@ for y in years:
 # --------------------------------------------------------------------------- #
 # %% storage capacities
 # --------------------------------------------------------------------------- #
-# --------------------------------------------------------------------------- #
+
+# ---------------------------------------------------------------------------
 # hydro storages
 plant_data['hydro'].drop(plant_data['hydro'][plant_data['hydro'].technology == 'Run-of-river'].index, inplace=True)
 # filter out data without reservoir size in GWh
@@ -79,33 +82,40 @@ plant_data['hydro'].dropna(subset=['energy_max', 'power_in'], inplace=True)
 # calculate duration of generation from fully filled reservoir
 plant_data['hydro']['max_duration'] = plant_data['hydro']['energy_max'] / plant_data['hydro']['power_out'] * 1000 / 24
 plant_data['hydro']['count'] = 1
-plant_data.update({'hydro_clusters': plant_data['hydro'].groupby(
+plant_data.update({'hydro_aggregated': plant_data['hydro'].groupby(
     ['technology', 'country', pd.cut(plant_data['hydro']['max_duration'], [0, 2, 7, 75])]).sum()})
 # assign technology and zone index to rows
-plant_data['hydro_clusters']['country'] = plant_data['hydro_clusters'].index.get_level_values(1)
-plant_data['hydro_clusters']['category'] = plant_data['hydro_clusters'].index.get_level_values(2).rename_categories(
+plant_data['hydro_aggregated']['country'] = plant_data['hydro_aggregated'].index.get_level_values(1)
+plant_data['hydro_aggregated']['category'] = plant_data['hydro_aggregated'].index.get_level_values(2).rename_categories(
     ['day', 'week', 'season']).astype(str)
-plant_data['hydro_clusters']['tech'] = plant_data['hydro_clusters'].index.get_level_values(0)
-plant_data['hydro_clusters']['tech'] = plant_data['hydro_clusters']['tech'].replace(['Pumped Storage', 'Reservoir'],
-                                                                                    ['psp', 'res'])
-plant_data['hydro_clusters']['set_elem'] = plant_data['hydro_clusters']['tech'] + '_' + plant_data['hydro_clusters'][
-    'category']
-plant_data['hydro_clusters'] = plant_data['hydro_clusters'].set_index(['set_elem', 'country'])
-plant_data['hydro_clusters'].fillna(0, inplace=True)
+plant_data['hydro_aggregated']['tech'] = plant_data['hydro_aggregated'].index.get_level_values(0)
+plant_data['hydro_aggregated']['tech'] = plant_data['hydro_aggregated']['tech'].replace(['Pumped Storage', 'Reservoir'],
+                                                                                        ['hyd_psp', 'hyd_res'])
+plant_data['hydro_aggregated']['set_elem'] = plant_data['hydro_aggregated']['tech'] + '_' + \
+                                             plant_data['hydro_aggregated'][
+                                                 'category']
+plant_data['hydro_aggregated'] = plant_data['hydro_aggregated'].set_index(['set_elem', 'country'])
+plant_data['hydro_aggregated'].fillna(0, inplace=True)
 # conversion from MW to GW
-plant_data['hydro_clusters']['power_out'] = plant_data['hydro_clusters']['power_out'] / 1000
-plant_data['hydro_clusters']['power_in'] = plant_data['hydro_clusters']['power_in'] / 1000
-plant_data['hydro_clusters']['inflow_factor'] = (
-        plant_data['hydro_clusters']['energy_max'] / plant_data['hydro_clusters']['energy_max'].sum())
-plant_data['hydro_clusters'] = plant_data['hydro_clusters'].loc[:,
-                               ['power_in', 'power_out', 'energy_max', 'inflow_factor']].copy()
+plant_data['hydro_aggregated']['power_out'] = plant_data['hydro_aggregated']['power_out'] / 1000
+plant_data['hydro_aggregated']['power_in'] = plant_data['hydro_aggregated']['power_in'] / 1000
+plant_data['hydro_aggregated']['inflow_factor'] = (
+        plant_data['hydro_aggregated']['energy_max'] / plant_data['hydro_aggregated']['energy_max'].sum())
+plant_data['hydro_aggregated'] = plant_data['hydro_aggregated'].loc[:,
+                                 ['power_in', 'power_out', 'energy_max', 'inflow_factor']].copy()
 
+# --------------------------------------------------------------------------- #
 # %% other storage capacity - batteries and hydrogen
-# append battery data
-bat_idx = pd.MultiIndex.from_product([['battery'], list(cfg.zones)])
-df_battery = pd.DataFrame(np.nan, bat_idx, dict_additions['batteries'].keys())
-for zone in list(cfg.zones):
-    for key in dict_additions['batteries'].keys():
-        df_battery.loc[('battery', zone), key] = dict_additions['batteries'][key][0]
 
-plant_data['storage_clusters'] = plant_data['hydro_clusters'].append(df_battery)
+# append battery data
+# bat_idx = pd.MultiIndex.from_product([['battery'], list(cfg.zones)])
+# df_battery = pd.DataFrame(np.nan, bat_idx, dict_additions['batteries'].keys())
+# for zone in list(cfg.zones):
+#    for key in dict_additions['batteries'].keys():
+#        df_battery.loc[('battery', zone), key] = dict_additions['batteries'][key][0]
+#
+# plant_data['storage_clusters'] = plant_data['hydro_aggregated'].append(df_battery)
+
+# --------------------------------------------------------------------------- #
+# %% renewables capacities
+# --------------------------------------------------------------------------- #

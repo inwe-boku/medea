@@ -8,7 +8,6 @@ import config as cfg
 from src.tools.gams_io import df2gdx
 from src.tools.preprocess_data import dict_sets, plant_data, ts_data, estimates, invest_limits
 
-
 idx = pd.IndexSlice
 # --------------------------------------------------------------------------- #
 # %% create workspace and database
@@ -19,6 +18,7 @@ db = ws.add_database()
 # --------------------------------------------------------------------------- #
 # %% instantiate SETS
 # --------------------------------------------------------------------------- #
+all_set = df2gdx(db, dict_sets['all_tec'], 'all_tec', 'set', [])
 f_set = df2gdx(db, dict_sets['f'], 'f', 'set', [])
 l_set = df2gdx(db, dict_sets['l'], 'l', 'set', [])
 m_set = df2gdx(db, dict_sets['m'], 'm', 'set', [])
@@ -47,33 +47,31 @@ transmission = plant_data['technology'].loc[plant_data['technology']['transmissi
 
 # technology parameters
 # TODO: consider reformulating model to have one capital cost / O&M parameter for all technologies
-CAPITALCOST_G = df2gdx(db, plant_data['technology'].loc[dispatchable, 'eqacapex_p'],
-                       'CAPITALCOST_G', 'par', [i_set], '[kEUR per GW]')
-CAPITALCOST_R = df2gdx(db, plant_data['technology'].loc[intermittent, 'eqacapex_p'],
-                       'CAPITALCOST_R', 'par', [z_set, n_set], '[kEUR per GW]')
-CAPITALCOST_S = df2gdx(db, plant_data['technology'].loc[storage, 'eqacapex_p'],
-                       'CAPITALCOST_S', 'par', [z_set, k_set], '[GW]')
-CAPITALCOST_V = df2gdx(db, plant_data['technology'].loc[storage, 'eqacapex_e'],
-                       'CAPITALCOST_V', 'par', [z_set, k_set], '[GW]')
-CAPITALCOST_X = df2gdx(db, plant_data['technology'].loc[transmission, 'eqacapex_p'],
-                       'CAPITALCOST_X', 'par', [z_set], 'kEUR per GW')
+CAPITALCOST_P = df2gdx(db, plant_data['technology'].loc[:, 'capex_p'],
+                       'CAPITALCOST_P', 'par', [all_set], '[kEUR per GW]')
+CAPITALCOST_E = df2gdx(db, plant_data['technology'].loc[:, 'capex_e'],
+                       'CAPITALCOST_E', 'par', [all_set], '[kEUR per GW]')
+LIFETIME = df2gdx(db, plant_data['technology'].loc[:, 'lifetime'],
+                  'LIFETIME', 'par', [all_set], '[a]')
+DISCOUNT_RATE = df2gdx(db, estimates['DISCOUNT_RATE'], 'DISCOUNT_RATE', 'par', [z_set], '[]')
 
-EFFICIENCY_G = df2gdx(db, plant_data['technology'].loc[dispatchable, 'eta_ec'],
+EFFICIENCY_G = df2gdx(db, plant_data['technology'].loc[dispatchable, ['eta_ec', 'primary_product', 'fuel']].set_index(
+    ['primary_product', 'fuel'], append=True),
                       'EFFICIENCY_G', 'par', [i_set, m_set, f_set], '[%]')
 EFFICIENCY_S_OUT = df2gdx(db, plant_data['technology'].loc[storage, 'eta_ec'],
-                          'EFFICIENCY_S_OUT', 'par', [z_set, k_set], '[GW]')
+                          'EFFICIENCY_S_OUT', 'par', [k_set], '[GW]')
 
-EFFICIENCY_S_IN = df2gdx(db, plant_data['storage_clusters']['efficiency_in'].reorder_levels((1, 0)),
-                         'EFFICIENCY_S_IN', 'par', [z_set, k_set], '[GW]')
+EFFICIENCY_S_IN = df2gdx(db, plant_data['technology'].loc[storage, 'eta_ec'],
+                         'EFFICIENCY_S_IN', 'par', [k_set], '[GW]')
 
 OM_COST_G_QFIX = df2gdx(db, plant_data['technology'].loc[dispatchable, 'opex_f'],
                         'OM_COST_G_QFIX', 'par', [i_set], '[kEUR per GW]')
 OM_COST_G_VAR = df2gdx(db, plant_data['technology'].loc[dispatchable, 'opex_v'],
                        'OM_COST_G_VAR', 'par', [i_set], '[kEUR per GWh]')
 OM_COST_R_QFIX = df2gdx(db, plant_data['technology'].loc[intermittent, 'opex_f'],
-                        'OM_COST_R_QFIX', 'par', [z_set, n_set], '[kEUR per GW]')
+                        'OM_COST_R_QFIX', 'par', [n_set], '[kEUR per GW]')
 OM_COST_R_VAR = df2gdx(db, plant_data['technology'].loc[intermittent, 'opex_v'],
-                       'OM_COST_R_VAR', 'par', [z_set, n_set], '[kEUR per GWh]')
+                       'OM_COST_R_VAR', 'par', [n_set], '[kEUR per GWh]')
 
 FEASIBLE_INPUT = df2gdx(db, plant_data['chp']['fuel_need'],
                         'FEASIBLE_INPUT', 'par', [i_set, l_set, f_set], '[GW]')
@@ -105,12 +103,13 @@ DISTANCE = df2gdx(db, plant_data['DISTANCE'].stack(),
 PEAK_LOAD = df2gdx(db, ts_data['PEAK_LOAD'], 'PEAK_LOAD', 'par', [z_set], '[GW]')
 PEAK_PROFILE = df2gdx(db, ts_data['PEAK_PROFILE'], 'PEAK_PROFILE', 'par', [z_set, n_set], '[]')
 # TODO: Document values of LAMBDA and SIGMA
-LAMBDA = df2gdx(db, estimates['ESTIMATES'].loc['LAMBDA', :], 'LAMBDA', 'par', 0, '[]')
-SIGMA = df2gdx(db, estimates['ESTIMATES'].loc['SIGMA', :], 'SIGMA', 'par', 0, '[]')
+LAMBDA = df2gdx(db, estimates['ESTIMATES'].loc['LAMBDA', :], 'LAMBDA', 'par', [z_set], '[]')
+SIGMA = df2gdx(db, estimates['ESTIMATES'].loc['SIGMA', :], 'SIGMA', 'par', [z_set], '[]')
 VALUE_NSE = df2gdx(db, estimates['ESTIMATES'].loc['VALUE_NSE'], 'VALUE_NSE', 'par', [z_set], 'EUR per MWh')
 
 CO2_INTENSITY = df2gdx(db, estimates['CO2_INTENSITY'],
                        'CO2_INTENSITY', 'par', [f_set], '[kt CO2 per GWh fuel input]')
+
 AIR_POL_COST_FIX = df2gdx(db, estimates['AIR_POLLUTION']['fixed cost'],
                           'AIR_POL_COST_FIX', 'par', [f_set], 'EUR per MW')
 AIR_POL_COST_VAR = df2gdx(db, estimates['AIR_POLLUTION']['variable cost'],
@@ -154,6 +153,6 @@ logging.info('medea data exported')
 # --------------------------------------------------------------------------- #
 # %% data export to gdx
 # --------------------------------------------------------------------------- #
-export_location = os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'gdx', 'medea_main_data.gdx')
+export_location = os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'gdx', 'medea_main_data_adj.gdx')
 db.export(export_location)
 logging.info(f'medea gdx exported to {export_location}')
