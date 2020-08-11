@@ -1,14 +1,15 @@
 # %% imports
-from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pandas as pd
 from scipy.signal import savgol_filter
+from statsmodels.tsa.seasonal import STL
 
 import config as cfg
+from src.tools.data_processing import medea_path
 
 # %% settings
-FNAME = Path(cfg.MEDEA_ROOT_DIR) / 'data' / 'processed' / 'medea_regional_timeseries.csv'
+FNAME = medea_path('data', 'processed', 'medea_regional_timeseries.csv')
 
 
 # %% define functions
@@ -31,6 +32,11 @@ def extract_hourly_pattern(time_series):
     return df
 
 
+def extract_monthly_pattern(time_series):
+    df = time_series.groupby(time_series.index.month).mean() / time_series.groupby(time_series.index.month).mean().sum()
+    return df
+
+
 def apply_pattern(aggregate_series, pattern):
     lst = [i * aggregate_series.iloc[d] for d in range(0, len(aggregate_series)) for i in list(pattern)]
     df = pd.DataFrame(lst, columns=['Values'])
@@ -41,12 +47,38 @@ def apply_pattern(aggregate_series, pattern):
 df = pd.read_csv(FNAME, index_col=[0])
 df.index = pd.to_datetime(df.index)
 
-cols = ['AT-power-load', 'AT-pv-generation', 'AT-pv-capacity', 'AT-wind_on-generation']
+cols = ['AT-power-load', 'AT-pv-generation', 'AT-pv-capacity', 'AT-wind_on-generation', 'AT-wind_on-capacity',
+        'AT-ror-profile']
 dfs = df.loc[str(cfg.year), cols]
+# dfs = df.loc[(df.index.year >= 2015) & (df.index.year <= 2018), cols]
 
-# scale full-load hours of PV to reach same LCOE as wind power
-pv_upscaled = dfs['AT-pv-generation'] / dfs['AT-pv-capacity'] * 1.287
-# pv austria says 1086.4 full-load hours per year, equal to factor of 1.267
+# scale generation of PV to levels consistent with national energy balance
+pv_profile = dfs['AT-pv-generation'] * 1.167 / dfs['AT-pv-capacity']
+
+# scale generation of onshore wind to levels consistent with national energy balance
+wind_profile = dfs['AT-wind_on-generation'] * 0.983 / dfs['AT-wind_on-capacity']
+
+# scale run-of-river profile to levels consistent with e-control Betriebsstatistik BStGes-JR1_Bilanz.xlsx available from
+# https://www.e-control.at/documents/1785851/1811609/BStGes-JR1_Bilanz.xlsx
+ror_profile = dfs['AT-ror-profile'] * 1.038
+
+# %% LOESS filter for additive decomposition
+
+# (1) decomposition of PV profile
+pv_loess = STL(pv_profile, seasonal=49, trend=673)
+pv_fit = pv_loess.fit()
+
+# (2) decomposition of Wind Onshore profile
+wind_loess = STL(wind_profile, seasonal=673, trend=2161)
+wind_fit = wind_loess.fit()
+
+# generate synthetic profiles
+synthetic = pd.DataFrame(index=wind_profile.index, columns=['pv_noseas', 'wind_noseas', 'wind_pvpat', 'pv_windpat'])
+
+synthetic['pv_noseas'] = pv_fit.seasonal + pv_fit.resid + pv_fit.trend.mean()
+
+synthetic.loc['2016-01', 'pv_noseas'].plot()
+plt.show()
 
 # %% get seasonal patterns of wind, pv, load in Austria
 seasonal_pattern = pd.DataFrame(columns=cols)

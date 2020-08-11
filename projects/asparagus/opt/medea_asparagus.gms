@@ -9,12 +9,15 @@ parameters
          WIND_ON_LIMIT           upper limit on onshore wind deployment
          FLOW_LIMIT              upper limit on electricity exchange
          PV_CAPEX                annuity of PV capex
+         SWITCH_POLICY           switch for policy constraint
 ;
 
 * read scenario parameter from scenario .gdx-file
 $gdxin medea_%scenario%_data
 $load  CO2_SCENARIO WIND_ON_LIMIT FLOW_LIMIT PV_CAPEX
 $gdxin
+
+SWITCH_POLICY = 1;
 
 * set model parameter to scenario parameter value
 PRICE_CO2(z,t) = CO2_SCENARIO;
@@ -74,7 +77,7 @@ equations
 ;
 * ------------------------------------------------------------------------------
 
-policy_100resbalance..
+policy_100resbalance$(SWITCH_POLICY)..
          sum((t,n), GEN_PROFILE('AT',t,n) * (INITIAL_CAP_R('AT',n) + add_r('AT',n) ) )
          + sum(t, g('AT',t,'bio_chp','el','biomass'))
          + sum(t, g('AT',t,'bio','el','biomass'))
