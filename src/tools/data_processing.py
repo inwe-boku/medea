@@ -1,6 +1,8 @@
+# %% imports
 import logging
 import os
 import shutil
+from pathlib import Path
 
 import cdsapi
 import certifi
@@ -8,9 +10,11 @@ import numpy as np
 import pandas as pd
 import urllib3
 
+import config as cfg
+
 
 # ======================================================================================================================
-# leap year functions
+# %% leap year functions
 # ----------------------------------------------------------------------------------------------------------------------
 
 def is_leapyear(year):
@@ -48,7 +52,7 @@ def hours_in_year(year):
 
 
 # ======================================================================================================================
-# functions for heat load calculation
+# %% functions for heat load calculation
 # ----------------------------------------------------------------------------------------------------------------------
 def heat_yr2day(av_temp, ht_cons_annual):
     """
@@ -150,7 +154,7 @@ def resample_index(index, freq):
 
 
 # ======================================================================================================================
-# functions to retrieve data
+# %% functions to retrieve data
 # ----------------------------------------------------------------------------------------------------------------------
 def download_file(url, save_to):
     """
@@ -206,3 +210,57 @@ def download_era_temp(filename, year, bounding_box):
             break
     else:
         logging.warning('download failed permanently')
+
+
+def download_energy_balance(country, years=range(2012, 2019)):
+    # TODO: check if files exist already and download only if not
+    if country == 'AT':
+        # Austrian energy balance as provided by Statistik Austria
+        url = ('http://www.statistik.at/wcm/idc/idcplg?IdcService=GET_NATIVE_FILE&'
+               'RevisionSelectionMethod=LatestReleased&dDocName=029955')
+        enbal_at = medea_path('data', 'raw', 'enbal_AT.xlsx')
+        logging.info(f'downloading Austrian energy balance')
+        download_file(url, enbal_at)
+
+    if country == 'DE':
+        # German energy balance as provided by AGEB
+        ht_enduse_de = pd.DataFrame()
+        url_extension_bal = {12: 'xlsx', 13: 'xls', 14: 'xls', 15: 'xlsx', 16: 'xls', 17: 'xlsx', 18: 'xls'}
+        url_extension_sat = {12: 'xlsx', 13: 'xls', 14: 'xls', 15: 'xlsx', 16: 'xls', 17: 'xlsx', 18: 'xlsx'}
+        for yr in [x - 2000 for x in years]:
+            url = 'https://ag-energiebilanzen.de/index.php?article_id=29&'
+            url_balance = url + f'fileName=bilanz{yr}d.{url_extension_bal[yr]}'
+            url_sat = url + f'fileName=sat{yr}.{url_extension_sat[yr]}'
+            enbal_de = medea_path('data', 'raw', f'enbal_DE_20{yr}.xlsx')
+            enbal_sat_de = medea_path('data', 'raw', f'enbal_sat_DE_20{yr}.xlsx')
+            logging.info(f'downloading German energy balance for year 20{yr}')
+            download_file(url_balance, enbal_de)
+            download_file(url_sat, enbal_sat_de)
+
+
+# ======================================================================================================================
+# %% further functions
+# ----------------------------------------------------------------------------------------------------------------------
+def medea_path(*name):
+    """
+    creates a path to a folder or file within the medea model
+    :param name: one or more strings with folder or file names that are being concatenated in the given order.
+    If a file name should be generated, use a name with '.'-extension as last argument
+    :return:
+    """
+    filename = Path(cfg.MEDEA_ROOT_DIR)
+    for n in name:
+        filename = filename / n
+    return filename
+
+
+def scale_timeseries(time_series, target_sum):
+    """
+    scales a time series such that its sum is equal to 'target_sum'.
+    Typical use is to scale generation time series to match data reported in annual energy balances
+    :param time_series: a pd.Series with high-frequency data
+    :param annual_sum: a float
+    :return: time series scaled to target sum
+    """
+    scaled_generation = time_series * target_sum / time_series.sum()
+    return scaled_generation
