@@ -5,7 +5,7 @@ import pandas as pd
 from gams import *
 
 import config as cfg
-from projects.asparagus.preprocess_asparagus import pv_upscaled
+# from projects.asparagus.preprocess_asparagus import pv_upscaled
 from projects.asparagus.settings_asparagus import *
 from src.tools.gams_io import reset_symbol, gdx2df, df2gdx, run_medea_project, timesort
 
@@ -94,6 +94,7 @@ CO2_SCENARIO = df2gdx(db_input, pd.DataFrame(data=[0]), 'CO2_SCENARIO', 'par', 0
 WIND_ON_LIMIT = df2gdx(db_input, pd.DataFrame(data=[0]), 'WIND_ON_LIMIT', 'par', 0, 'max wind_on capacity addition')
 PV_CAPEX = df2gdx(db_input, pd.DataFrame(data=[0]), 'PV_CAPEX', 'par', 0, 'capex for solar PV at 5.5% interest')
 SWITCH_ANCILLARY = df2gdx(db_input, pd.DataFrame(data=[0]), 'SWITCH_ANCILLARY', 'par', 0, 'CO2 price scenario')
+SWITCH_POLICY = df2gdx(db_input, pd.DataFrame(data=[1]), 'SWITCH_POLICY', 'par', 0, 'switch for policy constraint')
 INITIAL_CAP_X = pd.DataFrame(data=0, columns=['Value'], index=pd.MultiIndex.from_product([cfg.zones, cfg.zones]))
 FLOW_LIMIT = df2gdx(db_input, pd.DataFrame(data=[0]), 'FLOW_LIMIT', 'par', 0,
                     'max transmission expansion')
@@ -101,6 +102,7 @@ FLOW_LIMIT = df2gdx(db_input, pd.DataFrame(data=[0]), 'FLOW_LIMIT', 'par', 0,
 for campaign in dict_campaigns.keys():
     # modify scenario parameter and solve medea for each scenario (i.e. for each parameter modification)
     reset_symbol(db_input, 'SWITCH_ANCILLARY', pd.DataFrame(data=dict_campaigns[campaign]['must_run']))
+    reset_symbol(db_input, 'SWITCH_POLICY', pd.DataFrame(data=dict_campaigns[campaign]['policy']))
 
     INIT_CAP_X = INITIAL_CAP_X
     for z in cfg.zones:
@@ -112,8 +114,8 @@ for campaign in dict_campaigns.keys():
     if campaign == 'pv_upscale':
         GEN_PROFILE = GEN_PROFILE.unstack(['z', 'n'])
         GEN_PROFILE = timesort(GEN_PROFILE)
-        pv_upscaled.index = GEN_PROFILE.index
-        GEN_PROFILE.loc[:, idx['Value', 'AT', 'pv']] = pv_upscaled.values
+        # pv_upscaled.index = GEN_PROFILE.index
+        # GEN_PROFILE.loc[:, idx['Value', 'AT', 'pv']] = pv_upscaled.values
         GEN_PROFILE = GEN_PROFILE.stack(['z', 'n']).reorder_levels(['z', 't', 'n'])
         reset_symbol(db_input, 'GEN_PROFILE', GEN_PROFILE)
 

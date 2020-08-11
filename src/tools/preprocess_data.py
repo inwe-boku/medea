@@ -1,17 +1,14 @@
 # %% imports
-import os
-
 import pandas as pd
 
 import config as cfg
-from src.tools.data_processing import hours_in_year
+from src.tools.data_processing import hours_in_year, medea_path
 
 # --------------------------------------------------------------------------- #
 # %% settings and initializing
 # --------------------------------------------------------------------------- #
-STATIC_FNAME = os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'processed', 'data_static.xlsx')
+STATIC_FNAME = medea_path('data', 'processed', 'data_static.xlsx')
 idx = pd.IndexSlice
-
 
 # --------------------------------------------------------------------------- #
 # %% Read Data
@@ -24,7 +21,7 @@ plant_data = {
 }
 
 ts_data = {
-    'timeseries': pd.read_csv(os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'processed', 'medea_regional_timeseries.csv'))
+    'timeseries': pd.read_csv(medea_path('data', 'processed', 'medea_regional_timeseries.csv'))
 }
 
 estimates = {

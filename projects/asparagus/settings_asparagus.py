@@ -23,53 +23,45 @@ For sensitivity analysis, we also vary the capital cost of solar PV.
 
 # campaigns
 dict_campaigns = {
-    #    'base': {
-    #        'must_run': [1],
-    #        'co2_price': range(100, -1, -25),
-    #        'wind_cap': range(18, -1, -2),
-    #        'pv_cost': [36424, 16026],
-    #        'transmission': [4.9],
-    #        'xpansion': [0]
-    #        },
-    #    'pv_sens': {
-    #        'must_run': [1],
-    #        'co2_price': range(100, -1, -25),
-    #        'wind_cap': [18],
-    #        'pv_cost': range(36424, 15026, -1500),
-    #        'transmission': [4.9],
-    #        'xpansion': [0]
-    #        },
-    #    'no_mustrun': {
-    #        'must_run': [0],
-    #        'co2_price': [50],  # range(100, -1, -25)
-    #        'wind_cap': range(18, -1, -2),
-    #        'pv_cost': [36424],
-    #        'transmission': [4.9],
-    #        'xpansion': [0]
-    #    },
-    #    'no_bottleneck': {
-    #        'must_run': [1],
-    #        'co2_price': [50],  # range(100, -1, -25)
-    #        'wind_cap': range(18, -1, -2),
-    #        'pv_cost': [36424],
-    #        'transmission': [10],
-    #        'xpansion': [0]
-    #    },
-    #    'xpand': {
-    #        'must_run': [1],
-    #        'co2_price': [50],  # range(100, -1, -25)
-    #        'wind_cap': range(18, -1, -2),
-    #        'pv_cost': [36424],
-    #        'transmission': [10],
-    #        'xpansion': [50]
-    #    },
-    'pv_upscale': {
-        'must_run': [1],
-        'co2_price': [25, 100],
-        'wind_cap': [18],
+    'base': {
+        'must_run': [0],
+        'policy': [1],
+        'co2_price': range(100, -1, -25),
+        'wind_cap': range(18, -1, -2),
         'pv_cost': [36424],
-        'transmission': [4.9],
-        'xpansion': [0]
+        'transmission': [4.9]
+    },
+    'pv_sens': {
+        'must_run': [0],
+        'policy': [1],
+        'co2_price': range(100, -1, -25),
+        'wind_cap': [18],
+        'pv_cost': range(36424, 15026, -1500),
+        'transmission': [4.9]
+    },
+    'no_bottleneck': {
+        'must_run': [0],
+        'policy': [1],
+        'co2_price': [25, 75],  # range(100, -1, -25)
+        'wind_cap': range(18, -1, -2),
+        'pv_cost': [36424],
+        'transmission': [10]
+    },
+    'must_run': {
+        'must_run': [1],
+        'policy': [1],
+        'co2_price': [25],
+        'wind_cap': range(18, -1, -2),
+        'pv_cost': [36424],
+        'transmission': [4.9]
+    },
+    'no_policy': {
+        'must_run': [0],
+        'policy': [0],
+        'co2_price': range(100, -1, -25),
+        'wind_cap': range(18, -1, -2),  # range(18, -1, -2),
+        'pv_cost': [36424],
+        'transmission': [4.9]
     }
 }
 
