@@ -5,8 +5,8 @@ from itertools import compress
 import pysftp
 import yaml
 
-import config as cfg
 from logging_config import setup_logging
+from src.tools.data_processing import medea_path
 
 # TODO: check file size and download larger files from ftp
 # TODO: download zipped csv and unpack after download
@@ -14,7 +14,7 @@ from logging_config import setup_logging
 setup_logging()
 
 SERVER = 'sftp-transparency.entsoe.eu'
-RAW_DATA_DIR = os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'raw')
+RAW_DATA_DIR = medea_path('data', 'raw')
 
 CATEGORIES = [
     'ActualGenerationOutputPerUnit',
@@ -23,7 +23,7 @@ CATEGORIES = [
     'ScheduledCommercialExchanges'
 ]
 
-credentials = yaml.load(open(os.path.join(cfg.MEDEA_ROOT_DIR, 'credentials.yml')), Loader=yaml.SafeLoader)
+credentials = yaml.load(open(medea_path('credentials.yml')), Loader=yaml.SafeLoader)
 USER = credentials['entsoe']['user']
 PWD = credentials['entsoe']['pwd']
 

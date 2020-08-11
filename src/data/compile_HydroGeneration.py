@@ -3,8 +3,9 @@ import os
 import pandas as pd
 
 import config as cfg
+from src.tools.data_processing import medea_path
 
-directory = os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'raw', 'AggregatedGenerationPerType')
+directory = medea_path('data', 'raw', 'AggregatedGenerationPerType')
 df_ror = pd.DataFrame()
 
 for file in os.listdir(directory):
@@ -13,8 +14,8 @@ for file in os.listdir(directory):
     if filename.endswith('.csv'):
         df_tmpfile = pd.DataFrame()
         # print(os.path.join(directory, filename))
-        ts_agpt = pd.read_csv(os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'raw', 'AggregatedGenerationPerType',
-                                           filename), encoding='utf-16', sep='\t')
+        ts_agpt = pd.read_csv(medea_path('data', 'raw', 'AggregatedGenerationPerType', filename),
+                              encoding='utf-16', sep='\t')
         ts_agpt['DateTime'] = pd.to_datetime(ts_agpt['DateTime'])
         ts_agpt.set_index('DateTime', inplace=True)
         splitstr = filename.split('_')
@@ -48,4 +49,4 @@ df_ror = df_ror.fillna(0)
 # resample to hourly frequency
 df_ror_hr = df_ror.resample('H').mean()
 df_ror_hr = df_ror_hr.interpolate('linear')
-df_ror_hr.to_csv(os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'processed', 'generation_hydro.csv'))
+df_ror_hr.to_csv(medea_path('data', 'processed', 'generation_hydro.csv'))

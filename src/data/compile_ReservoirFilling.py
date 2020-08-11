@@ -3,8 +3,9 @@ import os
 import pandas as pd
 
 import config as cfg
+from src.tools.data_processing import medea_path
 
-directory = os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'raw', 'AggregateFillingRateWaterReservoirs')
+directory = medea_path('data', 'raw', 'AggregateFillingRateWaterReservoirs')
 
 df_resfill = pd.DataFrame()
 
@@ -13,8 +14,8 @@ for file in os.listdir(directory):
     print(filename)
     if filename.endswith('.csv'):
         # read data
-        df_fill = pd.read_csv(os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'raw', 'AggregateFillingRateWaterReservoirs',
-                                           filename), sep='\t', encoding='utf-16')
+        df_fill = pd.read_csv(medea_path('data', 'raw', 'AggregateFillingRateWaterReservoirs', filename),
+                              sep='\t', encoding='utf-16')
         df_fill.index = pd.DatetimeIndex(df_fill['DateTime'])
         df_fillreg = pd.DataFrame(columns=cfg.zones)
         for reg in cfg.zones:
@@ -28,4 +29,4 @@ df_resfill = df_resfill.sort_index()
 df_resfill.loc[df_resfill['AT'] < 200000, 'AT'] = None
 df_resfill = df_resfill.interpolate(method='pchip')
 
-df_resfill.to_csv(os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'processed', 'reservoir_filling.csv'))
+df_resfill.to_csv(medea_path('data', 'processed', 'reservoir_filling.csv'))

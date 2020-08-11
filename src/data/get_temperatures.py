@@ -8,7 +8,7 @@ from scipy import interpolate
 
 import config as cfg
 from logging_config import setup_logging
-from src.tools.data_processing import download_era_temp, days_in_year
+from src.tools.data_processing import download_era_temp, days_in_year, medea_path
 
 setup_logging()
 
@@ -21,8 +21,8 @@ setup_logging()
 
 YEARS = range(2012, 2019, 1)
 COUNTRY = {'AT': 'Austria', 'DE': 'Germany'}
-ERA_DIR = os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'raw', 'era5')
-PPLANT_DB = os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'processed', 'power_plant_db.xlsx')
+ERA_DIR = medea_path('data', 'raw', 'era5')
+PPLANT_DB = medea_path('data', 'processed', 'power_plant_db.xlsx')
 
 # format for downloading ERA5: north/west/south/east
 BBOX_CWE = [59.8612, -10.8043, 35.8443, 30.3285]
@@ -66,4 +66,4 @@ for zne in cfg.zones:
 
 # %% export results
 daily_mean_temp.replace(-9999, np.nan, inplace=True)
-daily_mean_temp.to_csv(os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'processed', 'temp_daily_mean.csv'))
+daily_mean_temp.to_csv(medea_path('data', 'processed', 'temp_daily_mean.csv'))

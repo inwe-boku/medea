@@ -22,6 +22,8 @@ RES_COLORS2 = ['#ffd53d', '#3758ba']
 ANNUITY_FACTOR = 0.05827816
 FLH_PV = 857.4938
 FLH_WINDON = 2015.0359
+PV_BASE_COST = 36424
+PV_LOW_COST = 16026
 
 RPATH = os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', 'asparagus', 'results')
 FPATH = os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', 'asparagus', 'doc', 'figures')
@@ -34,7 +36,7 @@ if not os.path.exists(FPATH):
 # results_sens = pd.read_csv(os.path.join(RPATH, 'results_h2_pvsens.csv'), decimal=',', delimiter=';', index_col=[0, 1, 2, 3, 4], header=[0])
 # results = results_h2stack.append(results_sens)
 
-results = pd.read_csv(os.path.join(RPATH, 'results_h2.csv'), decimal=',', delimiter=';', index_col=[0, 1, 2, 3, 4],
+results = pd.read_csv(os.path.join(RPATH, 'annual_results.csv'), decimal=',', delimiter=';', index_col=[0, 1, 2, 3, 4],
                       header=[0])
 results = results.unstack(-1)
 
@@ -79,7 +81,7 @@ capi = pd.DataFrame.from_dict(cap_init_at, orient='index', columns=['base'])
 capi.columns.name = 'scenario'
 capi.index.name = 'variable'
 
-capa = results.loc[idx[scenario, PRICE_CO2, :, 36715], idx['AT', :]]
+capa = results.loc[idx[scenario, PRICE_CO2, :, PV_BASE_COST], idx['AT', :]]
 capa.columns = capa.columns.droplevel(0)
 capa = capa.loc[:, (capa.columns.str.contains('add_g') | capa.columns.str.contains('deco'))]
 capa.columns = pd.MultiIndex.from_tuples(list(capa.columns.str.split('_g_')))
@@ -97,7 +99,7 @@ plot_lines(capa, os.path.join(FPATH, 'capacity.pdf'))  #, color=REFUEL_COLORS)
 var_of_interest = ['AnnCO2Emissions', 'AnnCurtail', 'AnnCurtailShare', 'AnnGBiomass', 'AnnGFossil_el', 'AnnG_el',
                    'AnnR', 'AnnSIn', 'AnnSOut', 'AnnX']
 
-oper = results.loc[idx[scenario, :, :, 36715], idx['AT', :]]
+oper = results.loc[idx[scenario, :, :, PV_BASE_COST], idx['AT', :]]
 oper.loc[:, idx['AT', 'AnnX']] = results.loc[:, idx['DE', 'AnnX']]
 oper.columns = oper.columns.droplevel(0)
 oper['AnnGFossil_el'] = oper['AnnG_el'] - oper['AnnGBiomass']
@@ -116,9 +118,10 @@ for var in var_of_interest:
 # net electricity generation, net electricity exports, fossil thermal generation, CO2 emissions from energy generation
 
 # prepare data
-restrict_sysops = results.loc[idx[scenario, PRICE_CO2, :, 36715], idx['AT', ['AnnG_el', 'AnnGBiomass', 'AnnSOut',
-                                                                             'AnnSIn', 'AnnR', 'AnnCO2Emissions']]]
-restrict_sysops[('AT', 'AnnX')] = results.loc[idx[scenario, PRICE_CO2, :, 36715], idx['DE', 'AnnX']]
+restrict_sysops = results.loc[idx[scenario, PRICE_CO2, :, PV_BASE_COST], idx['AT', ['AnnG_el', 'AnnGBiomass', 'AnnSOut',
+                                                                                    'AnnSIn', 'AnnR',
+                                                                                    'AnnCO2Emissions']]]
+restrict_sysops[('AT', 'AnnX')] = results.loc[idx[scenario, PRICE_CO2, :, PV_BASE_COST], idx['DE', 'AnnX']]
 restrict_sysops.index = restrict_sysops.index.droplevel([0, 1, 3])
 restrict_sysops.columns = restrict_sysops.columns.droplevel(0)
 restrict_sysops['Net electricity generation'] = (restrict_sysops[['AnnG_el', 'AnnSOut', 'AnnR']].sum(axis=1)
@@ -142,8 +145,8 @@ plot_lines(restrict_sysops['Fossil thermal generation'] / 1000, os.path.join(FPA
 
 # %% ----- ----- ----- plot wind restriction: changes in cost ----- ----- -----
 # system cost, electricity trade balance, system cost net of trade, cost of air pollution (SOx, NOx, PM)
-undisturbed_cost = results.loc[idx[scenario, :, :, 36715], idx['AT', ['cost_zonal', 'AnnValueX', 'AnnValueI',
-                                                                      'cost_airpol']]]
+undisturbed_cost = results.loc[idx[scenario, :, :, PV_BASE_COST], idx['AT', ['cost_zonal', 'AnnValueX', 'AnnValueI',
+                                                                             'cost_airpol']]]
 undisturbed_cost.index = undisturbed_cost.index.droplevel([0, 3])
 undisturbed_cost.columns = undisturbed_cost.columns.droplevel(0)
 undisturbed_cost['trade_balance'] = undisturbed_cost[['AnnValueX', 'AnnValueI']].sum(axis=1)
@@ -173,7 +176,7 @@ plot_lines(restrict_cost.loc[:, 'Cost of air pollution (SOx, NOx, PM)'] / 1000,
 # %% line plot of cost of undisturbed landscapes - baseline capital cost of pv
 undisturbed_base = undisturbed_cost[['System cost net of trade',
                                      'Cost of air pollution (SOx, NOx, PM)']].sum(axis=1).unstack(0)
-wind_add = results.loc[idx[scenario, :, :, 36715], idx['AT', 'add_r_wind_on']].unstack(1)
+wind_add = results.loc[idx[scenario, :, :, PV_BASE_COST], idx['AT', 'add_r_wind_on']].unstack(1)
 wind_add.index = wind_add.index.droplevel([0, 2])
 
 undisturbed_marginal = undisturbed_base.iloc[::-1].diff().divide(wind_add.iloc[::-1].diff().round(8), axis=0) * -1
@@ -184,7 +187,7 @@ plot_lines(undisturbed_marginal / 1000, os.path.join(FPATH, 'undisturbed_base.pd
            xlabel='Added Capacity of Wind [GW]', ylabel='thousand € / MW', color=REFUEL_COLORS)
 
 # %% ------ ----- ----- plot opportunity cost of wind with SHARE of deployment
-uplim = results.loc[idx[scenario, PRICE_CO2, :, 36715], idx['AT', 'add_r_wind_on']].max()
+uplim = results.loc[idx[scenario, PRICE_CO2, :, PV_BASE_COST], idx['AT', 'add_r_wind_on']].max()
 # divide index by uplim, delete indices larger than one except for the smallest and set the smallest to 1
 
 lgnd = []
@@ -211,15 +214,15 @@ plt.savefig(os.path.join(FPATH, 'undisturbed_base_share.pdf'))
 plt.close()
 
 # %% line plot of cost of undisturbed landscapes - low capital cost of pv
-undisturbed_cost_low = results.loc[idx[scenario, :, :, 16715], idx['AT', ['cost_zonal', 'AnnValueX', 'AnnValueI',
-                                                                          'cost_airpol']]]
+undisturbed_cost_low = results.loc[idx[scenario, :, :, PV_LOW_COST], idx['AT', ['cost_zonal', 'AnnValueX', 'AnnValueI',
+                                                                                'cost_airpol']]]
 undisturbed_cost_low.index = undisturbed_cost_low.index.droplevel([0, 3])
 undisturbed_cost_low.columns = undisturbed_cost_low.columns.droplevel(0)
 undisturbed_cost_low['trade_balance'] = undisturbed_cost_low[['AnnValueX', 'AnnValueI']].sum(axis=1)
 undisturbed_cost_low['syscost_net'] = undisturbed_cost_low['cost_zonal'] - undisturbed_cost_low['trade_balance']
 undisturbed_cost_low['total_cost'] = undisturbed_cost_low[['syscost_net', 'cost_airpol']].sum(axis=1)
 
-wind_add_low = results.loc[idx[scenario, :, :, 16715], idx['AT', 'add_r_wind_on']].unstack(1)
+wind_add_low = results.loc[idx[scenario, :, :, PV_LOW_COST], idx['AT', 'add_r_wind_on']].unstack(1)
 wind_add_low.index = wind_add_low.index.droplevel([0, 2])
 
 undisturbed_marginal_low = (undisturbed_cost_low['total_cost'].unstack(0).iloc[::-1].diff().divide(
@@ -231,7 +234,7 @@ plot_lines(undisturbed_marginal_low / 1000, os.path.join(FPATH, 'undisturbed_low
            xlabel='Added Capacity of Wind [GW]', ylabel='thousand € / MW', color=REFUEL_COLORS)
 
 # %% ------ ----- ----- plot sensitivity of opportunity cost of wind with SHARE of deployment
-# uplim_sens = results.loc[idx['base', PRICE_CO2, :, 16715], idx['AT', 'add_r_wind_on']].max()
+# uplim_sens = results.loc[idx['base', PRICE_CO2, :, PV_LOW_COST], idx['AT', 'add_r_wind_on']].max()
 # divide index by uplim, delete indices larger than one except for the smallest and set the smallest to 1
 
 lgnd = []
@@ -315,7 +318,7 @@ plt.close()
 # %% data analysis
 
 # % response of capacity additions to \Phi
-capa = results.loc[idx[scenario, :, :, 36715], idx['AT', :]]
+capa = results.loc[idx[scenario, :, :, PV_BASE_COST], idx['AT', :]]
 capa.columns = capa.columns.droplevel(0)
 additions = pd.DataFrame()
 additions['lig'] = capa.loc[:, capa.columns.str.contains('add_g_lig')].sum(axis=1)
@@ -397,7 +400,7 @@ ngadd.index = ngadd.index.droplevel([0, 2])
 plot_lines(ngadd, os.path.join(FPATH, 'ng_additions.pdf'), xlim=[18, 0], xlabel='wind addition', color=REFUEL_COLORS)
 
 # %% # generation time series
-g_tec = results.loc[idx[scenario, :, :, 36715], idx['AT', :]].copy()
+g_tec = results.loc[idx[scenario, :, :, PV_BASE_COST], idx['AT', :]].copy()
 g_tec.columns = g_tec.columns.droplevel(0)
 g_tec = g_tec.loc[:, g_tec.columns.str.contains('AnnGByTec_')]
 g_tec.columns = g_tec.columns.str.replace('AnnGByTec_', '')
@@ -411,11 +414,11 @@ g_tec.columns = g_tec.columns.droplevel([1, 2])
 util = g_tec / ctat / 8784
 util.dropna(axis=1, how='all', inplace=True)
 
-util.loc[idx[scenario, 60, :, 36715], :].plot()
+util.loc[idx[scenario, 60, :, PV_BASE_COST], :].plot()
 plt.show()
 
 # %% curtailment
-curt = results.loc[idx[scenario, :, :, 36715], idx[:, 'AnnCurtail']]
+curt = results.loc[idx[scenario, :, :, PV_BASE_COST], idx[:, 'AnnCurtail']]
 curt.columns = curt.columns.droplevel(1)
 curt = curt.unstack(1)
 curt.index = curt.index.droplevel([0, 2])
@@ -426,7 +429,7 @@ plot_lines(curt.loc[:, idx['DE', :]], os.path.join(FPATH, 'curt_DE.pdf'), xlim=[
            color=REFUEL_COLORS)
 
 # %% CO2 emissions
-carb = results.loc[idx[scenario, :, :, 36715], idx[:, 'AnnCO2Emissions']]
+carb = results.loc[idx[scenario, :, :, PV_BASE_COST], idx[:, 'AnnCO2Emissions']]
 carb.columns = carb.columns.droplevel(1)
 carb = carb.unstack(1)
 carb.index = carb.index.droplevel([0, 2])
@@ -437,7 +440,7 @@ plot_lines(carb.loc[:, idx['DE', :]], os.path.join(FPATH, 'emissions_DE.pdf'), x
            color=REFUEL_COLORS)
 
 # %% system cost
-syscost = results.loc[idx[scenario, :, :, 36715], idx[:, 'AnnCO2Emissions']]
+syscost = results.loc[idx[scenario, :, :, PV_BASE_COST], idx[:, 'AnnCO2Emissions']]
 syscost.columns = syscost.columns.droplevel(1)
 syscost = syscost.unstack(1)
 syscost.index = syscost.index.droplevel([0, 2])
@@ -450,7 +453,7 @@ plot_lines(syscost.loc[:, idx['DE', :]], os.path.join(FPATH, 'syscost_DE.pdf'), 
 # %% electricity and heat prices
 # AvgPriceEl, AvgPriceHt
 
-pel = results.loc[idx[scenario, :, :, 36715], idx[:, 'AvgPriceEl']]
+pel = results.loc[idx[scenario, :, :, PV_BASE_COST], idx[:, 'AvgPriceEl']]
 pel.columns = pel.columns.droplevel(1)
 pel = pel.unstack(1)
 pel.index = pel.index.droplevel([0, 2])
@@ -460,7 +463,7 @@ plot_lines(pel.loc[:, idx['AT', :]], os.path.join(FPATH, 'priceel_AT.pdf'), xlim
 plot_lines(pel.loc[:, idx['DE', :]], os.path.join(FPATH, 'priceel_DE.pdf'), xlim=[18, 0], xlabel='wind addition',
            color=REFUEL_COLORS)
 
-pht = results.loc[idx[scenario, :, :, 36715], idx[:, 'AvgPriceHt']]
+pht = results.loc[idx[scenario, :, :, PV_BASE_COST], idx[:, 'AvgPriceHt']]
 pht.columns = pht.columns.droplevel(1)
 pht = pht.unstack(1)
 pht.index = pht.index.droplevel([0, 2])

@@ -3,8 +3,9 @@ import os
 import pandas as pd
 
 import config as cfg
+from src.tools.data_processing import medea_path
 
-directory = os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'raw', 'ScheduledCommercialExchanges')
+directory = medea_path('data', 'raw', 'ScheduledCommercialExchanges')
 
 df_imports = pd.DataFrame(columns=[f'imp_{zn}' for zn in cfg.zones])
 df_exports = pd.DataFrame(columns=[f'exp_{zn}' for zn in cfg.zones])
@@ -14,8 +15,8 @@ for file in os.listdir(directory):
     filename = os.fsdecode(file)
     print(filename)
     if filename.endswith('.csv'):
-        df_flows = pd.read_csv(os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'raw', 'ScheduledCommercialExchanges',
-                                            filename), sep='\t', encoding='utf-16')
+        df_flows = pd.read_csv(medea_path('data', 'raw', 'ScheduledCommercialExchanges', filename),
+                               sep='\t', encoding='utf-16')
         df_flows['DateTime'] = pd.to_datetime(df_flows['DateTime'])
         # for each zone: sum import and export flows from / to all other zones except the ones included in model
         # 1) import flows
@@ -88,5 +89,5 @@ df_X_endo.index = pd.DatetimeIndex(df_X_endo.index)
 df_X_endo = df_X_endo.sort_index()
 
 df_flows = pd.concat([df_imports, df_exports], axis=1)
-df_flows.to_csv(os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'processed', 'commercial_flows.csv'))
-df_X_endo.to_csv(os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'processed', 'commercial_flows_endogenous.csv'))
+df_flows.to_csv(medea_path('data', 'processed', 'commercial_flows.csv'))
+df_X_endo.to_csv(medea_path('data', 'processed', 'commercial_flows_endogenous.csv'))

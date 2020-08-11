@@ -6,6 +6,7 @@ from gams import *
 
 import config as cfg
 from src.templates.settings_template import *
+from src.tools.data_processing import medea_path
 from src.tools.gams_io import reset_symbol, gdx2df, df2gdx
 
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -13,8 +14,7 @@ from src.tools.gams_io import reset_symbol, gdx2df, df2gdx
 # -------------------------------------------------------------------------------------------------------------------- #
 # import base data from gdx
 ws = GamsWorkspace(system_directory=cfg.GMS_SYS_DIR)
-db_input = ws.add_database_from_gdx(
-    os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', project_name, 'opt', 'medea_main_data.gdx'))
+db_input = ws.add_database_from_gdx(medea_path('projects', project_name, 'opt', 'medea_main_data.gdx'))
 
 
 # %% read parameters that change in scenarios (and corresponding sets)
@@ -62,7 +62,7 @@ reset_symbol(db_input, 'FEASIBLE_INPUT', df_fuelreq_mod)
 # %% generate 'dynamic' parameter variations (modifications that constitute the scenarios, i.e. that change each run)
 # -------------------------------------------------------------------------------------------------------------------- #
 # ensure that we are in the correct model directory
-os.chdir(os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', project_name, 'opt'))
+os.chdir(medea_path('projects', project_name, 'opt'))
 
 # create empty scenario parameter in GAMS database so that it can be modified subsequently
 # example: changing CO2 price
@@ -78,12 +78,11 @@ for price_co2 in range_co2price:
     reset_symbol(db_input, 'CO2_SCENARIO', pd.DataFrame(data=[price_co2]))
 
     # export modified GAMS database to a .gdx-file that is then being read by the GAMS model
-    export_location = os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', project_name, 'opt',
-                                   f'medea_{identifier}_data.gdx')
+    export_location = medea_path('projects', project_name, 'opt', f'medea_{identifier}_data.gdx')
     db_input.export(export_location)
 
     # generate path to medea model
-    gms_model = os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', project_name, 'opt', 'medea_main.gms')
+    gms_model = medea_path('projects', project_name, 'opt', 'medea_main.gms')
 
     # generate identifier of scenario output
     gdx_out = f'gdx=medea_out_{identifier}.gdx'
