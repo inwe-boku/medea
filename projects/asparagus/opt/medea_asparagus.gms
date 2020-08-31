@@ -14,10 +14,8 @@ parameters
 
 * read scenario parameter from scenario .gdx-file
 $gdxin medea_%scenario%_data
-$load  CO2_SCENARIO WIND_ON_LIMIT FLOW_LIMIT PV_CAPEX
+$load  CO2_SCENARIO WIND_ON_LIMIT FLOW_LIMIT PV_CAPEX SWITCH_POLICY
 $gdxin
-
-SWITCH_POLICY = 1;
 
 * set model parameter to scenario parameter value
 PRICE_CO2(z,t) = CO2_SCENARIO;
@@ -76,13 +74,13 @@ equations
          policy_100resbalance    policy constraint requiring "100%" renewable electricity generation over year
 ;
 * ------------------------------------------------------------------------------
-
+* according to govt need 27 TWh additional energy from RES to meet target
+* RES generation in 2016: 51.1 TWh ==> in 2030 51.1 + 27 = 78.1 TWh needed
 policy_100resbalance$(SWITCH_POLICY)..
          sum((t,n), GEN_PROFILE('AT',t,n) * (INITIAL_CAP_R('AT',n) + add_r('AT',n) ) )
          + sum(t, g('AT',t,'bio_chp','el','biomass'))
          + sum(t, g('AT',t,'bio','el','biomass'))
          + sum((t,k), INFLOWS('AT',t,k)* EFFICIENCY_S_OUT(k))
          =G=
-         71800
-*         0.90 * sum(t, DEMAND('AT',t,'el'))
+         78100
          ;

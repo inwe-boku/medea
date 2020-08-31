@@ -31,15 +31,23 @@ symbols_to_read = {
     'AnnSOut': ([], ['z']),
     'AvgPriceEl': ([], ['z']),
     'AvgPriceHt': ([], ['z']),
+    'cost_invest_g': ([], ['z']),
+    'cost_invest_r': ([], ['z']),
+    'cost_invest_sv': ([], ['z']),
+    'cost_invest_x': ([], ['z']),
+    'CostCO2': ([], ['z']),
+    'CostFuel': ([], ['z']),
+    'CostOMG': ([], ['z']),
+    'CostOMR': ([], ['z']),
     'add_r': (['n'], ['z']),
     'add_g': (['i'], ['z']),
     'deco_g': (['i'], ['z']),
     'add_s': (['k'], ['z']),
     'add_v': (['k'], ['z']),
     'add_x': (['z'], ['z']),
+    'cost_air_pol': (['f'], ['z']),
     'AnnGByTec': (['i', 'm', 'f'], ['z'])
 }
-# cost_air_pol(z,f)
 
 idx = pd.IndexSlice
 

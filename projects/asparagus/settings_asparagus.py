@@ -1,72 +1,74 @@
 # This file holds all scenario-specific settings and assumptions
 
 PROJECT_NAME = 'asparagus'
+
 # -------------------------------------------------------------------------------------------------------------------- #
-"""
-Description:
-determine optimal investment in Austrian dispatchable and intermittent energy generation and storage technologies 
-in 2030, given
-    a) the targets of the Austrian energy- and climate strategy ("mission 2030"), notably
-        a1) 100% of electricity consumption met from domestic, renewable sources (annual average, 
-            excluding industry own-consumption, i.e. effectively 90% of consumption)
-        a2) balanced international electricity exchange (on annual average)
-        a3) reduction of transport sector CO2-emissions by 7.2 mn t, translating in a fuel consumption reduction of 
-            27.3 TWh, which, if substituted by battery-electric mobility, raises electricity demand by 12.5 TWh.
-    b) restrictions on land availability for wind turbines due to social conflicts
-Our analysis allows for electricity exchange with Germany, Austria's most important electricity trading partner and 
-accounts for Germany's nuclear exit and its proposed coal phase-out.
-As restrictions on land availability for wind turbines are not specified, we generate scenarios of deployable wind 
-turbine capacity in the range between 0 and unconstrained deployment. This is repeated for a range of CO2 price 
-assumptions.
-For sensitivity analysis, we also vary the capital cost of solar PV. 
-"""
+# %% CAMPAIGNS and SCENARIOS
+
+# baseline settings
+dict_base = {
+    'must_run': [1],
+    'policy': [1],
+    'co2_price': range(100, -1, -25),
+    'wind_cap': range(14, -1, -2),
+    'pv_cost': [36424],
+    'transmission': [4.9],
+    'd_power': [82850]  # *
+}
+# * government programme states that 27 TWh electricity need to be added to reach renewable electricity generation equal
+# to "100%" of electricity consumption (excluding industry self consumption and system services).
+# In 2016, renewable electricity generation in Austria was 51.1 TWh. Adding to this the 27 TWh of additional renewable
+# generation and industry self generation and consumption (4.75 TWh in 2016 *§) as well as electricity consumption for
+# ancillary services (which we do not model) we arrive at total electricity consumption of
+# 51.1 TWh + 27 TWh + 4.75 TWh = 82.85 TWh in 2030
+# *§ Industry own generation and consumption was calculated as total fossil generation from industry-owned units (UEA)
+# (excluding energy industry). In 2016 this equates to 4 752 907 MWh, according to extended energy balances of
+# Statistics Austria (2020).
 
 # campaigns
 dict_campaigns = {
     'base': {
-        'must_run': [0],
-        'policy': [1],
-        'co2_price': range(100, -1, -25),
-        'wind_cap': range(18, -1, -2),
-        'pv_cost': [36424],
-        'transmission': [4.9]
+        #
     },
+    # sensitivity of results to overnight cost of solar PV
     'pv_sens': {
-        'must_run': [0],
-        'policy': [1],
-        'co2_price': range(100, -1, -25),
+        'co2_price': [0],
         'wind_cap': [18],
-        'pv_cost': range(36424, 15026, -1500),
-        'transmission': [4.9]
+        'pv_cost': range(25924, 15026, -1500),
     },
+    # no (artificial) bottleneck that constrains electricity trade between AT and DE (which was put in place in 2018 to
+    # prevent loop-flows from DE to AT through eastern Europe
     'no_bottleneck': {
-        'must_run': [0],
-        'policy': [1],
-        'co2_price': [25, 75],  # range(100, -1, -25)
-        'wind_cap': range(18, -1, -2),
-        'pv_cost': [36424],
-        'transmission': [10]
+        'co2_price': [25, 75],
+        'transmission': [10],
     },
+    # disables the must-run condition mimicking ancillary services requirements
     'must_run': {
-        'must_run': [1],
-        'policy': [1],
-        'co2_price': [25],
-        'wind_cap': range(18, -1, -2),
-        'pv_cost': [36424],
-        'transmission': [4.9]
-    },
-    'no_policy': {
         'must_run': [0],
+        'policy': [1],
+        'co2_price': [25, 75],
+    },
+    # disables the policy objective of generating sufficient electricity from renewable sources under 2030 conditions
+    'no_policy': {
         'policy': [0],
-        'co2_price': range(100, -1, -25),
-        'wind_cap': range(18, -1, -2),  # range(18, -1, -2),
-        'pv_cost': [36424],
-        'transmission': [4.9]
+        'wind_cap': [14],
+    },
+    # calculates the opportunity cost of wind turbines at low overnight cost for solar PV
+    'low_cost': {
+        'co2_price': [25, 75],
+        'pv_cost': [22146],
+    },
+    # disables policy objective and sets electricity demand to 2016 level to decompose change in CO2 emissions
+    'base-2016': {
+        'policy': [0],
+        'wind_cap': [14],
+        'd_power': [65377.516]  # **
     }
 }
+# ** end-use plus transmission losses as of 2016. excludes energy sector own consumption as plant efficiencies are net
 
+# %% CAPACITY ASSUMPTIONS
 """
-CAPACITY ASSUMPTIONS
 - GERMANY:
   - nuclear exit
   - proposal of coal commission is followed, i.e. reduction of 9 GW lignite and 11 GW coal till 2030
@@ -77,14 +79,13 @@ CAPACITY ASSUMPTIONS
     conventional capacities:
              Country    Gas   Hard coal   Oil   Biomass
     2030 DG       AT   3928           0   174       620
-  - endogeneous optimization of intermittent capacities from baseline
+  - endogenous optimization of intermittent capacities from baseline
 """
-# electricity consumption in Austria in 2016 excluding distribution losses and own consumption: 62 038,515 GWh
-# projected increase in electricity consumption up to 2030: 27 000 GWh
 
 scenario_2030 = {
     'AT': {
-        'bio': [1],
+        # scaling factors
+        'bio': [1.2],  # scales biomass capacity to 870 MW consistent with generating +1 TWh/a
         'coal': [0],
         'heatpump': [1],
         'hpa': [1],
@@ -93,13 +94,14 @@ scenario_2030 = {
         'ng': [0.86],
         'nuc': [0],
         'oil': [0.5],
-        'wind_on': [2.6],
+        # levels
+        'wind_on': [2.649],
         'wind_off': [0],
-        'pv': [1.1],
-        'ror': [6.9],
-        'd_power': [62038.515 + 20761.485]
+        'pv': [1.096],
+        'ror': [6.7]  # 6.7 GW (+1 GW vs 2016) ror capacity consistent with generating +5 TWh from hydro power
     },
     'DE': {
+        # scaling factors
         'bio': [1.3],
         'coal': [0.56],
         'heatpump': [1.0],
@@ -109,20 +111,10 @@ scenario_2030 = {
         'ng': [1.0],
         'nuc': [0.0],
         'oil': [1.0],
+        # levels
         'wind_on': [90.8],
         'wind_off': [15],
         'pv': [73],
         'ror': [4.5]
     }
-}
-
-# calibration of power plant efficiencies
-efficiency = {
-    # [plant efficiencies] -------------- #
-    'e_Nuclear': [1],
-    'e_Biomass': [1],
-    'e_Lignite': [1.0],
-    'e_Coal': [1.0],
-    'e_Gas': [1.0],
-    'e_Oil': [1]
 }

@@ -507,6 +507,7 @@ solveStat = medea.solvestat;
 * EX-POST ANALYSIS
 * parameters summarizing model solution - CamelCaseStyle beginning with Ann
 parameters
+AirPollutionCost(z)              total cost of air pollution
 AnnRenShare(z)                   renewables generation divided by electricity consumption
 AnnG(z,m)                        annual thermal generation
 AnnGByTec(z,i,m,f)               annual thermal generation by technology
@@ -547,9 +548,14 @@ AvgPriceHt(z)                    annual average price of heat
 HourlyPriceEl(z,t)               hourly price of electricity
 HourlyPriceHt(z,t)               hourly price of heat
 HourlyPriceSystemServices(z,t)   hourly price of system services
+CostCO2(z)                       annual cost of CO2 emissions
+CostFuel(z)                      annual cost of fuel
+CostOMG(z)                       annual O&M cost of dispatchable generators
+CostOMR(z)                       annual O&M cost of intermittent generators
 ;
 * ------------------------------------------------------------------------------
 * parameter calculation
+AirPollutionCost(z) = sum(f, cost_air_pol.L(z,f));
 AnnRenShare(z) = (sum((t,n), r.L(z,t,n) ) + sum((t,k), s_out.L(z,t,k) ) - sum((t,k), s_in.L(z,t,k) ) + sum((t,i), g.L(z,t,i,'el','Biomass') ) ) / sum(t, DEMAND(z,t,'el') );  # + sum((t,i), g.L(z,t,i,'el','Syngas') ) ) / sum(t, DEMAND(z,t,'el') );
 AnnG(z,m) = sum((t,i,f), g.L(z, t, i, m, f));
 AnnGByTec(z,i,m,f) = sum(t, g.L(z, t, i, m, f));
@@ -592,6 +598,10 @@ AvgPriceHt(z) = sum(t, bal_ht.M(z,t))/card(t);
 HourlyPriceEl(z,t) = bal_el.M(z,t);
 HourlyPriceHt(z,t) = bal_ht.M(z,t);
 HourlyPriceSystemServices(z,t) = lolim_ancservices.M(z,t);
+CostCO2(z) = sum((t,i), cost_co2.L(z,t,i)) ;
+CostFuel(z) = sum((t,i), cost_fuel.L(z,t,i));
+CostOMG(z) = sum((i), cost_om_g.L(z,i));
+CostOMR(z) = sum((n), cost_om_r.L(z,n));
 
 * ==============================================================================
 * THE END

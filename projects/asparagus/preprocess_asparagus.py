@@ -1,9 +1,8 @@
 # %% imports
-
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 from scipy.signal import savgol_filter
-from statsmodels.tsa.seasonal import STL
 
 import config as cfg
 from src.tools.data_processing import medea_path
@@ -11,85 +10,26 @@ from src.tools.data_processing import medea_path
 # %% settings
 FNAME = medea_path('data', 'processed', 'medea_regional_timeseries.csv')
 
-
-# %% define functions
-def seasonal_decomposition(time_series, resample_window='D', window_length=73, poly_order=3):
-    # TODO: check if timeseries has DateTimeIndex. Throw error if not.
-    # TODO: check if timeseries is a single column
-    df_sdc = pd.DataFrame(columns=['seasonal', 'day', 'residual', 'deseas_abs', 'deseas_rel'])
-    df_sdc['day'] = time_series.resample(resample_window).sum()
-    df_sdc['seasonal'] = savgol_filter(df_sdc['day'], window_length, poly_order)
-    df_sdc['residual'] = df_sdc['day'] - df_sdc['seasonal']
-    df_sdc['deseas_abs'] = df_sdc['residual'] + df_sdc['day'].mean()
-    df_sdc['deseas_rel'] = (1 + df_sdc['residual'] / df_sdc['seasonal']) * df_sdc['day'].mean()
-    return df_sdc
-
-
-def extract_hourly_pattern(time_series):
-    # TODO: check if timeseries has DateTimeIndex. Throw error if not.
-    # TODO: check if timeseries is a single column
-    df = time_series.groupby(time_series.index.hour).mean() / time_series.groupby(time_series.index.hour).mean().sum()
-    return df
-
-
-def extract_monthly_pattern(time_series):
-    df = time_series.groupby(time_series.index.month).mean() / time_series.groupby(time_series.index.month).mean().sum()
-    return df
-
-
-def apply_pattern(aggregate_series, pattern):
-    lst = [i * aggregate_series.iloc[d] for d in range(0, len(aggregate_series)) for i in list(pattern)]
-    df = pd.DataFrame(lst, columns=['Values'])
-    return df
-
-
-# %% process data
+# %% read data
 df = pd.read_csv(FNAME, index_col=[0])
 df.index = pd.to_datetime(df.index)
-
-cols = ['AT-power-load', 'AT-pv-generation', 'AT-pv-capacity', 'AT-wind_on-generation', 'AT-wind_on-capacity',
-        'AT-ror-profile']
+cols = ['AT-pv-profile', 'AT-wind_on-profile', 'AT-ror-profile']
 dfs = df.loc[str(cfg.year), cols]
-# dfs = df.loc[(df.index.year >= 2015) & (df.index.year <= 2018), cols]
 
-# scale generation of PV to levels consistent with national energy balance
-pv_profile = dfs['AT-pv-generation'] * 1.167 / dfs['AT-pv-capacity']
+# %% extract trend from hourly time series of PV and wind
+trend = pd.DataFrame(data=np.nan, columns=cols, index=dfs.index)
+detrend = pd.DataFrame(data=np.nan, columns=cols, index=dfs.index)
+savgol_parameter = pd.DataFrame(columns=cols, index=['window_length', 'poly_order'])
+savgol_parameter.loc['poly_order', :] = 3
+savgol_parameter.loc['window_length', 'AT-pv-profile'] = 673
+savgol_parameter.loc['window_length', 'AT-wind_on-profile'] = 1161
+savgol_parameter.loc['window_length', 'AT-ror-profile'] = 561
 
-# scale generation of onshore wind to levels consistent with national energy balance
-wind_profile = dfs['AT-wind_on-generation'] * 0.983 / dfs['AT-wind_on-capacity']
-
-# scale run-of-river profile to levels consistent with e-control Betriebsstatistik BStGes-JR1_Bilanz.xlsx available from
-# https://www.e-control.at/documents/1785851/1811609/BStGes-JR1_Bilanz.xlsx
-ror_profile = dfs['AT-ror-profile'] * 1.038
-
-# %% LOESS filter for additive decomposition
-
-# (1) decomposition of PV profile
-pv_loess = STL(pv_profile, seasonal=49, trend=673)
-pv_fit = pv_loess.fit()
-
-# (2) decomposition of Wind Onshore profile
-wind_loess = STL(wind_profile, seasonal=673, trend=2161)
-wind_fit = wind_loess.fit()
-
-# generate synthetic profiles
-synthetic = pd.DataFrame(index=wind_profile.index, columns=['pv_noseas', 'wind_noseas', 'wind_pvpat', 'pv_windpat'])
-
-synthetic['pv_noseas'] = pv_fit.seasonal + pv_fit.resid + pv_fit.trend.mean()
-
-synthetic.loc['2016-01', 'pv_noseas'].plot()
-plt.show()
-
-# %% get seasonal patterns of wind, pv, load in Austria
-seasonal_pattern = pd.DataFrame(columns=cols)
-deseasonalized = pd.DataFrame(columns=cols)
-for c in dfs.columns:
-    sdc = seasonal_decomposition(dfs.loc[:, c], resample_window='W', window_length=9, poly_order=1)
-    seasonal_pattern[c] = sdc['seasonal']
-    deseasonalized[c] = sdc['deseas_rel']
-
-(seasonal_pattern / seasonal_pattern.mean()).plot()
-plt.show()
+for i in [cols[0]]:
+    trend[i] = savgol_filter(dfs[i], savgol_parameter.loc['window_length', i], savgol_parameter.loc['poly_order', i])
+    detrend[i] = dfs[i] / trend[i] * dfs[i].mean()
+    detrend[i].plot()
+    plt.show()
 
 # %% what do i want to say?
 # difference in system cost comes from
