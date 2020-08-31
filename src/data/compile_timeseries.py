@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 import config as cfg
-from src.tools.data_processing import download_file, medea_path, download_energy_balance
+from src.tools.data_processing import download_file, medea_path, download_energy_balance, process_energy_balance
 
 idx = pd.IndexSlice
 # ======================================================================================================================
@@ -58,10 +58,10 @@ ts_medea['DE-hydro-generation'] = ts_hydro_generation[['ror_DE', 'res_DE']].sum(
 # in official hydropower generation numbers.
 
 # %% scale intermittent generation to match annual numbers from national energy balances
-intermittents = ['pv', 'wind_on', 'wind_off', 'ror']
+cols = ['pv', 'wind_on', 'wind_off', 'ror', 'load']
 first_year = max(ts_medea.index.year.min(), 2010)
 last_year = ts_medea.index.year.max()
-scale_index = pd.MultiIndex.from_product([intermittents, [str(yr) for yr in range(first_year, last_year)]])
+scale_index = pd.MultiIndex.from_product([cols, [str(yr) for yr in range(first_year, last_year)]])
 scaling_factor = pd.DataFrame(data=1, columns=cfg.zones, index=scale_index)
 # download energy balances
 download_energy_balance('AT')
@@ -71,6 +71,9 @@ download_file(url_econtrol, medea_path('data', 'raw', 'BStGes-JR1_Bilanz.xlsx'))
 # ---------
 # Austria - PV, wind, run-of-river
 # read energy balance for Austria
+nbal_at_cons = pd.read_excel(medea_path('data', 'raw', 'enbal_AT.xlsx'), sheet_name='Elektrische Energie',
+                             header=[196], index_col=[0], nrows=190,
+                             na_values=['-']).astype('float').dropna(axis=0, how='all')
 nbal_at_pv = pd.read_excel(medea_path('data', 'raw', 'enbal_AT.xlsx'), sheet_name='Photovoltaik',
                            header=[196], index_col=[0], nrows=1, na_values=['-']).astype('float').dropna(axis=1)
 nbal_at_wind = pd.read_excel(medea_path('data', 'raw', 'enbal_AT.xlsx'), sheet_name='Wind',
@@ -88,6 +91,10 @@ for year in range(first_year, last_year):
     if ts_medea.loc[str(year), 'AT-ror-generation'].sum() > 0:
         scaling_factor.loc[idx['ror', str(year)], 'AT'] = nbal_at_ror.loc[year, 'Laufkraft-\nwerke'] * 10 ** 3 / \
                                                           ts_medea.loc[str(year), 'AT-ror-generation'].sum()
+    if ts_medea.loc[str(year), 'AT-power-load'].sum() > 0:
+        scaling_factor.loc[idx['load', str(year)], 'AT'] = \
+            nbal_at_cons.loc[['Energetischer Endverbrauch', 'Transportverluste'], year].sum() / \
+            ts_medea.loc[str(year), 'AT-power-load'].sum()
 
 # ---------
 # Germany - PV, wind
@@ -95,30 +102,38 @@ url = 'https://www.erneuerbare-energien.de/EE/Redaktion/DE/Downloads/' \
       'zeitreihen-zur-entwicklung-der-erneuerbaren-energien-in-deutschland-1990-2019-excel-en.xlsx' \
       '?__blob=publicationFile'
 download_file(url, medea_path('data', 'raw', 'res_DE.xlsx'))
+res_de = pd.read_excel(medea_path('data', 'raw', 'res_DE.xlsx'), sheet_name='3', header=[7], index_col=[0], nrows=13)
 
-nbal_de = pd.read_excel(medea_path('data', 'raw', 'res_DE.xlsx'), sheet_name='3', header=[7], index_col=[0], nrows=13)
+download_energy_balance('DE')
+process_energy_balance('DE')
+nbal_de_el = pd.read_csv(medea_path('data', 'processed', 'enbal_DE_el.csv'), index_col=[0], sep=';')
 
 for year in range(first_year, last_year):
     # wind_off_gen_nbal = nbal_de.loc['Wind energy offshore', str(cfg.year)] * 10**3
     if ts_medea.loc[str(year), 'DE-pv-generation'].sum() > 0:
         scaling_factor.loc[idx['pv', str(year)], 'DE'] = \
-            nbal_de.loc['Solar Photovoltaic', str(year)].values * 10 ** 3 / \
+            res_de.loc['Solar Photovoltaic', str(year)].values * 10 ** 3 / \
             ts_medea.loc[str(year), 'DE-pv-generation'].sum()
 
     if ts_medea.loc[str(year), 'DE-wind_on-generation'].sum() > 0:
         scaling_factor.loc[idx['wind_on', str(year)], 'DE'] = \
-            nbal_de.loc['Wind energy onshore', str(year)].values * 10 ** 3 / \
+            res_de.loc['Wind energy onshore', str(year)].values * 10 ** 3 / \
             ts_medea.loc[str(year), 'DE-wind_on-generation'].sum()
 
     if ts_medea.loc[str(year), 'DE-wind_off-generation'].sum() > 0:
         scaling_factor.loc[idx['wind_off', str(year)], 'DE'] = \
-            nbal_de.loc['Wind energy offshore', str(year)].values * 10 ** 3 / \
+            res_de.loc['Wind energy offshore', str(year)].values * 10 ** 3 / \
             ts_medea.loc[str(year), 'DE-wind_off-generation'].sum()
 
     if ts_medea.loc[str(year), 'DE-hydro-generation'].sum() > 0:
         scaling_factor.loc[idx['ror', str(year)], 'DE'] = \
-            nbal_de.loc['Hydropower ¹⁾', str(year)].values * 10 ** 3 / \
+            res_de.loc['Hydropower ¹⁾', str(year)].values * 10 ** 3 / \
             ts_medea.loc[str(year), 'DE-hydro-generation'].sum()
+
+    if ts_medea.loc[str(year), 'DE-power-load'].sum() > 0:
+        scaling_factor.loc[idx['load', str(year)], 'DE'] = \
+            nbal_de_el.loc[['ENDENERGIEVERBRAUCH', 'Fackel- u. Leitungsverluste'], str(year)].sum() * 10 ** 3 / \
+            ts_medea.loc[str(year), 'DE-power-load'].sum()
 
 # ----------------------------------------------------------------------------------------------------------------------
 # %% intermittent capacities
@@ -137,15 +152,14 @@ for reg in cfg.zones:
     ts_medea[f'{reg}-ror-capacity'] = itm_capacities[('ror', reg)]
     ts_medea[f'{reg}-ror-capacity'] = ts_medea[f'{reg}-ror-capacity'].interpolate()
 
-# %% convert load and capacities from MW to GW
-ts_medea['AT-power-load'] = ts_medea['AT-power-load'] / 1000
-ts_medea['DE-power-load'] = ts_medea['DE-power-load'] / 1000
+# %% convert capacities from MW to GW
 ts_medea['DE-pv-capacity'] = ts_medea['DE-pv-capacity'] / 1000
 ts_medea['DE-wind_on-capacity'] = ts_medea['DE-wind_on-capacity'] / 1000
 ts_medea['DE-wind_off-capacity'] = ts_medea['DE-wind_off-capacity'] / 1000
 
 # ----------------------------------------------------------------------------------------------------------------------
 # %% generate scaled generation profiles
+intermittents = ['pv', 'wind_on', 'wind_off', 'ror']
 for reg in cfg.zones:
     for itm in intermittents:
         ts_medea[f'{reg}-{itm}-profile'] = 0
@@ -162,6 +176,21 @@ for reg in cfg.zones:
                                                                 ts_medea.loc[str(yr), f'{reg}-{itm}-capacity']
         # cut off profile peaks larger than 1
         ts_medea.loc[ts_medea[f'{reg}-{itm}-profile'] > 1] = 1
+
+# ----------------------------------------------------------------------------------------------------------------------
+# %% scale electricity load
+# TODO: scale electricity load profiles to match values from national energy balances
+for reg in cfg.zones:
+    for yr in range(first_year, last_year):
+        if scaling_factor.loc[idx['load', str(yr)], reg] < 2:
+            ts_medea.loc[str(yr), f'{reg}-power-load'] = \
+                ts_medea.loc[str(yr), f'{reg}-power-load'] * \
+                scaling_factor.loc[idx['load', str(yr)], reg]
+
+# ----------------------------------------------------------------------------------------------------------------------
+# %% convert load from MW to GW
+ts_medea['AT-power-load'] = ts_medea['AT-power-load'] / 1000
+ts_medea['DE-power-load'] = ts_medea['DE-power-load'] / 1000
 
 # ----------------------------------------------------------------------------------------------------------------------
 # %% heat consumption data

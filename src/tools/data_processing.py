@@ -231,11 +231,24 @@ def download_energy_balance(country, years=range(2012, 2019)):
             url = 'https://ag-energiebilanzen.de/index.php?article_id=29&'
             url_balance = url + f'fileName=bilanz{yr}d.{url_extension_bal[yr]}'
             url_sat = url + f'fileName=sat{yr}.{url_extension_sat[yr]}'
-            enbal_de = medea_path('data', 'raw', f'enbal_DE_20{yr}.xlsx')
-            enbal_sat_de = medea_path('data', 'raw', f'enbal_sat_DE_20{yr}.xlsx')
+            enbal_de = medea_path('data', 'raw', f'enbal_DE_20{yr}.{url_extension_bal[yr]}')
+            enbal_sat_de = medea_path('data', 'raw', f'enbal_sat_DE_20{yr}.{url_extension_sat[yr]}')
             logging.info(f'downloading German energy balance for year 20{yr}')
             download_file(url_balance, enbal_de)
             download_file(url_sat, enbal_sat_de)
+
+
+def process_energy_balance(country, years=range(2012, 2019)):
+    if country == 'DE':
+        url_extension_bal = {12: 'xlsx', 13: 'xls', 14: 'xls', 15: 'xlsx', 16: 'xls', 17: 'xlsx', 18: 'xls'}
+        enbal_el = pd.DataFrame()
+        for yr in years:
+            enbal = pd.read_excel(medea_path('data', 'raw', f'enbal_DE_{yr}.{url_extension_bal[yr - 2000]}'),
+                                  sheet_name='tj', index_col=[0], usecols=[0, 29], skiprows=list(range(0, 6)),
+                                  nrows=45, na_values=['-'])
+            enbal.columns = [yr]
+            enbal_el = pd.concat([enbal_el, enbal / 3.6], axis=1)
+        enbal_el.to_csv(medea_path('data', 'processed', 'enbal_DE_el.csv'), sep=';')
 
 
 # ======================================================================================================================
