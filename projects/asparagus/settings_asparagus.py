@@ -10,7 +10,7 @@ dict_base = {
     'must_run': [1],
     'policy': [1],
     'co2_price': range(100, -1, -25),
-    'wind_cap': range(14, -1, -2),
+    'wind_cap': range(16, -1, -2),
     'pv_cost': [36424],
     'transmission': [4.9],
     'd_power': [82850]  # *
@@ -32,36 +32,35 @@ dict_campaigns = {
     },
     # sensitivity of results to overnight cost of solar PV
     'pv_sens': {
-        'co2_price': [0],
-        'wind_cap': [18],
+        'co2_price': range(100, -1, -25),
+        'wind_cap': [max(dict_base['wind_cap'])],
         'pv_cost': range(25924, 15026, -1500),
     },
     # no (artificial) bottleneck that constrains electricity trade between AT and DE (which was put in place in 2018 to
     # prevent loop-flows from DE to AT through eastern Europe
     'no_bottleneck': {
-        'co2_price': [25, 75],
+        'co2_price': [25, 50, 75],
         'transmission': [10],
     },
     # disables the must-run condition mimicking ancillary services requirements
     'must_run': {
         'must_run': [0],
-        'policy': [1],
-        'co2_price': [25, 75],
+        'co2_price': [25, 50, 75],
     },
     # disables the policy objective of generating sufficient electricity from renewable sources under 2030 conditions
     'no_policy': {
         'policy': [0],
-        'wind_cap': [14],
+        'wind_cap': [max(dict_base['wind_cap'])],
     },
     # calculates the opportunity cost of wind turbines at low overnight cost for solar PV
     'low_cost': {
-        'co2_price': [25, 75],
-        'pv_cost': [22146],
+        'co2_price': [25, 50, 75],
+        'pv_cost': [22146, 29285],
     },
     # disables policy objective and sets electricity demand to 2016 level to decompose change in CO2 emissions
     'base-2016': {
         'policy': [0],
-        'wind_cap': [14],
+        'wind_cap': [max(dict_base['wind_cap'])],
         'd_power': [65377.516]  # **
     }
 }

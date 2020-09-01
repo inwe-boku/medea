@@ -54,10 +54,14 @@ idx = pd.IndexSlice
 # %% iterate over all output .gdx-files
 df_result = pd.DataFrame(columns=cfg.zones)
 for campaign in dict_campaigns.keys():
+    # update campaign dictionary
+    dict_camp = dict_base.copy()
+    dict_camp.update(dict_campaigns[campaign])
+
     # mix = pd.MultiIndex.from_product([dict_campaigns[campaign]['wind_cap'], cfg.zones])
-    for price_co2 in dict_campaigns[campaign]['co2_price']:
-        for cap_wind in dict_campaigns[campaign]['wind_cap']:
-            for pv_cost in dict_campaigns[campaign]['pv_cost']:
+    for price_co2 in dict_camp['co2_price']:
+        for cap_wind in dict_camp['wind_cap']:
+            for pv_cost in dict_camp['pv_cost']:
 
                 identifier = f'{PROJECT_NAME}_{campaign}_{price_co2}_{cap_wind}_{pv_cost}'
                 FNAME = os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', PROJECT_NAME, 'opt', f'medea_out_{identifier}.gdx')
@@ -102,10 +106,13 @@ hourly_to_read = {
 df_hourly = pd.DataFrame()
 
 for campaign in dict_campaigns.keys():
+    # update campaign dictionary
+    dict_camp = dict_base.copy()
+    dict_camp.update(dict_campaigns[campaign])
     # mix = pd.MultiIndex.from_product([dict_campaigns[campaign]['wind_cap'], cfg.zones])
-    for price_co2 in dict_campaigns[campaign]['co2_price']:
-        for cap_wind in dict_campaigns[campaign]['wind_cap']:
-            for pv_cost in dict_campaigns[campaign]['pv_cost']:
+    for price_co2 in dict_camp['co2_price']:
+        for cap_wind in dict_camp['wind_cap']:
+            for pv_cost in dict_camp['pv_cost']:
 
                 identifier = f'{PROJECT_NAME}_{campaign}_{price_co2}_{cap_wind}_{pv_cost}'
                 FNAME = os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', PROJECT_NAME, 'opt', f'medea_out_{identifier}.gdx')
