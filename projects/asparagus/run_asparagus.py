@@ -56,20 +56,23 @@ for campaign in dict_campaigns.keys():
     dict_camp.update(dict_campaigns[campaign])
 
     # do not adjust capacities if we are running a campaign for 2016
+    # modify INITIAL_CAP_G
+    INIT_CAP_G = INITIAL_CAP_G.copy()
     if '2016' not in campaign:
-        # modify INITIAL_CAP_G
-        INIT_CAP_G = INITIAL_CAP_G
         for z in cfg.zones:
-            for gen in INITIAL_CAP_G.loc[z].index:
+            for gen in INIT_CAP_G.loc[z].index:
                 INIT_CAP_G.loc[idx[z, gen]] = INITIAL_CAP_G.loc[idx[z, gen]] * scenario_2030[z][gen.split('_')[0]][0]
-        reset_symbol(db_input, 'INITIAL_CAP_G', INIT_CAP_G)
-        # modify INITIAL_CAP_R
-        INIT_CAP_R = INITIAL_CAP_R
+    reset_symbol(db_input, 'INITIAL_CAP_G', INIT_CAP_G)
+
+    # modify INITIAL_CAP_R
+    INIT_CAP_R = INITIAL_CAP_R.copy()
+    if '2016' not in campaign:
         for z in cfg.zones:
             for itm in dict_r:
                 #        if itm != 'ror':
                 INIT_CAP_R.loc[idx[z, itm], :] = scenario_2030[z][itm][0]
-        reset_symbol(db_input, 'INITIAL_CAP_R', INIT_CAP_R)
+    reset_symbol(db_input, 'INITIAL_CAP_R', INIT_CAP_R)
+    print(INIT_CAP_R)
 
     # set campaign-parameters for:
     # 1) electricity demand,
