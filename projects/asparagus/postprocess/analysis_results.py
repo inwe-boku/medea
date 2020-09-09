@@ -27,6 +27,75 @@ results.loc[idx[:], idx['AT', 'cost_zonal_net']] = results.loc[idx[:], idx['AT',
                                                    - results.loc[idx[:], idx['AT', 'AnnValueX']] \
                                                    + results.loc[idx[:], idx['AT', 'cost_airpol']]
 
+# drop columns with only zero or nan
+results[results == 0] = np.nan
+results.dropna(axis=1, how='all', inplace=True)
+results.fillna(0, inplace=True)
+
+# Calculate derived results
+results.loc[:, idx['AT', 'AnnGFossil']] = results.loc[:, idx['AT', 'AnnG_el']] - \
+                                          results.loc[:, idx['AT', 'AnnGBiomass']]
+results.loc[:, idx['AT', 'AnnG_htFromEl']] = results.loc[:, idx['AT',
+                                                                'AnnGByTec_(\'eboi_pth\', \'ht\', \'Power\')']] + \
+                                             results.loc[:, idx['AT',
+                                                                'AnnGByTec_(\'heatpump_pth\', \'ht\', \'Power\')']]
+results.loc[:, idx['AT', 'AnnValueXNet']] = results.loc[:, idx['AT', 'AnnValueX']] + \
+                                            results.loc[:, idx['AT', 'AnnValueI']]
+
+# %% plot of storage operation
+st_op = results.loc[idx['base', :, :, 36424], idx['AT', 'AnnSOut']].copy()
+st_op = st_op.unstack([1])
+st_op.index = st_op.index.get_level_values(1)
+st_op.plot()
+plt.show()
+
+# %% plot of electricity trade
+nxnrg = results.loc[idx['base', :, :, 36424], idx['DE', 'AnnX']].copy()
+nxnrg = nxnrg.unstack([1])
+nxnrg.index = nxnrg.index.get_level_values(1)
+nxnrg.plot()
+plt.show()
+
+nxval = results.loc[idx['base', :, :, 36424], idx['AT', ['AnnValueX', 'AnnValueI']]].copy().sum(axis=1)
+nxval = nxval.unstack([1])
+nxval.index = nxval.index.get_level_values(1)
+nxval.plot()
+plt.show()
+
+# %% plot total installed fossil generation capacities
+foscap = results.loc[
+    idx['base', :, :, 36424], idx['AT', results.columns.get_level_values(1).str.contains('add_g_ng')]].copy().sum(
+    axis=1)
+foscap = foscap.unstack([1])
+foscap.index = foscap.index.get_level_values(1)
+# foscap.plot()
+# plt.show()
+
+fosdec = results.loc[
+    idx['base', :, :, 36424], idx['AT', results.columns.get_level_values(1).str.contains('deco_g_ng')]].copy().sum(
+    axis=1)
+fosdec = fosdec.unstack([1])
+fosdec.index = fosdec.index.get_level_values(1)
+# fosdec.plot()
+# plt.show()
+
+fosnet = foscap - fosdec
+fosnet.plot()
+plt.show()
+
+# %% system cost decomposition
+coco = ['CostCO2', 'CostFuel', 'CostOMG', 'CostOMR', 'cost_invest_g', 'cost_invest_r']
+sysco = results.loc[idx['base', :, :, 36424], idx['AT', coco]].copy()
+sysco.index = sysco.index.droplevel([0, 3])
+sysco.columns = sysco.columns.get_level_values(1)
+
+prices = sysco.index.get_level_values(0).unique()
+for p in prices:
+    sysco.loc[idx[p, :], :].plot()
+    plt.show()
+# sysco.plot()
+# plt.show()
+
 # %% Calculate Opportunity Cost of Wind Power
 mixcols = pd.MultiIndex.from_product([['AT'], ['add_r_wind_on', 'cost_zonal_net', 'oc_wind']])
 oc_wind = pd.DataFrame(columns=mixcols)
@@ -174,13 +243,33 @@ plot_lines(sensmrun, FIGPATH / 'sensitivity_mustrun.pdf',
 #
 
 
-# %% MAKE SEASONAL ANALYSIS -- show where additional cost of PV come from
-# * plot seasonal patterns of ror, consumption, pv, wind
+# %% ANALYSIS OF INTERMITTENT GENERATION -- show where additional cost of PV come from
+# read data
 cols = ['AT-wind_on-generation', 'AT-ror-generation', 'AT-pv-generation', 'AT-power-load']
-seas = pd.read_csv(Path(cfg.MEDEA_ROOT_DIR) / 'data' / 'processed' / 'medea_regional_timeseries.csv', index_col=[0])
-seas.index = pd.to_datetime(seas.index)
-seas = seas.loc['2016', cols]
-seasm = seas.resample('M', label='left').mean() / seas.mean()
+itm = pd.read_csv(Path(cfg.MEDEA_ROOT_DIR) / 'data' / 'processed' / 'medea_regional_timeseries.csv', index_col=[0])
+itm.index = pd.to_datetime(itm.index)
+itm = itm.loc['2016', cols]
+
+# * calculate variance of intermittent generation for base case and constrained wind power expansion
+varix = ['base', 'wind8', 'wind4', 'wind0']
+caps = pd.DataFrame(columns=cols[0:3], index=varix)
+caps['AT-ror-generation'] = 6.7
+caps.loc['base', 'AT-pv-generation'] = 1.096 + 0.698
+caps.loc['wind8', 'AT-pv-generation'] = 1.096 + 9.259
+caps.loc['wind4', 'AT-pv-generation'] = 1.096 + 17.161
+caps.loc['wind0', 'AT-pv-generation'] = 1.096 + 25.233
+caps.loc['base', 'AT-wind_on-generation'] = 2.649 + 12.347
+caps.loc['wind8', 'AT-wind_on-generation'] = 2.649 + 8
+caps.loc['wind4', 'AT-wind_on-generation'] = 2.649 + 4
+caps.loc['wind0', 'AT-wind_on-generation'] = 2.649
+
+#
+itmvar = pd.DataFrame(index=varix, columns=['Variance'])
+for i in varix:
+    itmvar.loc[i, 'Variance'] = (itm * caps.loc[i, :]).sum(axis=1).var()
+
+# * plot seasonal patterns of ror, consumption, pv, wind
+seasm = itm.resample('M', label='left').mean() / itm.mean()
 seasm = seasm.rename(mapper={'AT-pv-generation': 'solar PV', 'AT-wind_on-generation': 'wind onshore',
                              'AT-ror-generation': 'run-of-river', 'AT-power-load': 'electricity consumption'}, axis=1)
 plot_lines(seasm, FIGPATH / 'seasonal.pdf', x_date_format='months', color=REFUEL_COLORS)

@@ -21,6 +21,7 @@ symbols_to_read = {
     'AnnCurtail': ([], ['z']),
     'AnnG': (['m'], ['z']),
     'AnnGBiomass': ([], ['z']),
+    'AnnGFossil': ([], ['z']),
     'AnnR': ([], ['z']),
     'AnnSpendingEl': ([], ['z']),
     'AnnProdSurplus': ([], ['z']),
