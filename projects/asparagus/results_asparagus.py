@@ -101,7 +101,7 @@ df_result.to_csv(os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', PROJECT_NAME, 'res
 
 # %% retrieve hourly results
 hourly_to_read = {
-    'v': (['t', ], ['z', 'k'])
+    'x': (['t', ], ['z', 'zz'])
 }
 
 df_hourly = pd.DataFrame()
@@ -135,4 +135,12 @@ for campaign in dict_campaigns.keys():
                     [[campaign], [price_co2], [cap_wind], [pv_cost], df_collect.index],
                     names=('campaign', 'co2_price', 'wind_cap', 'pv_cost', 'variable'))
 
-                df_result = df_result.append(df_collect)
+                df_hourly = df_hourly.append(df_collect)
+
+# drop all zero columns
+df_hourly = df_hourly.loc[:, df_hourly.any()]
+
+# %% write hourly results to csv
+df_hourly.index = pd.MultiIndex.from_tuples(df_hourly.index)
+df_hourly.to_csv(os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', PROJECT_NAME, 'results', 'hourly_results.csv'),
+                 sep=';', decimal=',', encoding='utf-8-sig')
