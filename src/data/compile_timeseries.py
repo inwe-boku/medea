@@ -1,4 +1,6 @@
 # %% imports
+from datetime import datetime
+
 import numpy as np
 import pandas as pd
 
@@ -6,6 +8,8 @@ import config as cfg
 from src.tools.data_processing import download_file, medea_path, download_energy_balance, process_energy_balance
 
 idx = pd.IndexSlice
+
+eta_hydro_storage = 0.9
 # ======================================================================================================================
 # %% download and process opsd time series
 
@@ -78,8 +82,11 @@ nbal_at_pv = pd.read_excel(medea_path('data', 'raw', 'enbal_AT.xlsx'), sheet_nam
                            header=[196], index_col=[0], nrows=1, na_values=['-']).astype('float').dropna(axis=1)
 nbal_at_wind = pd.read_excel(medea_path('data', 'raw', 'enbal_AT.xlsx'), sheet_name='Wind',
                              header=[196], index_col=[0], nrows=1, na_values=['-']).astype('float').dropna(axis=1)
-nbal_at_ror = pd.read_excel(medea_path('data', 'raw', 'BStGes-JR1_Bilanz.xlsx'), sheet_name='Erz',
-                            header=[8], index_col=[0], nrows=37)
+eca_at_hydro = pd.read_excel(medea_path('data', 'raw', 'BStGes-JR1_Bilanz.xlsx'), sheet_name='Erz',
+                             header=[8], index_col=[0], nrows=37)
+eca_at_hydro.drop('Einheit', inplace=True)
+eca_at_hydro.replace(to_replace='-', value=np.nan, inplace=True)
+nbal_at_hydro = nbal_at_cons.loc['aus Wasserkraft', :].sum()
 
 for year in range(first_year, last_year):
     if ts_medea.loc[str(year), 'AT-pv-generation'].sum() > 0:
@@ -89,8 +96,10 @@ for year in range(first_year, last_year):
         scaling_factor.loc[idx['wind_on', str(year)], 'AT'] = nbal_at_wind.loc[:, year].values / \
                                                               ts_medea.loc[str(year), 'AT-wind_on-generation'].sum()
     if ts_medea.loc[str(year), 'AT-ror-generation'].sum() > 0:
-        scaling_factor.loc[idx['ror', str(year)], 'AT'] = nbal_at_ror.loc[year, 'Laufkraft-\nwerke'] * 10 ** 3 / \
-                                                          ts_medea.loc[str(year), 'AT-ror-generation'].sum()
+        scaling_factor.loc[idx['ror', str(year)], 'AT'] = eca_at_hydro.loc[year, 'Laufkraft-\nwerke'] * \
+                                                          (nbal_at_hydro[year] / 1000) / \
+                                                          eca_at_hydro.loc[year, 'Summe\nWasser-\nkraft'] / \
+                                                          (ts_medea.loc[str(year), 'AT-ror-generation'].sum() / 1000)
     if ts_medea.loc[str(year), 'AT-power-load'].sum() > 0:
         scaling_factor.loc[idx['load', str(year)], 'AT'] = \
             nbal_at_cons.loc[['Energetischer Endverbrauch', 'Transportverluste'], year].sum() / \
@@ -179,7 +188,6 @@ for reg in cfg.zones:
 
 # ----------------------------------------------------------------------------------------------------------------------
 # %% scale electricity load
-# TODO: scale electricity load profiles to match values from national energy balances
 for reg in cfg.zones:
     for yr in range(first_year, last_year):
         if scaling_factor.loc[idx['load', str(yr)], reg] < 2:
@@ -209,12 +217,36 @@ for reg in cfg.zones:
     ts_medea[f'{reg}-exports-flow'] = ts_flows.loc[:, f'exp_{reg}'] / 1000
 
 # ----------------------------------------------------------------------------------------------------------------------
+# %% scaling of hydro reservoir inflows
+# 1) how much is reservoir generation according to energy balance? -- infer from ECA data and scale to energy balance
+entsoe_ror = ts_medea.loc[:, 'AT-ror-generation'].resample('Y').sum()
+entsoe_ror.index = entsoe_ror.index.year
+factor_ror = scaling_factor.loc[idx['ror', :], 'AT']
+factor_ror.index = factor_ror.index.get_level_values(1).astype('int')
+nbal_at_ror = factor_ror * entsoe_ror
+nbal_at_ror.loc[nbal_at_ror < 10000] = np.nan
+nbal_at_rsvr = nbal_at_hydro / 1000 - nbal_at_ror
+
+# 2) scaling factor for hydro storage generation and inflows
+scaling_factor_nflw = nbal_at_rsvr / eca_at_hydro.loc[:, 'Speicher-\nkraftwerke']
+
+# 3) ECA inflows to hydro reservoirs
+eca_at_rsvr = pd.read_excel(medea_path('data', 'raw', 'BStGes-JR1_Bilanz.xlsx'), sheet_name='Bil', header=[7],
+                            index_col=[0], nrows=37)
+eca_at_rsvr.drop('Einheit', inplace=True)
+eca_at_rsvr.replace(to_replace='- ', value=np.nan, inplace=True)
+eca_at_nflw = eca_at_hydro.loc[:, 'Speicher-\nkraftwerke'] / eta_hydro_storage - eca_at_rsvr.loc[:,
+                                                                                 'Verbrauch\nfür Pump-\nspeicher'] * eta_hydro_storage
+
+# 4) inflows in line with energy balance
+nbal_at_nflw = eca_at_nflw * scaling_factor_nflw
+
 # %% filling rates of hydro reservoirs
 df_hydro_fill = pd.read_csv(medea_path('data', 'processed', 'reservoir_filling.csv'), index_col=[0])
 df_hydro_fill.index = pd.DatetimeIndex(df_hydro_fill.index).tz_localize('utc')
 ts_hydro_fill = pd.DataFrame(
-    index=pd.date_range(pd.datetime(df_hydro_fill.head(1).index.year[0], 1, 1, 0, 0),
-                        pd.datetime(df_hydro_fill.tail(1).index.year[0], 12, 31, 23, 0),
+    index=pd.date_range(datetime(df_hydro_fill.head(1).index.year[0], 1, 1, 0, 0),
+                        datetime(df_hydro_fill.tail(1).index.year[0], 12, 31, 23, 0),
                         freq='h', tz='utc'), columns=cfg.zones)
 ts_hydro_fill.update(df_hydro_fill[cfg.zones].resample('H').interpolate(method='pchip'))
 ts_hydro_fill = ts_hydro_fill.fillna(method='pad')
@@ -232,9 +264,18 @@ for reg in cfg.zones:
         'W-MON').sum() + ts_hydro_generation[f'psp_gen_{reg}'].resample('W-MON').sum() + ts_hydro_generation[
                         f'res_{reg}'].resample(
         'W-MON').sum()) / 1000 / 168
-    inflows.loc[inflows[reg] < 0, reg] = 0
-    # downsample to hours
-    ts_medea[f'{reg}-inflows-reservoir'] = inflows[reg].resample('H').interpolate(method='pchip')
+    # shift inflow estimate up to avoid negative inflows
+    if inflows[reg].min() < 0:
+        inflows[reg] = inflows[reg] - inflows[reg].min() * 1.1
+
+inflows_hr = inflows.resample('H').interpolate(method='pchip')
+
+for yr in nbal_at_nflw.dropna().index:
+    inflows_hr.loc[str(yr), 'AT'] = inflows_hr.loc[str(yr), 'AT'] * nbal_at_nflw.loc[yr] / inflows_hr.loc[
+        str(yr), 'AT'].sum()
+
+for reg in cfg.zones:
+    ts_medea[f'{reg}-inflows-reservoir'] = inflows_hr[reg]
     ts_medea.loc[ts_medea[f'{reg}-inflows-reservoir'] < 0, f'{reg}-inflows-reservoir'] = 0
 
 # ----------------------------------------------------------------------------------------------------------------------
