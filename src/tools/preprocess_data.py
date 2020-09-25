@@ -136,14 +136,13 @@ for zone in list(cfg.zones):
                                           inflow_factor.loc[strg, zone]
 ts_data.update({'INFLOWS': ts_inflows})
 
-
-
 # --------------------------------------------------------------------------- #
 # %% peak load and profiles
 # --------------------------------------------------------------------------- #
 ts_data.update({'PEAK_LOAD': ts_data['ZONAL'].loc[:, idx[:, 'el', 'load']].max().unstack((1, 2)).squeeze()})
-ts_data.update({'PEAK_PROFILE': ts_data['ZONAL'].loc[:, idx[:, :, 'profile']].max().unstack(2).drop(
-    'ror', axis=0, level=1)})
+peak_profile = ts_data['ZONAL'].loc[:, idx[:, :, 'profile']].max().unstack(2).drop('ror', axis=0, level=1)
+peak_profile.fillna(0, inplace=True)
+ts_data.update({'PEAK_PROFILE': peak_profile})
 
 # --------------------------------------------------------------------------- #
 # %% limits on investment - long-run vs short-run
