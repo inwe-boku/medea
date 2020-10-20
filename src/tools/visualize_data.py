@@ -1,13 +1,24 @@
 # %% imports
 import itertools
 
+import matplotlib.dates as mdates
+import matplotlib.pylab as pylab
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+params = {
+    'legend.fontsize': 9,
+    'figure.figsize': (6, 3.75),
+    'axes.labelsize': 9,
+    'axes.titlesize': 10,
+    'xtick.labelsize': 9,
+    'ytick.labelsize': 9}
+pylab.rcParams.update(params)
+
 
 # %% plotting functions
-def plot_subn(df, path, width=2, xlim=None, ylim=None, xlabel=None, ylabel=None, color=None):
+def plot_subn(df, path, width=2, xlim=None, ylim=None, xlabel=None, ylabel=None, y_ax_fixed_spacing=None, color=None):
     """
     plots each column of a pandas DataFrame on a separate subplot. Uses column names as subplot-titles.
     :param df: pandas DataFrame to be plotted
@@ -28,15 +39,25 @@ def plot_subn(df, path, width=2, xlim=None, ylim=None, xlabel=None, ylabel=None,
     sub_length = np.ceil(ncols / width).astype(int)
     sub_boxes = list(itertools.product(range(0, width), range(0, sub_length)))
 
-    figure, axis = plt.subplots(width, sub_length, figsize=(8, 5))
+    max_range = np.ceil((df.loc[:, y_ax_fixed_spacing].max() - df.loc[:, y_ax_fixed_spacing].min()).max() * 12.5) / 10
+
+    figure, axis = plt.subplots(width, sub_length)  # figsize=(8, 5)
     for col in range(0, ncols):
         a = sub_boxes[col][0]
         b = sub_boxes[col][1]
 
         if color is not None:
             axis[a, b].plot(df.iloc[:, col], linewidth=2, color=color[col])
+            y_lim = axis[a, b].get_ylim()
+            y_mid = (y_lim[0] + y_lim[1]) / 2
+            if y_ax_fixed_spacing[col]:
+                axis[a, b].set_ylim(y_mid - max_range / 2, y_mid + max_range / 2)
+
         else:
             axis[a, b].plot(df.iloc[:, col], linewidth=2)
+            y_lim = axis[a, b].get_ylim()
+            if y_ax_fixed_spacing[col]:
+                axis[a, b].set_ylim(y_lim[0], y_lim[0] + max_range)
 
         if xlabel is not None:
             axis[a, b].set_xlabel(xlabel)
@@ -59,7 +80,7 @@ def plot_subn(df, path, width=2, xlim=None, ylim=None, xlabel=None, ylabel=None,
     plt.close()
 
 
-def plot_lines(df, path, xlim=None, ylim=None, xlabel=None, ylabel=None, color=None):
+def plot_lines(df, path, xlim=None, ylim=None, xlabel=None, x_ax_date_format=None, ylabel=None, color=None):
     """
     line plot of each column in pandas DataFrame.
     :param df: a pandas DataFrame
@@ -78,7 +99,7 @@ def plot_lines(df, path, xlim=None, ylim=None, xlabel=None, ylabel=None, color=N
     else:
         raise TypeError
 
-    figure, axis = plt.subplots(1, 1, figsize=(8, 5))
+    figure, axis = plt.subplots(1, 1)
     axis.set_ylabel(ylabel)
     axis.set_xlabel(xlabel)
 
@@ -96,6 +117,9 @@ def plot_lines(df, path, xlim=None, ylim=None, xlabel=None, ylabel=None, color=N
         axis.legend([df.name])
     else:
         raise TypeError
+
+    if x_ax_date_format:
+        axis.xaxis.set_major_formatter(mdates.DateFormatter(x_ax_date_format))
 
     axis.set_ylim(ylim)
     axis.set_xlim(xlim)
@@ -126,7 +150,7 @@ def plot_sublines(df, path, width=2, midx_level=0, subtitle=True, xlim=None, yli
     num_subfigures = len(idx_to_group)
     sub_length = np.ceil(num_subfigures / width).astype(int)
 
-    fig = plt.figure(figsize=(8, 5))
+    fig = plt.figure()  # figsize=(8, 5)
     for subplot in range(0, num_subfigures):
         data_to_plot = df.xs(idx_to_group[subplot], axis=1, level=midx_level)
         _, num_lines = data_to_plot.shape
