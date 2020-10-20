@@ -317,11 +317,19 @@ plot_lines(seasm, FIGPATH / 'seasonal.pdf', x_date_format='months', color=REFUEL
 # read data
 trd = pd.read_csv(medea_path('projects', 'asparagus', 'results', 'hourly_results.csv'), sep=';', decimal=',',
                   index_col=[0, 1, 2, 3, 4], header=[0, 1])
+trixa = pd.DataFrame(columns=['imp', 'exp'])
+trixa['imp'] = trd.loc[:, idx['AT', 'DE']]
+trixa.loc[trixa['imp'] > 0, 'imp'] = 0
+trixa['exp'] = trd.loc[:, idx['AT', 'DE']]
+trixa.loc[trixa['exp'] < 0, 'exp'] = 0
+
+impex = trixa.groupby(level=[0, 1, 2, 3]).sum().copy()
 
 # exports x and imports i for baseline scenario
-cors = pd.DataFrame(index=range(100, -1, -25), columns=pd.MultiIndex.from_product([[0, 16], ['xw', 'xp', 'i']]))
+wind_limits = [16, 8, 0]
+cors = pd.DataFrame(index=range(100, -1, -25), columns=pd.MultiIndex.from_product([wind_limits, ['xw', 'xp', 'i']]))
 for p_co2 in range(100, -1, -25):
-    for wlim in [16, 0]:
+    for wlim in wind_limits:
         trdat = pd.DataFrame(columns=['x', 'i'])
         trdat['x'] = trd.loc[idx['base', p_co2, wlim, 36424, :], idx['AT', 'DE']].copy()
         trdat.loc[trdat['x'] < 0, 'x'] = 0
