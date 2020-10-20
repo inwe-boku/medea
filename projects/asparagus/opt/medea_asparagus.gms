@@ -82,5 +82,5 @@ policy_100resbalance$(SWITCH_POLICY)..
          + sum(t, g('AT',t,'bio','el','biomass'))
          + sum((t,k), INFLOWS('AT',t,k)* EFFICIENCY_S_OUT(k))
          =G=
-         78100
+         74809.4
          ;
