@@ -9,11 +9,11 @@ PROJECT_NAME = 'asparagus'
 dict_base = {
     'must_run': [1],
     'policy': [1],
-    'co2_price': range(100, -1, -25),
+    'co2_price': range(0, 101, 25),
     'wind_cap': range(16, -1, -2),
-    'pv_cost': [32530],  # [36424],
+    'pv_cost': [36424],  # [36424, 32530] with open-space / rooftop as stated by Gewessler
     'transmission': [4.9],
-    'd_power': [82850]  # *
+    'd_power': [79302.65]  # *
 }
 # * government programme states that 27 TWh electricity need to be added to reach renewable electricity generation equal
 # to "100%" of electricity consumption (excluding industry self consumption and system services).
@@ -28,41 +28,39 @@ dict_base = {
 # campaigns
 dict_campaigns = {
     'base': {
-        #
-    },
-    # # sensitivity of results to overnight cost of solar PV
-    # 'pv_sens': {
-    #     'co2_price': [100, 0],  # range(100, -1, -25),
-    #     'wind_cap': [max(dict_base['wind_cap'])],
-    #     'pv_cost': range(36424, 15026, -1500),  # range(25924, 15026, -1500),
-    # },
-    # no (artificial) bottleneck that constrains electricity trade between AT and DE (which was put in place in 2018 to
-    # prevent loop-flows from DE to AT through eastern Europe
-    'no_bottleneck': {
-        'co2_price': [25, 50, 75],
-        'transmission': [10],
-    },
-    # disables the must-run condition mimicking ancillary services requirements
-    'must_run': {
-        'must_run': [0],
-        'co2_price': [25, 50, 75],
-    },
-    # disables the policy objective of generating sufficient electricity from renewable sources under 2030 conditions
-    'no_policy': {
-        'policy': [0],
-        'co2_price': [63],
-        'wind_cap': [max(dict_base['wind_cap'])],
+        'wind_cap': [16, 0]
         # },
-        # calculates the opportunity cost of wind turbines at low overnight cost for solar PV
+        # # sensitivity of results to overnight cost of solar PV
+        # 'pv_sens': {
+        #     # 'co2_price': range(100, -1, -25),
+        #     'wind_cap': [max(dict_base['wind_cap'])],
+        #     'pv_cost': range(36424, 15026, -1500),  # range(25924, 15026, -1500),
+        # },
+        # # no (artificial) bottleneck that constrains electricity trade between AT and DE (which was put in place in 2018 to
+        # # prevent loop-flows from DE to AT through eastern Europe
+        # 'no_bottleneck': {
+        #     'transmission': [10],
+        # },
+        # # disables the must-run condition mimicking ancillary services requirements
+        # 'must_run': {
+        #     'must_run': [0],
+        # },
+        # # # disables the policy objective of generating sufficient electricity from renewable sources under 2030 conditions
+        # # 'no_policy': {
+        # #     'policy': [0],
+        # #     'co2_price': [25, 45, 60],
+        # #     'wind_cap': [max(dict_base['wind_cap'])],
+        # # },
+        # # calculates the opportunity cost of wind turbines at low overnight cost for solar PV
         # 'low_cost': {
-        #     # 'co2_price': [25, 50, 75],
+        #     'co2_price': [25, 50, 75],
         #     'pv_cost': [32530],  # [22146, 29285],
         # # },
-        # # disables policy objective and sets generation capacities & electricity demand to 2016 level
-        # 'base-2016': {
-        #     'policy': [0],
-        #     'wind_cap': [max(dict_base['wind_cap'])],
-        #     'd_power': [65377.516]  # **
+        #     # # disables policy objective and sets generation capacities & electricity demand to 2016 level
+        #     # 'base-2016': {
+        #     #     'policy': [0],
+        #     #     'wind_cap': [max(dict_base['wind_cap'])],
+        #     #     'd_power': [65377.516]  # **
     }
 }
 # ** end-use plus transmission losses as of 2016. excludes energy sector own consumption as plant efficiencies are net
@@ -85,7 +83,7 @@ dict_campaigns = {
 scenario_2030 = {
     'AT': {
         # scaling factors
-        'bio': [1.2],  # scales biomass capacity to 870 MW consistent with generating +1 TWh/a
+        'bio': [1],
         'coal': [0],
         'heatpump': [1],
         'hpa': [1],
@@ -98,7 +96,7 @@ scenario_2030 = {
         'wind_on': [2.649],
         'wind_off': [0],
         'pv': [1.096],
-        'ror': [6.7]  # 6.7 GW (+1 GW vs 2016) ror capacity consistent with generating +5 TWh from hydro power
+        'ror': [6.75]  # 5.7 GW (+1.05 GW vs 2016) ror capacity consistent with generating +5 TWh from hydro power
     },
     'DE': {
         # scaling factors
