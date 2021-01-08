@@ -396,7 +396,7 @@ for v in var:
     # dfp = senspv[senspv.columns.intersection(mix)]
     dfp = senspv.loc[:, idx[v, :]]
     dfp.columns = dfp.columns.droplevel(0)
-    plot_lines(dfp, FIGPATH / f'S_PVCost_P_{v}.pdf',
+    plot_lines(dfp, FIGPATH / f'S_PVCost_P_{v}.pdf'.replace(' ', ''),
                xlabel='Capital Cost of PV [€/kWp]', xlim=[650, 250], ylim=[0, 16],
                ylabel='Added Capacity of Wind Turbines [GW]', color=REFUEL_COLORS)
 
