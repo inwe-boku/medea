@@ -1,3 +1,4 @@
+# %% imports
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -303,9 +304,10 @@ caps.loc['wind4', 'AT-wind_on-generation'] = 2.649 + 4
 caps.loc['wind0', 'AT-wind_on-generation'] = 2.649
 
 #
-itmvar = pd.DataFrame(index=varix, columns=['Variance'])
+itmvar = pd.DataFrame(index=varix, columns=['Variance', 'Min'])
 for i in varix:
     itmvar.loc[i, 'Variance'] = (itm * caps.loc[i, :]).sum(axis=1).var()
+    itmvar.loc[i, 'Min'] = (itm * caps.loc[i, :]).sum(axis=1).min()
 
 # * plot seasonal patterns of ror, consumption, pv, wind
 seasm = itm.resample('M', label='left').mean() / itm.mean()
