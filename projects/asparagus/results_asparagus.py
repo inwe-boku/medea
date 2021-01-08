@@ -93,7 +93,7 @@ for campaign in dict_campaigns.keys():
 
 # %% write results to csv
 df_result.index = pd.MultiIndex.from_tuples(df_result.index)
-df_result.to_csv(os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', PROJECT_NAME, 'results', 'annual_results_base.csv'),
+df_result.to_csv(os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', PROJECT_NAME, 'results', 'annual_results.csv'),
                  sep=';', decimal=',', encoding='utf-8-sig')
 
 # %% retrieve hourly results
