@@ -70,10 +70,10 @@ s_outm = s_outt.groupby([s_outt.index.get_level_values(i) for i in [0, 1, 2]] + 
 nxpt = to_timeindex(nxp, datetime(2016, 1, 1), datetime(2017, 1, 1), 'H', 't', 1)
 nxpm = nxpt.groupby([nxpt.index.get_level_values(i) for i in [0, 1, 2]] + [pd.Grouper(freq='M', level=-1)]).sum()
 
-# %% plotting
+# %% data preparation
 co2p = 25
 wlim = 16
-reg = 'DE'
+reg = 'AT'
 scen = 'base'
 
 dispatch = pd.DataFrame(data=0,
@@ -125,7 +125,7 @@ dispatchb_pos.fillna(0, inplace=True)
 dispatchb_neg = dispatchb[dispatchb < 0].copy()
 dispatchb_neg.fillna(0, inplace=True)
 
-# %% figure
+# %% plotting
 
 labs = ['Biomass', 'Coal', 'Run-of-river', 'PV', 'Wind', 'Natural Gas', 'Oil', 'Storage Discharge', 'Storage Charge',
         'Exports', 'Imports']
@@ -166,5 +166,5 @@ handles, labels = ax2.get_legend_handles_labels()
 plt.legend(handles, labels, loc='lower center', bbox_to_anchor=(-0.125, -0.33), ncol=4)
 plt.grid()
 ax2.set_axisbelow(True)
-plt.savefig(APATH / 'doc' / 'figures' / 'dispatch_DE.pdf', dpi=dpi)
+plt.savefig(APATH / 'doc' / 'figures' / f'dispatch_{reg}.pdf', dpi=dpi)
 plt.close(fig)
