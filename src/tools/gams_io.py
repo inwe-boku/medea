@@ -10,7 +10,7 @@ import config as cfg
 
 def timesort(df, index_sets='t', timeindex_name='t', timeindex_string='t'):
     """
-    Sorts a pandas dataframe indexed by a string-float combination by float (ignoring string) in decending order.
+    Sorts a pandas dataframe indexed by a string-float combination by float (ignoring string) in descending order.
     Useful for sorting GAMS-time-set-indexed data.
     :param df: A dataframe indexed by a float-string combination
     :param index_sets: column name(s) to be used as index
@@ -47,14 +47,15 @@ def reset_symbol(db_gams, symbol_name, df):
         raise ValueError('dimension_list must be list or integer')
 
 
-def gdx2df(db_gams, symbol, index_list, column_list):
+def gdx2df(db_gams, symbol, index_list, column_list, check_sets=False):
     """
     writes data from a GAMS gdx to a pandas dataframe.
     :param db_gams: a GAMS database object
     :param symbol: string of the GAMS symbol name
-    :param index_list:
-    :param column_list:
-    :return:
+    :param index_list: a list of strings of GAMS-sets over which 'symbol' is defined which constitute the df's index
+    :param column_list: a list of strings of GAMS-sets over which 'symbol' is defined which constitute the df's columns
+    :param check_sets:
+    :return: a pd.DataFrame
     """
     sym = db_gams.get_symbol(symbol)
     if isinstance(sym, GamsParameter):
@@ -79,11 +80,9 @@ def gdx2df(db_gams, symbol, index_list, column_list):
         gdx_df = pd.pivot_table(gdx_df, values='Value', index=index_list, columns=column_list)
     if 't' in index_list:
         gdx_df = timesort(gdx_df, index_sets=index_list)
-        # gdx_df.reset_index(inplace=True)
-        # gdx_df['tix'] = pd.to_numeric(gdx_df['t'].str.split(pat='t').str.get(1))
-        # gdx_df.sort_values(by=['tix'], inplace=True)
-        # gdx_df.set_index(index_list, drop=True, inplace=True)
-        # gdx_df.drop(columns=['tix'], inplace=True)
+    # if check_sets and (isinstance(sym, GamsParameter) or isinstance(sym, GamsVariable)):
+    #    gdx_index_set = {obj.keys[0] for obj in sym}
+
     gdx_df = gdx_df.fillna(0)
     return gdx_df
 
