@@ -1,0 +1,314 @@
+\documentclass[aspectratio=1610, xcolor=dvipsnames]{beamer}
+\usetheme{Pittsburgh}
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{siunitx}
+\usepackage[version=4]{mhchem}
+
+\usepackage[T1]{fontenc}
+
+\usepackage{animate}
+\usepackage{biblatex}
+
+\usepackage{booktabs}
+\usepackage{cmbright}
+\usepackage[gen]{eurosym}
+\usepackage{fancyvrb}
+\usepackage{multicol}
+\usepackage{setspace}
+\usepackage[absolute,overlay]{textpos}
+
+\usepackage{xcolor}
+\usepackage{graphicx}
+
+\newcommand{\COO}{\ensuremath{\mathrm{CO_2}} }
+%\usepackage{natbib}
+\usepackage{cellspace}
+\setlength\cellspacetoplimit{4pt}
+\setlength\cellspacebottomlimit{4pt}
+
+% plotting with tikz and pgfplots
+\usepackage{pgfplots}
+\usepackage{tikz}
+\usepackage{hyperref}
+\usetikzlibrary{shapes.geometric, arrows, positioning, fit, shapes.arrows}
+\usetikzlibrary{decorations.pathreplacing, decorations.markings}
+\pgfplotsset{compat = 1.16}
+% make tikz compatible with \againframe
+\tikzset{onslide/.code args={<#1>#2}{%
+    \only<#1>{\pgfkeysalso{#2}} % \pgfkeysalso doesn't change the path
+}}
+\tikzset{alt/.code args={<#1>#2#3}{%
+    \alt<#1>{\pgfkeysalso{#2}}{\pgfkeysalso{#3}} % \pgfkeysalso doesn't change the path
+}}
+\tikzset{temporal/.code args={<#1>#2#3#4}{%
+    \temporal<#1>{\pgfkeysalso{#2}}{\pgfkeysalso{#3}}{\pgfkeysalso{#4}} % \pgfkeysalso doesn't change the path
+}}
+
+% horizontal alignment of \underbraces
+\newcommand{\tempstrut}{\rule[-1.2\baselineskip]{0pt}{1.5\baselineskip}}
+
+%gets rid of bottom navigation bars
+\setbeamertemplate{footline}[frame number]{}
+
+%gets rid of bottom navigation symbols
+\setbeamertemplate{navigation symbols}{}
+
+% colors
+\definecolor{bokugreen}{rgb}{0.302, 0.675, 0.149}
+\setbeamercolor{title}{fg=bokugreen, bg=white}
+\setbeamercolor{frametitle}{fg=bokugreen}
+\setbeamercolor{itemize item}{fg=bokugreen}
+\setbeamercolor{enumerate item}{fg=bokugreen}
+\setbeamercolor{local structure}{fg=bokugreen}
+
+% wider slide
+\newcommand\Wider[2][3em]{%
+    \makebox[\linewidth][c]{%
+        \begin{minipage}{\dimexpr\textwidth+#1\relax}
+            \raggedright#2
+        \end{minipage}%
+    }%
+}
+
+% title page
+\setbeamertemplate{title page}[default][colsep=-4bp,rounded=true]
+\title[The Cost of Undisturbed Landscapes]{The Cost of Undisturbed Landscapes}
+\author{Sebastian Wehrle}
+\institute{Institute for Sustainable Economic Development \\University of Natural Resources and Life Sciences, Vienna}
+\date{January 12, 2021}
+% section page
+\setbeamertemplate{section page}{
+    \begin{textblock*}{4cm}
+        (11.5cm, 4cm) % {block width} (coords)
+            {\LARGE \insertsection}
+    \end{textblock*}
+}
+% subsection page
+\setbeamertemplate{subsection page}{
+    \begin{textblock*}{4cm}
+        (11.5cm, 4cm) % {block width} (coords)
+            {\LARGE \insertsection} \\ \bigskip \insertsubsection
+    \end{textblock*}
+}
+
+\begin{document}
+{
+    \begin{frame}[noframenumbering,plain]
+        \maketitle
+        \centering
+        \includegraphics[height=1.7cm]{./figures/boku-logo}\\
+    \end{frame}
+}
+
+    \begin{frame}
+        \frametitle{Preface}
+        \framesubtitle{Motivation for research}
+        \structure{Wind power potentials -- state of the art in a nutshell} \\~\\
+        %\medskip
+        %\structure{How much wind power \emph{can} be installed?} \\~\\
+        \begin{itemize}
+            \item Wind power potentials typically derived by step-wise exclusion of areas
+            \begin{itemize}
+                \item technical restrictions (e.g.\ elevation)
+                \item legal restrictions (e.g.\ protected areas)
+                \item resource restrictions (i.e.\ sufficient wind at location)
+            \end{itemize} %\\~\\
+            \item Assumption that wind power is feasible in all areas not excluded
+        \end{itemize}
+        \medskip
+        Yet, increasing understanding that "social acceptance" matters
+        \medskip
+        \begin{itemize}
+            \item Exclude areas where erection of wind turbines is "socially unacceptable"
+            \item In the literature, such areas are identified, for example, based on
+            \begin{itemize}
+                \item participatory processes
+                \item approximation of public authorities' licensing decisions through "scenicness"
+            \end{itemize} %\\~\\
+            %\item Binary attributions
+            %\item No guidance on choice of method
+            %\item How is selection of areas justified?
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Preface}
+        \framesubtitle{Motivation for research}
+        \structure{Wind power potentials -- my take on advancing the state-of-the-art} \\~\\
+        \begin{itemize}
+            \item Abandon binary attributions which fall short of complexity involved
+            \item Realize that there is no guaranteed way to come up with unanimous ("socially accepted") decisions in a society
+            \begin{itemize}
+                \item How much wind power \emph{can} be deployed ultimately is a matter of power
+            \end{itemize}
+        \end{itemize}
+        \medskip
+        Instead, consider how much wind power \emph{should} be installed
+        \begin{itemize}
+            \item Minimize damage caused
+            \item Weigh cost and benefit we are willing to take (as a society)
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{How much wind power \emph{should} be installed}
+        \begin{columns}[T]
+            \begin{column}{7cm}
+                \begin{block}{The cost of undisturbed landscapes}
+                    \begin{itemize}
+                        \item change in electricity generation cost
+                        \item change in GHG emissions
+                        \item change in local air pollution
+                        \item change in grid connection cost
+                        \item change in capital construction cost
+                        \item change in O\&M cost
+                        \item change in cost of supply security
+                    \end{itemize}
+                \end{block}
+            \end{column}
+
+            \begin{column}{7cm}
+                \begin{block}{The benefit of undisturbed landscapes}
+                    \begin{itemize}
+                        \item avoided impact on ecosystem services
+                        \item avoided impact on amenity value of landscape
+                        \item avoided impacts on wildlife
+                        \item avoided loss of property value
+                    \end{itemize}
+                \end{block}
+            \end{column}
+        \end{columns}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{The cost of undisturbed landscapes}
+        \framesubtitle{Some background}
+        \begin{itemize}
+            \item By 2030, \SI{100}{\percent}\footnote[frame]{System services and industry own consumption,
+            accounting for $\sim$\SI{10}{\percent} of total electricity demand and $\sim$\SI{40}{\percent} of \ce{CO2} emissions from power
+            generation are exempt} of Austria's electricity demand to be sourced from renewables
+            \item Sufficient potentials for large-scale expansion only for wind and solar power
+        \end{itemize}
+        \medskip
+        {%
+            \setbeamercolor{block body}{bg=bokugreen!30, fg=black}
+            \setbeamertemplate{blocks}[rounded][shadow=false]
+            \begin{block}{}
+                \begin{itemize}
+                    \item Not disturbing landscapes by wind turbines means substituting wind turbines with PV modules (potentially open-space)
+                \end{itemize}
+            \end{block}
+        }%
+        \medskip
+        \begin{itemize}
+            \item Substituting wind turbines with PV modules changes system operation and investment
+            \item Which cost arises due to this substitution?
+            \item In our case, this is the \emph{opportunity cost of wind power}, as the cost-minimizing system relies
+            (almost) entirely on wind power
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{The cost of undisturbed landscapes}
+        \framesubtitle{Methodology}
+        %, which includes all operation and
+        %investment cost of the (domestic) electricity system, the cost of emissions (we also include air pollutants), plus
+        %the cost (revenue) from electricity imports (exports).
+
+        \medskip
+        {%
+            \setbeamercolor{block title}{bg=bokugreen, fg=white}
+            \setbeamercolor{block body}{bg=bokugreen!20, fg=black}
+            \setbeamertemplate{blocks}[rounded][shadow=false]
+            \begin{block}{Approximation of the opportunity cost of wind turbines $OC_w$}
+                %To approximate the opportunity cost of wind turbines $OC_w$, we proceed as follows:
+                \begin{enumerate}
+                    \item determine unconstrained level of RET that leads to minimal system cost $c_{net}$ \label{step1}
+                    \item restrict the admissible expansion of the least-cost RET by a small margin, $\Delta w$, and observe
+                    resulting change in system cost $\Delta c_{net}$ \label{step2}
+                    \item approximate the opportunity cost of wind power by \label{step3}
+                    \begin{align*}
+                        OC_w = \frac{\Delta c_{net}}{\Delta w}
+                    \end{align*}
+                    \item repeat steps \ref{step2} and \ref{step3} till no more wind turbines can be erected
+                \end{enumerate}
+            \end{block}
+        }%
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{The cost of undisturbed landscapes}
+        \framesubtitle{Assumptions}
+        We quantify the opportunity cost of wind power with the numerical power system model \emph{medea}, which we set up
+        to resemble the Austrian and German electricity and district heating systems in 2030.
+        \begin{columns}[T]
+        {%
+            \setbeamercolor{block title}{bg=bokugreen, fg=white}
+            \setbeamercolor{block body}{bg=bokugreen!20, fg=black}
+            \setbeamertemplate{blocks}[rounded][shadow=false]
+            \begin{column}{7cm}
+                \begin{block}{Model assumptions}
+                    \begin{itemize}
+                        \item perfect foresight, partial-equilibrium model of electricity and district heating sectors in
+                        AT and DE
+                        \item technology-rich representation of supply to meet price-inelastic demand
+                        \item economic dispatch in hourly resolution plus investment
+                    \end{itemize}
+                \end{block}
+            \end{column}
+
+            \begin{column}{7cm}
+                \begin{block}{Scenario assumptions (2030)}
+                    \begin{itemize}
+                        \item DE: nuclear and (partial) coal exit
+                        \item DE: RET expansion as in EEG 2017
+                        \item AT: must generate 79.3 TWh/a from RES
+                        \begin{itemize}
+                            \item + 5 TWh/a hydropower
+                            \item + 1 TWh/a electricity from biomass
+                        \end{itemize}
+                        \item weather as in 2016 (a low wind year)
+                    \end{itemize}
+                \end{block}
+            \end{column}
+        }%
+        \end{columns}
+        \bigskip
+        \url{https://github.com/inwe-boku/medea}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Change in annual net system cost -- Austria, 2030}
+        \begin{figure}
+            \includegraphics[width=0.95\textwidth]{./figures/cost_components_base_25.pdf} \label{fig:cost_breakdown}
+        \end{figure}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Monthly electricity generation by source -- Austria, 2030}
+        \framesubtitle{(a) maximum wind power, (b) maximum solar power}
+        \begin{figure}
+            \includegraphics[width=0.85\textwidth]{./figures/dispatch_AT.pdf} \label{fig:monthly_gen}
+        \end{figure}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Annual opportunity cost of wind power -- Austria, 2030}
+        \framesubtitle{PV capital cost: \euro 625/kWp}
+        \begin{figure}
+            \includegraphics[width=0.95\textwidth]{./figures/oc_base.pdf} \label{fig:opportunity_cost_base}
+        \end{figure}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Sensitivity of annual opportunity cost of wind power -- Austria, 2030}
+        \begin{figure}
+            \includegraphics[width=0.95\textwidth]{./figures/Sensitivities.pdf} \label{fig:sensitivities}
+        \end{figure}
+    \end{frame}
+
+\end{document}
