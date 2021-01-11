@@ -12,6 +12,7 @@ import config as cfg
 from src.tools.data_processing import medea_path
 from src.tools.visualize_data import plot_lines
 
+# TODO: create /asparagus/doc/figures-subfolder before saving figures
 # TODO: Plots of first differrences (e.g. oc of wind) need to have their x-axis adjusted (shift to mean of adjacent categories)
 # TODO: plot sensitivity as scatters of baseline versus sensivitiy scenario plot
 

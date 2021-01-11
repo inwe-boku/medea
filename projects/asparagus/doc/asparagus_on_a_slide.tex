@@ -7,6 +7,7 @@
 \usepackage{mathtools}
 \usepackage{siunitx}
 \usepackage[version=4]{mhchem}
+\usepackage{qrcode}
 
 \usepackage[T1]{fontenc}
 
@@ -195,7 +196,7 @@
         \end{itemize}
         \medskip
         {%
-            \setbeamercolor{block body}{bg=bokugreen!30, fg=black}
+            \setbeamercolor{block body}{bg=structure.fg!20, fg=black}
             \setbeamertemplate{blocks}[rounded][shadow=false]
             \begin{block}{}
                 \begin{itemize}
@@ -221,11 +222,12 @@
 
         \medskip
         {%
-            \setbeamercolor{block title}{bg=bokugreen, fg=white}
-            \setbeamercolor{block body}{bg=bokugreen!20, fg=black}
+            \setbeamercolor{block title}{bg=structure.fg!0, fg=structure.fg}
+            \setbeamercolor{block body}{bg=structure.fg!0, fg=black}%{bg=bokugreen!20, fg=black}
             \setbeamertemplate{blocks}[rounded][shadow=false]
             \begin{block}{Approximation of the opportunity cost of wind turbines $OC_w$}
                 %To approximate the opportunity cost of wind turbines $OC_w$, we proceed as follows:
+                \medskip
                 \begin{enumerate}
                     \item determine unconstrained level of RET that leads to minimal system cost $c_{net}$ \label{step1}
                     \item restrict the admissible expansion of the least-cost RET by a small margin, $\Delta w$, and observe
@@ -234,7 +236,7 @@
                     \begin{align*}
                         OC_w = \frac{\Delta c_{net}}{\Delta w}
                     \end{align*}
-                    \item repeat steps \ref{step2} and \ref{step3} till no more wind turbines can be erected
+                    \item repeat steps~\ref{step2} and~\ref{step3} till no more wind turbines can be erected
                 \end{enumerate}
             \end{block}
         }%
@@ -243,72 +245,183 @@
     \begin{frame}
         \frametitle{The cost of undisturbed landscapes}
         \framesubtitle{Assumptions}
-        We quantify the opportunity cost of wind power with the numerical power system model \emph{medea}, which we set up
-        to resemble the Austrian and German electricity and district heating systems in 2030.
-        \begin{columns}[T]
         {%
-            \setbeamercolor{block title}{bg=bokugreen, fg=white}
-            \setbeamercolor{block body}{bg=bokugreen!20, fg=black}
+            \setbeamercolor{block body}{bg=structure.fg!20, fg=black}
             \setbeamertemplate{blocks}[rounded][shadow=false]
+            \begin{block}{}
+                We quantify the opportunity cost of wind power with the numerical power system model \emph{medea}, which we set up
+                to resemble the Austrian and German electricity and district heating systems in 2030
+            \end{block}
+        }%
+        \begin{columns}[T]
+            %{%
+            %\setbeamercolor{block title}{bg=bokugreen, fg=white}
+            %\setbeamercolor{block body}{bg=bokugreen!20, fg=black}
+            %\setbeamertemplate{blocks}[rounded][shadow=false]
             \begin{column}{7cm}
-                \begin{block}{Model assumptions}
-                    \begin{itemize}
-                        \item perfect foresight, partial-equilibrium model of electricity and district heating sectors in
-                        AT and DE
-                        \item technology-rich representation of supply to meet price-inelastic demand
-                        \item economic dispatch in hourly resolution plus investment
-                    \end{itemize}
-                \end{block}
+                %\begin{block}{Model assumptions}
+                \structure{Model assumptions}
+                \begin{itemize}
+                    \item perfect foresight, partial-equilibrium model of electricity and district heating sectors in
+                    AT and DE
+                    \item technology-rich representation of supply to meet price-inelastic demand
+                    \item economic dispatch in hourly resolution plus investment
+                \end{itemize}
+                %\end{block}
             \end{column}
 
             \begin{column}{7cm}
-                \begin{block}{Scenario assumptions (2030)}
+                %\begin{block}{Scenario assumptions (2030)}
+                \structure{Scenario assumptions (2030)}
+                \begin{itemize}
+                    \item DE: nuclear and (partial) coal exit
+                    \item DE: RET expansion as in EEG 2017
+                    \item AT: at least 74.8 TWh/a from RES
                     \begin{itemize}
-                        \item DE: nuclear and (partial) coal exit
-                        \item DE: RET expansion as in EEG 2017
-                        \item AT: must generate 79.3 TWh/a from RES
-                        \begin{itemize}
-                            \item + 5 TWh/a hydropower
-                            \item + 1 TWh/a electricity from biomass
-                        \end{itemize}
-                        \item weather as in 2016 (a low wind year)
+                        \item + 5 TWh/a hydropower
+                        \item + 1 TWh/a electricity from biomass
                     \end{itemize}
-                \end{block}
+                    \item weather as in 2016 (a low wind year)
+                \end{itemize}
+                %\end{block}
             \end{column}
-        }%
+            %}%
         \end{columns}
         \bigskip
-        \url{https://github.com/inwe-boku/medea}
+        \begin{center}
+            \url{https://github.com/inwe-boku/medea}
+        \end{center}
     \end{frame}
 
     \begin{frame}
-        \frametitle{Change in annual net system cost -- Austria, 2030}
-        \begin{figure}
-            \includegraphics[width=0.95\textwidth]{./figures/cost_components_base_25.pdf} \label{fig:cost_breakdown}
-        \end{figure}
+        \frametitle{Results}
+        \begin{columns}[T]
+            \begin{column}{10.6 cm}
+                \begin{figure}
+                    \caption{Change in annual net system cost -- Austria, 2030}
+                    \includegraphics[width=1.0\textwidth]{./figures/cost_components_base_25.pdf} \label{fig:cost_breakdown}
+                \end{figure}
+            \end{column}
+            \begin{column}{5.0 cm}
+                \bigskip
+                \begin{itemize}
+                    \item "100\%"-policy necessarily turns Austria from a net importer (2016: 7.2 TWh) into a
+                    net exporter of electricity as fossil generation needed (heat, system services)
+                    \item each avoided GW wind power replaced by 1.98 GWp PV
+                    \item resource adequacy drives O\&M cost
+                    \item lower exports also mean less fossil generation
+                \end{itemize}
+            \end{column}
+        \end{columns}
     \end{frame}
 
     \begin{frame}
-        \frametitle{Monthly electricity generation by source -- Austria, 2030}
-        \framesubtitle{(a) maximum wind power, (b) maximum solar power}
-        \begin{figure}
-            \includegraphics[width=0.85\textwidth]{./figures/dispatch_AT.pdf} \label{fig:monthly_gen}
-        \end{figure}
+        \frametitle{Results}
+        \begin{columns}[T]
+            \begin{column}{10.6 cm}
+                \begin{figure}
+                    \caption{\parbox[t]{8.6cm}{Monthly electricity generation by source -- Austria, 2030 (a) maximum wind power, (b) maximum solar power}}
+                    \includegraphics[width=0.875\textwidth]{./figures/dispatch_AT.pdf} \label{fig:monthly_gen}
+                \end{figure}
+            \end{column}
+            \begin{column}{5.0 cm}
+                \bigskip
+                \begin{itemize}
+                    \item Wind power is favourably complementary to run-of-river generation
+                    \item Solar PV positively correlated with run-of-river generation
+                    \item In PV-based system more imports needed in winter, while export price in summer lower
+                \end{itemize}
+            \end{column}
+        \end{columns}
     \end{frame}
 
     \begin{frame}
-        \frametitle{Annual opportunity cost of wind power -- Austria, 2030}
-        \framesubtitle{PV capital cost: \euro 625/kWp}
-        \begin{figure}
-            \includegraphics[width=0.95\textwidth]{./figures/oc_base.pdf} \label{fig:opportunity_cost_base}
-        \end{figure}
+        \frametitle{Results}
+        %\framesubtitle{PV capital cost: \euro 625/kWp}
+        \begin{columns}[T]
+            \begin{column}{10.6 cm}
+                \begin{figure}
+                    \caption{\parbox[t]{8.4cm}{Annual opportunity cost of wind power -- Austria, 2030 PV capital cost: \euro 625/kWp}}
+                    \includegraphics[width=0.975\textwidth]{./figures/oc_base.pdf} \label{fig:opportunity_cost_base}
+                \end{figure}
+            \end{column}
+            \begin{column}{5.0 cm}
+                \bigskip
+                \begin{itemize}
+                    \item Figure shows on marginal system cost of not erecting wind turbines
+                    \item Policy target implies marginal opportunity cost of 22\,500 \euro/MW per year
+                    \item Equals \euro 1.3 mn over lifetime of a single standard wind turbine
+                \end{itemize}
+            \end{column}
+        \end{columns}
     \end{frame}
 
     \begin{frame}
-        \frametitle{Sensitivity of annual opportunity cost of wind power -- Austria, 2030}
-        \begin{figure}
-            \includegraphics[width=0.95\textwidth]{./figures/Sensitivities.pdf} \label{fig:sensitivities}
-        \end{figure}
+        \frametitle{Results}
+
+        \begin{columns}[T]
+            \begin{column}{10.6 cm}
+                \begin{figure}
+                    \caption{\parbox[t]{8.0cm}{Sensitivity of annual opportunity cost of wind power PV capital cost: \euro 625/kWp}}
+                    \includegraphics[width=0.975\textwidth]{./figures/Sensitivities.pdf} \label{fig:sensitivities}
+                \end{figure}
+            \end{column}
+            \begin{column}{5.4 cm}
+                \bigskip
+                \begin{itemize}
+                    \item \emph{Low capital cost of PV} assumes overnight cost of PV of \euro 560/kWp
+                    \item \emph{No bottleneck} assumes 10 GW transmission capacity
+                \end{itemize}
+            \end{column}
+        \end{columns}
     \end{frame}
 
+%    \begin{frame}
+%        \frametitle{Summary}
+%        \begin{itemize}
+%            \item So-called 100\% goal necessarily turns Austria into a net exporter of electricity
+%            \item Choice of RET impacts installed capacities, system operation, and, most importantly, trade flows
+%            \item Austria's wind resources are favourable for exporting to Germany
+%            \item Export revenues accrue to electricity producers, not consumers
+%            \item Consumers benefit from low electricity prices
+%            \item Compensation for neighbors of wind parks makes sense
+%        \end{itemize}
+%    \end{frame}
+
+    \begin{frame}
+        \frametitle{Discussion}
+        \begin{itemize}
+            \item Renewable resource quality held constant as capacity is expanded
+            \item sub-national electricity grids neglected
+            \item external cost of open-space PV assumed to be zero
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Conclusions}
+        \begin{itemize}
+            \item If cost of $CO_2$ low and PV is realized as open-space, utility-scale installations (with zero external cost),
+            wind power does not come at a system cost advantage
+            \item With high $CO_2$ cost, a preference for rooftop PV, or in the presence of negative external effects of
+            open-space, utility-scale PV, wind power can reduce total system cost
+            \item Wind power induces a current account surplus, which accrues to exporters. Compensation of affected
+            residents could improve distributional fairness and, potentially, increase acceptance of wind power
+            \item In contrast to (relative) market value, opportunity cost of renewables consistent with fully renewable energy systems
+            \item Trade effects lead to much higher system cost impacts of capacity decisions than currently acknowledged in literature
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Thank you!}
+        %\vspace{1 cm}
+        \begin{center}
+            \structure{%
+                \href{https://arxiv.org/abs/2006.08009}{The Cost of Undisturbed Landscapes}
+            }\\%
+            \vspace{0.6cm}
+            \qrcode[height=2cm]{https://arxiv.org/abs/2006.08009}\\
+            \vspace{0.6 cm}
+            \href{https://arxiv.org/abs/2006.08009}{https://arxiv.org/abs/2006.08009}
+        \end{center}
+    \end{frame}
 \end{document}
