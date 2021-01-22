@@ -47,8 +47,8 @@ else:
     pos_medea = rpath.find('medea')
     MEDEA_ROOT_DIR = rpath[0:pos_medea + 6]
     if sys_id == 'win32 WINP1218':
-        GMS_SYS_DIR = os.path.join(r'C:\GAMS\win64', version[0:4])
+        GMS_SYS_DIR = os.path.join(r'D:\GAMS', version[0:2])
     elif sys_id == 'darwin Sebastians-MBP':
         GMS_SYS_DIR = os.path.join(f'/Applications/GAMS{version[0:4]}', 'sysdir')
     else:
-        GMS_SYS_DIR = os.path.join(r'C:\GAMS\win64', version[0:4])
+        GMS_SYS_DIR = os.path.join(r'D:\GAMS', version[0:2])
