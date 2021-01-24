@@ -286,7 +286,7 @@ bal_el(z,t)..
                  - q_curtail(z,t)
                  =E=
                  DEMAND(z,t,'el')
-                 + sum(i, b(z,t,i,'Power') )
+                 + sum(i$MAP_FUEL_G(i,'Power'), b(z,t,i,'Power') )
                  + sum(k, s_in(z,t,k) )
                  + sum(zz, x(z,zz,t) )
                  - q_nse(z,t,'el')
@@ -307,7 +307,7 @@ uplim_g(z,t,i,m)..
                  =L=
                  INITIAL_CAP_G(z,i) + add_g(z,i) - deco_g(z,i)
                  ;
-lolim_b(z,t,i,m,f)$(NOT j(i))..
+lolim_b(z,t,i,m,f)$(NOT j(i) AND MAP_FUEL_G(i,f))..
                  g(z,t,i,m,f)
                  =E=
                  EFFICIENCY_G(i,m,f) * b(z,t,i,f)
@@ -323,12 +323,12 @@ bal_w_chp(z,t,i)$(j(i))..
                  =L=
                  INITIAL_CAP_G(z,i) + add_g(z,i) - deco_g(z,i)
                  ;
-uplim_g_chp(z,t,i,m,f)$(j(i))..
+uplim_g_chp(z,t,i,m,f)$(j(i) AND MAP_FUEL_G(i,f) )..
                  g(z,t,i,m,f)
                  =E=
                  sum(l$(MAP_FUEL_G(i,f) ), FEASIBLE_OUTPUT(i,l,m) * w(z,t,i,l,f) )
                  ;
-lolim_b_chp(z,t,i,f)$(j(i))..
+lolim_b_chp(z,t,i,f)$(j(i) AND MAP_FUEL_G(i,f))..
                  b(z,t,i,f)
                  =E=
                  sum(l$(MAP_FUEL_G(i,f) ), FEASIBLE_INPUT(i,l,f) * w(z,t,i,l,f) )
@@ -381,7 +381,7 @@ v.FX(z,t,k)$(ord(t) eq card(t)) = 0.6 * INITIAL_CAP_V(z,k);
 acn_co2(z,t,i)..
                  emission_co2(z,t,i)
                  =E=
-                 sum(f$(CO2_INTENSITY(f)), CO2_INTENSITY(f) * b(z,t,i,f) )
+                 sum(f$(CO2_INTENSITY(f) AND MAP_FUEL_G(i,f)), CO2_INTENSITY(f) * b(z,t,i,f) )
                  ;
 * ------------------------------------------------------------------------------
 * ACCOUNTING FOR EXTERNALITIES FROM AIR POLLUTANTS
@@ -398,28 +398,29 @@ acn_airpollute(z,f)..
 * ------------------------------------------------------------------------------
 * INTERZONAL ELECTRICITY EXCHANGE
 
-uplim_transmission(z,zz,t)..
+uplim_transmission(z,zz,t)$(NOT SAMEAS(z,zz))..
                  x(z,zz,t)
                  =L=
                  INITIAL_CAP_X(z,zz) + add_x(z,zz)
                  ;
-lolim_transmission(z,zz,t)..
+lolim_transmission(z,zz,t)$(NOT SAMEAS(z,zz))..
                  x(z,zz,t)
                  =G=
                  - (INITIAL_CAP_X(z,zz) + add_x(z,zz) )
                  ;
-bal_transmission(z,zz,t)..
+bal_transmission(z,zz,t)$(NOT SAMEAS(z,zz))..
                  x(z,zz,t)
                  =E=
                  - x(zz,z,t)
                  ;
-bal_add_x(z,zz)..
+* with added countries could introduce feasible expansion parameter here
+bal_add_x(z,zz)$(NOT SAMEAS(z,zz))..
                  add_x(z,zz)
                  =E=
                  add_x(zz,z)
                  ;
-x.FX(z,zz,t)$(not INITIAL_CAP_X(z,zz)) = 0;
-x.FX(zz,z,t)$(not INITIAL_CAP_X(zz,z)) = 0;
+x.FX(z,zz,t)$(SAMEAS(z,zz)) = 0;
+x.FX(zz,z,t)$(SAMEAS(zz,z)) = 0;
 * ------------------------------------------------------------------------------
 * DECOMMISSIONING
 
@@ -557,7 +558,7 @@ CostOMR(z)                       annual O&M cost of intermittent generators
 * ------------------------------------------------------------------------------
 * parameter calculation
 AirPollutionCost(z) = sum(f, cost_air_pol.L(z,f));
-AnnRenShare(z) = (sum((t,n), r.L(z,t,n) ) + sum((t,k), s_out.L(z,t,k) ) - sum((t,k), s_in.L(z,t,k) ) + sum((t,i), g.L(z,t,i,'el','Biomass') ) ) / sum(t, DEMAND(z,t,'el') );  # + sum((t,i), g.L(z,t,i,'el','Syngas') ) ) / sum(t, DEMAND(z,t,'el') );
+AnnRenShare(z) = (sum((t,n), r.L(z,t,n) ) + sum((t,k), s_out.L(z,t,k) ) - sum((t,k), s_in.L(z,t,k) ) + sum((t,k), INFLOWS(z,t,k)* EFFICIENCY_S_OUT(k)) + sum((t,i), g.L(z,t,i,'el','Biomass') ) ) / sum(t, DEMAND(z,t,'el') );  # + sum((t,i), g.L(z,t,i,'el','Syngas') ) ) / sum(t, DEMAND(z,t,'el') );
 AnnG(z,m) = sum((t,i,f), g.L(z, t, i, m, f));
 AnnGByTec(z,i,m,f) = sum(t, g.L(z, t, i, m, f));
 *AnnGSyngas(z) = sum((t,i), g.L(z,t,i,'el','Syngas') );

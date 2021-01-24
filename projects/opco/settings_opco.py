@@ -5,7 +5,7 @@ PROJECT_NAME = 'opco'
 # baseline settings
 dict_base = {
     're_share': range(100, 24, -25),
-    'wind_on_cap': range(900, -699, -100),
+    'wind_on_cap': range(120, -1, -20),
     'must_run': [1]
 }
 
