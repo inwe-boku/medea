@@ -5,8 +5,8 @@ import pandas as pd
 from gams import *
 
 import config as cfg
-from src.tools.gams_io import df2gdx
-from src.tools.prepare_data import dict_sets, dict_instantiate, static_data, plant_data, ts_data, invest_limits
+from src.utils.gams_io import df2gdx
+from src.utils.prepare_data import dict_sets, dict_instantiate, static_data, plant_data, ts_data, invest_limits
 
 # TODO: Add energy stored in hydro reservoirs - STORAGE_LEVEL
 

@@ -4,8 +4,8 @@ from gams import *
 
 import config as cfg
 from src.templates.settings_template import *
-from src.tools.data_processing import medea_path
-from src.tools.gams_io import gdx2df
+from src.utils.data_processing import medea_path
+from src.utils.gams_io import gdx2df
 
 # -------------------------------------------------------------------------------------------------------------------- #
 # prepare GAMS workspace

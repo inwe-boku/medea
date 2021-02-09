@@ -3,9 +3,10 @@ import os
 import sys
 from shutil import copyfile
 
+from logging_config import setup_logging
+
 dirname = os.path.dirname
 sys.path.append(os.path.join(dirname(dirname(dirname(__file__)))))
-from logging_config import setup_logging
 
 
 def create_project(project_name, medea_dir):

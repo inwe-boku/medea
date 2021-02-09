@@ -6,7 +6,7 @@ import pysftp
 import yaml
 
 from logging_config import setup_logging
-from src.tools.data_processing import medea_path
+from src.utils.data_processing import medea_path
 
 # TODO: check file size and download larger files from ftp
 # TODO: download zipped csv and unpack after download

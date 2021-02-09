@@ -6,7 +6,7 @@ from gams import *
 
 import config as cfg
 from projects.asparagus.settings_asparagus import *
-from src.tools.gams_io import reset_symbol, gdx2df, df2gdx, run_medea_project
+from src.utils.gams_io import reset_symbol, gdx2df, df2gdx, run_medea_project
 
 idx = pd.IndexSlice
 # path to main medea model to use

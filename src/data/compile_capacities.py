@@ -2,7 +2,7 @@
 import numpy as np
 import pandas as pd
 
-from src.tools.data_processing import medea_path
+from src.utils.data_processing import medea_path
 
 # --------------------------------------------------------------------------- #
 # %% settings and initializing

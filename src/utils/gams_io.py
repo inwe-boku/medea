@@ -15,10 +15,9 @@ def timesort(df, index_sets='t', timeindex_name='t', timeindex_string='t'):
     :param df: A dataframe indexed by a float-string combination
     :param index_sets: column name(s) to be used as index
     :param timeindex_name: name of df's index. Defaults to 't'
-    :param timeindex_pattern: string part of the index to be ignored in sorting
+    :param timeindex_string:
     :return:
     """
-
     df.reset_index(inplace=True)
     df['tix'] = pd.to_numeric(df[timeindex_name].str.split(pat=timeindex_string).str.get(1))
     df.sort_values(by=['tix'], inplace=True)
@@ -130,6 +129,7 @@ def gdx2plot(db_gams, symbol, index_list, column_list, base_year, slicer=None, s
     :param column_list: set(s) to be used as columns
     :param base_year: year of model simulation
     :param slicer: slices the column-data
+    :param stacked:
     :return:
     """
     idx = pd.IndexSlice
@@ -207,8 +207,6 @@ def run_medea_project(project_name, scenario_id):
 def run_medea_test(test_data_name):
     """
     runs / solves a project of power system model medea with strict project directory conventions
-    :param test_name: string of medea-project name
-    :param scenario_id: string of project-scenario (typically one iteration)
     :return:
     """
     # generate file names

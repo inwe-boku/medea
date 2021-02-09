@@ -5,7 +5,7 @@ from gams import *
 from scipy.stats import pearsonr
 
 import config as cfg
-from src.tools.gams_io import gdx2df
+from src.utils.gams_io import gdx2df
 
 idx = pd.IndexSlice
 

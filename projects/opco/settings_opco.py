@@ -6,12 +6,20 @@ PROJECT_NAME = 'opco'
 dict_base = {
     're_share': range(100, 24, -25),
     'wind_on_cap': range(120, -1, -20),
+    'carbon_price': [25],
+    'carbon_limit': [float('inf')],
     'must_run': [1]
 }
 
 # campaigns
 dict_campaigns = {
-    'base': {
+    'carb_pricing': {
+        're_share': [0],
+        'carbon_price': range(900, 1, -400)
+    },
+    'carb_budget': {
+        're_share': [0],
+        'carbon_limit': [1000, 10000]
     }
 }
 

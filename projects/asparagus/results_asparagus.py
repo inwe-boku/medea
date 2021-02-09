@@ -6,7 +6,7 @@ from gams import *
 
 import config as cfg
 from projects.asparagus.settings_asparagus import *
-from src.tools.gams_io import gdx2df
+from src.utils.gams_io import gdx2df
 
 # -------------------------------------------------------------------------------------------------------------------- #
 # %% prepare GAMS workspace

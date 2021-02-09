@@ -7,9 +7,10 @@ To start a new _medea_-project, call the function
 create_project('project_name', 'medea_dir')
 ```
 contained in `./src/tools/create_project.py`. In the python console this can be done like this:
+
 ```python
 import config as cfg
-from src.tools.create_project import create_project
+from src.utils.create_project import create_project
 
 create_project('new_project', cfg.MEDEA_ROOT_DIR)
 ```

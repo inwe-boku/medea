@@ -3,7 +3,7 @@ import os
 import pandas as pd
 
 import config as cfg
-from src.tools.data_processing import medea_path
+from src.utils.data_processing import medea_path
 
 directory = medea_path('data', 'raw', 'AggregatedGenerationPerType')
 df_ror = pd.DataFrame()

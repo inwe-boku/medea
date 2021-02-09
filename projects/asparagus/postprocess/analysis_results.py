@@ -7,8 +7,8 @@ import pandas as pd
 from scipy.stats import pearsonr
 
 import config as cfg
-from src.tools.data_processing import medea_path
-from src.tools.visualize_data import plot_lines
+from src.utils.data_processing import medea_path
+from src.utils.visualize_data import plot_lines
 
 # %% settings
 APATH = medea_path('projects', 'asparagus')

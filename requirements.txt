@@ -1,19 +1,16 @@
-matplotlib~=3.1.1
-cdsapi~=0.2.5
-scipy~=1.1.0
-netCDF4~=1.4.1
-urllib3~=1.23
-#
-### requirements for medea
-os
-sys
-numpy~=1.16.4
-pandas~=0.24.2
-platform
-itertools
-subprocess
-
+pyyaml~=5.4.1
 pysftp~=0.2.9
-PyYAML~=5.3.1
-GAMS~=1.0
-certifi~=2018.8.24
+numpy~=1.19.2
+scipy~=1.6.0
+pandas~=1.2.1
+openpyxl
+netCDF4~=1.5.5.1
+cdsapi~=0.4.0
+matplotlib~=3.3.4
+
+# local installation from GAMS distribution
+## in the <GAMS folder>/apifiles/Python/api_<python version without dot> execute: 'python.exe setup.py install'
+gams~=1.0
+
+certifi~=2020.12.5
+urllib3~=1.26.3

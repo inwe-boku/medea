@@ -5,7 +5,7 @@ import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import pandas as pd
 
-from src.tools.data_processing import medea_path
+from src.utils.data_processing import medea_path
 
 APATH = medea_path('projects', 'asparagus')
 RPATH = APATH / 'results'

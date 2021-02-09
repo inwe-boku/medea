@@ -7,8 +7,8 @@ LOG_FILE = os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'logfile.log')
 
 
 def setup_logging(fname=LOG_FILE):
-    NO_COLOR = '\33[m'
-    RED, GREEN, ORANGE, BLUE, PURPLE, LBLUE, GREY = (
+    no_color = '\33[m'
+    red, green, orange, blue, purple, lblue, grey = (
         map('\33[%dm'.__mod__, range(31, 38)))
 
     logging_config = {
@@ -21,9 +21,7 @@ def setup_logging(fname=LOG_FILE):
             },
             'color': {
                 'format': '{}[%(asctime)s]{} {}%(levelname)-5s{} - '
-                          '{}%(name)-5s{}: %(message)s'.format(
-                    GREEN, NO_COLOR, PURPLE, NO_COLOR,
-                    ORANGE, NO_COLOR)
+                          '{}%(name)-5s{}: %(message)s'.format(green, no_color, purple, no_color, orange, no_color)
             }
         },
         'handlers': {

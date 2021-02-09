@@ -144,7 +144,8 @@
             \item Abandon binary attributions which fall short of complexity involved
             \item Realize that there is no guaranteed way to come up with unanimous ("socially accepted") decisions in a society
             \begin{itemize}
-                \item How much wind power \emph{can} be deployed ultimately is a matter of power
+                \item Determining potentials means asking how much wind power \emph{can} be deployed
+                \item Yet, this ultimately is a matter of power
             \end{itemize}
         \end{itemize}
         \medskip
@@ -187,11 +188,11 @@
 
     \begin{frame}
         \frametitle{The cost of undisturbed landscapes}
-        \framesubtitle{Some background}
+        \framesubtitle{Introduction}
         \begin{itemize}
             \item By 2030, \SI{100}{\percent}\footnote[frame]{System services and industry own consumption,
-            accounting for $\sim$\SI{10}{\percent} of total electricity demand and $\sim$\SI{40}{\percent} of \ce{CO2} emissions from power
-            generation are exempt} of Austria's electricity demand to be sourced from renewables
+                accounting for $\sim$\SI{10}{\percent} of total electricity demand and $\sim$\SI{40}{\percent} of \ce{CO2} emissions from power
+                generation are exempt} of Austria's electricity demand to be sourced from renewables
             \item Sufficient potentials for large-scale expansion only for wind and solar power
         \end{itemize}
         \medskip
@@ -215,6 +216,21 @@
 
     \begin{frame}
         \frametitle{The cost of undisturbed landscapes}
+        \framesubtitle{Policy consequences}
+        Immediate corollary of the "100\%"-policy:
+        \begin{itemize}
+            \item  Austria turns from a net importer of electricity (2016: 7.2 TWh, 9.9\% of total electricity
+            consumption) into a net exporter
+            \begin{itemize}
+                \item Heat generation requires running (fossil) co-generation units
+                \item (Fossil) generation also required to secure supply at all times
+            \end{itemize}
+            \item This is not the case under a (equivalent) carbon pricing regime
+        \end{itemize}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{The cost of undisturbed landscapes}
         \framesubtitle{Methodology}
         %, which includes all operation and
         %investment cost of the (domestic) electricity system, the cost of emissions (we also include air pollutants), plus
@@ -232,7 +248,7 @@
                     \item determine unconstrained level of RET that leads to minimal system cost $c_{net}$ \label{step1}
                     \item restrict the admissible expansion of the least-cost RET by a small margin, $\Delta w$, and observe
                     resulting change in system cost $\Delta c_{net}$ \label{step2}
-                    \item approximate the opportunity cost of wind power by \label{step3}
+                    \item approximate the opportunity cost of wind power $OC_w$ by \label{step3}
                     \begin{align*}
                         OC_w = \frac{\Delta c_{net}}{\Delta w}
                     \end{align*}
@@ -305,9 +321,10 @@
             \begin{column}{5.0 cm}
                 \bigskip
                 \begin{itemize}
-                    \item "100\%"-policy necessarily turns Austria from a net importer (2016: 7.2 TWh) into a
-                    net exporter of electricity as fossil generation needed (heat, system services)
+                    %\item "100\%"-policy necessarily turns Austria from a net importer (2016: 7.2 TWh) into a
+                    %net exporter of electricity as fossil generation needed (heat, system services)
                     \item each avoided GW wind power replaced by 1.98 GWp PV
+                    \item mixture of RET slightly reduce variance and increases minimal renewable generation by a small margin
                     \item resource adequacy drives O\&M cost
                     \item lower exports also mean less fossil generation
                 \end{itemize}
@@ -330,6 +347,7 @@
                     \item Wind power is favourably complementary to run-of-river generation
                     \item Solar PV positively correlated with run-of-river generation
                     \item In PV-based system more imports needed in winter, while export price in summer lower
+                    \item PV pushes $CO_2$ emissions from Austria to Germany
                 \end{itemize}
             \end{column}
         \end{columns}
@@ -348,29 +366,9 @@
             \begin{column}{5.0 cm}
                 \bigskip
                 \begin{itemize}
-                    \item Figure shows on marginal system cost of not erecting wind turbines
-                    \item Policy target implies marginal opportunity cost of 22\,500 \euro/MW per year
-                    \item Equals \euro 1.3 mn over lifetime of a single standard wind turbine
-                \end{itemize}
-            \end{column}
-        \end{columns}
-    \end{frame}
-
-    \begin{frame}
-        \frametitle{Results}
-
-        \begin{columns}[T]
-            \begin{column}{10.6 cm}
-                \begin{figure}
-                    \caption{\parbox[t]{8.0cm}{Sensitivity of annual opportunity cost of wind power PV capital cost: \euro 625/kWp}}
-                    \includegraphics[width=0.975\textwidth]{./figures/Sensitivities.pdf} \label{fig:sensitivities}
-                \end{figure}
-            \end{column}
-            \begin{column}{5.4 cm}
-                \bigskip
-                \begin{itemize}
-                    \item \emph{Low capital cost of PV} assumes overnight cost of PV of \euro 560/kWp
-                    \item \emph{No bottleneck} assumes 10 GW transmission capacity
+                    \item Figure shows marginal system cost of not erecting wind turbines
+                    \item Policy target implies marginal opportunity cost of \euro 22\,500 per MW and year
+                    \item Equals \euro 1.3 mn over lifetime of a single 3.5 MW wind turbine (discounted at 5\%)
                 \end{itemize}
             \end{column}
         \end{columns}
@@ -392,22 +390,39 @@
         \frametitle{Discussion}
         \begin{itemize}
             \item Renewable resource quality held constant as capacity is expanded
-            \item sub-national electricity grids neglected
-            \item external cost of open-space PV assumed to be zero
+            \begin{itemize}
+                \item Hölting et a. (2016) estimate 45 TWh of wind resources available in Austria at equal or lower cost
+                than we assumed
+                \item We consider additions of at most 32 TWh (at a carbon price of \euro 100 per t)
+            \end{itemize}
+            \item Sub-national electricity grids neglected
+            \begin{itemize}
+                \item grid cost of open-space PV and wind power should be similar
+                \item cost of rooftop PV in distribution grid underresearched
+                \item some estimates imply distribution cost not substantially different from wind power in transmission grids
+                \item however, huge variability of estimates
+            \end{itemize}
+            \item External cost of open-space PV assumed to be zero
+            \begin{itemize}
+                \item external cost of open-space PV underresearched
+                \item mixed findings from working papers ranging from "no impact" to "small impact with limited significance"
+            \end{itemize}
         \end{itemize}
     \end{frame}
 
     \begin{frame}
         \frametitle{Conclusions}
         \begin{itemize}
-            \item If cost of $CO_2$ low and PV is realized as open-space, utility-scale installations (with zero external cost),
+            \item If cost of $CO_2$ low and PV realized as open-space, utility-scale installations,
             wind power does not come at a system cost advantage
-            \item With high $CO_2$ cost, a preference for rooftop PV, or in the presence of negative external effects of
-            open-space, utility-scale PV, wind power can reduce total system cost
-            \item Wind power induces a current account surplus, which accrues to exporters. Compensation of affected
-            residents could improve distributional fairness and, potentially, increase acceptance of wind power
-            \item In contrast to (relative) market value, opportunity cost of renewables consistent with fully renewable energy systems
+            \item With high $CO_2$ cost, a preference for rooftop PV, or external costs of
+            open-space, utility-scale PV, wind power can reduce total system cost (including external cost)
+            \item Wind power increases electricity's current account surplus, which accrues to exporters.
+            Compensation of affected residents could improve distributional fairness and, potentially, increase
+            acceptance of wind power \\
+            \medskip
             \item Trade effects lead to much higher system cost impacts of capacity decisions than currently acknowledged in literature
+            \item In contrast to (relative) market value, opportunity cost of renewables consistent with fully renewable energy systems
         \end{itemize}
     \end{frame}
 
@@ -424,4 +439,44 @@
             \href{https://arxiv.org/abs/2006.08009}{https://arxiv.org/abs/2006.08009}
         \end{center}
     \end{frame}
+
+    \begin{frame}
+        \frametitle{Results}
+
+        \begin{columns}[T]
+            \begin{column}{10.6 cm}
+                \begin{figure}
+                    \caption{\parbox[t]{8.0cm}{Sensitivity of annual opportunity cost of wind power (Cubic fit across $CO_2$ price scenarios)}}
+                    \includegraphics[width=0.975\textwidth]{./figures/Sensitivities.pdf} \label{fig:sensitivities}
+                \end{figure}
+            \end{column}
+            \begin{column}{5.4 cm}
+                \bigskip
+                \begin{itemize}
+                    \item \emph{Low capital cost of PV} assumes overnight cost of PV of \euro 560/kWp
+                    \item \emph{No bottleneck} assumes 10 GW transmission capacity
+                \end{itemize}
+            \end{column}
+        \end{columns}
+    \end{frame}
+
+    \begin{frame}
+        \frametitle{Results}
+        \begin{columns}[T]
+            \begin{column}{10.6 cm}
+                \begin{figure}
+                    \caption{\parbox[t]{8.0cm}{Sensitivity of optimal wind power expansion}}
+                    \includegraphics[width=0.975\textwidth]{./figures/S_PVCost_P_WindOnshore.pdf} \label{fig:sens_wind_cap}
+                \end{figure}
+            \end{column}
+            \begin{column}{5.0 cm}
+                \bigskip
+                \begin{itemize}
+                    \item If RET expansion incentivised by carbon price (not "100\%"-policy), optimal wind power expansion is
+                    robust against capital cost of PV
+                \end{itemize}
+            \end{column}
+        \end{columns}
+    \end{frame}
+
 \end{document}

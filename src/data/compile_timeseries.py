@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 import config as cfg
-from src.tools.data_processing import download_file, medea_path, download_energy_balance, process_energy_balance
+from src.utils.data_processing import download_file, medea_path, download_energy_balance, process_energy_balance
 
 idx = pd.IndexSlice
 
@@ -235,8 +235,8 @@ eca_at_rsvr = pd.read_excel(medea_path('data', 'raw', 'BStGes-JR1_Bilanz.xlsx'),
                             index_col=[0], nrows=37)
 eca_at_rsvr.drop('Einheit', inplace=True)
 eca_at_rsvr.replace(to_replace='- ', value=np.nan, inplace=True)
-eca_at_nflw = eca_at_hydro.loc[:, 'Speicher-\nkraftwerke'] / eta_hydro_storage - eca_at_rsvr.loc[:,
-                                                                                 'Verbrauch\nfür Pump-\nspeicher'] * eta_hydro_storage
+eca_at_nflw = eca_at_hydro.loc[:, 'Speicher-\nkraftwerke'] / eta_hydro_storage - \
+              eca_at_rsvr.loc[:, 'Verbrauch\nfür Pump-\nspeicher'] * eta_hydro_storage
 
 # 4) inflows in line with energy balance
 nbal_at_nflw = eca_at_nflw * scaling_factor_nflw

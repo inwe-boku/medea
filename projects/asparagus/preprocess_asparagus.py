@@ -5,7 +5,7 @@ import pandas as pd
 from scipy.signal import savgol_filter
 
 import config as cfg
-from src.tools.data_processing import medea_path
+from src.utils.data_processing import medea_path
 
 # %% settings
 FNAME = medea_path('data', 'processed', 'medea_regional_timeseries.csv')

@@ -7,13 +7,18 @@ $title add-on to medea_main.gms to include custom model modifications
 parameters
          RE_SHARE            scenario renewables share
          WIND_ON_LIMIT       limit on deployable onshore wind power
+         CO2_SCENARIO        scenario emission allowance price
+         CO2_BUDGET          scenario limit on co2 emissions
+         LIMIT_CO2           model limit on co2 emissions
 ;
 
 * read scenario parameter from scenario .gdx-file
 $gdxin medea_%scenario%_data
-$load  RE_SHARE WIND_ON_LIMIT
+$load  RE_SHARE WIND_ON_LIMIT CO2_SCENARIO CO2_BUDGET
 $gdxin
 
+PRICE_CO2(z,t) = CO2_SCENARIO;
+LIMIT_CO2 = CO2_BUDGET;
 
 add_r.UP('AT','wind_off') = 0;
 add_r.UP('DE','wind_off') = 25;
@@ -59,7 +64,8 @@ add_v.UP(z,'hyd_psp_season') = 0;
 * -----------------------------------------------------
 equations
 lolim_reshare   lower limit on renewable electricity generation,
-uplim_windon    upper limit on deployable wind power
+uplim_windon    upper limit on deployable wind power,
+uplim_co2em     upper limit on CO2 emissions
 ;
 
 lolim_reshare..
@@ -73,8 +79,13 @@ lolim_reshare..
          ;
 
 uplim_windon..
-        sum(z, add_r(z,'wind_on'))
-        =L=
-        WIND_ON_LIMIT
-        ;
+         sum(z, add_r(z,'wind_on'))
+         =L=
+         WIND_ON_LIMIT
+         ;
 
+uplim_co2em..
+         sum((z,t,i), emission_co2(z,t,i))
+         =L=
+         LIMIT_CO2
+         ;

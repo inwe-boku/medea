@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 import config as cfg
-from src.tools.data_processing import hours_in_year, medea_path
+from src.utils.data_processing import hours_in_year, medea_path
 
 # --------------------------------------------------------------------------- #
 # %% settings and initializing

@@ -6,7 +6,7 @@ import pandas as pd
 
 import config as cfg
 from logging_config import setup_logging
-from src.tools.data_processing import medea_path, download_energy_balance, resample_index, heat_yr2day, heat_day2hr
+from src.utils.data_processing import medea_path, download_energy_balance, resample_index, heat_yr2day, heat_day2hr
 
 # ----------------------------------------------------------------------------
 # %% settings

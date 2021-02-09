@@ -4,7 +4,7 @@ import pandas as pd
 import yaml
 
 from logging_config import setup_logging
-from src.tools.data_processing import download_file, medea_path
+from src.utils.data_processing import download_file, medea_path
 
 setup_logging()
 
