@@ -5,8 +5,8 @@ import pandas as pd
 from gams import *
 
 import config as cfg
-from src.tools.gams_io import df2gdx
-from src.tools.preprocess_data import dict_sets, plant_data, ts_data, estimates, invest_limits
+from src.utils.gams_io import df2gdx
+from src.utils.preprocess_data import dict_sets, plant_data, ts_data, estimates, invest_limits
 
 idx = pd.IndexSlice
 # --------------------------------------------------------------------------- #

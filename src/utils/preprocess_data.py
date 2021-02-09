@@ -2,7 +2,7 @@
 import pandas as pd
 
 import config as cfg
-from src.tools.data_processing import hours_in_year, medea_path
+from src.utils.data_processing import hours_in_year, medea_path
 
 # --------------------------------------------------------------------------- #
 # %% settings and initializing
@@ -13,7 +13,7 @@ idx = pd.IndexSlice
 # --------------------------------------------------------------------------- #
 # %% Read Data
 plant_data = {
-    'technology': pd.read_excel(STATIC_FNAME, 'Technologies', header=[2], index_col=[2]),
+    'technology': pd.read_excel(STATIC_FNAME, 'Technologies', header=[2], index_col=[2]).dropna(axis=0, how='all'),
     'chp': pd.read_excel(STATIC_FNAME, 'FEASIBLE_INPUT-OUTPUT', header=[0], index_col=[0, 1, 2]),
     'installed': pd.read_excel(STATIC_FNAME, 'Capacities', header=[0], index_col=[0, 1, 2], skiprows=[0, 1, 2]),
     'CAP_X': pd.read_excel(STATIC_FNAME, 'ATC', index_col=[0]),
