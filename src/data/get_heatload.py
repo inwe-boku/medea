@@ -1,6 +1,7 @@
 # %% imports
 import logging
 
+import os
 import numpy as np
 import pandas as pd
 
@@ -28,8 +29,15 @@ ht_enduse_at = pd.read_excel(enbal_at, sheet_name='Fernwärme', header=[438], in
 download_energy_balance('DE')
 ht_enduse_de = pd.DataFrame()
 for yr in [x - 2000 for x in YEARS]:
-    enbal_de = medea_path('data', 'raw', f'enbal_DE_20{yr}.xlsx')
-    df = pd.read_excel(enbal_de, sheet_name='tj', index_col=[0], usecols=[0, 31], skiprows=list(range(0, 50)),
+    # mix of xlsx and xls files...
+    enebal_de = medea_path('data', 'raw', f'enbal_DE_20{yr}.xlsx')
+    if not os.path.exists(enebal_de):
+        # check if xls file exists...
+        enebal_de = medea_path('data', 'raw', f'enbal_DE_20{yr}.xls')
+        if not os.path.exists(enebal_de):
+            raise FileNotFoundError(f'File {enebal_de} does not exist!')
+
+    df = pd.read_excel(enebal_de, sheet_name='tj', index_col=[0], usecols=[0, 31], skiprows=list(range(0, 50)),
                        nrows=24, na_values=['-'])
     df.columns = [2000 + yr]
     ht_enduse_de = pd.concat([ht_enduse_de, df], axis=1)
