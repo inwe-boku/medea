@@ -1,4 +1,5 @@
 # %% imports
+import numpy as np
 import pandas as pd
 
 import config as cfg
@@ -15,7 +16,7 @@ idx = pd.IndexSlice
 plant_data = {
     'technology': pd.read_excel(STATIC_FNAME, 'Technologies', header=[2], index_col=[2]).dropna(axis=0, how='all'),
     'chp': pd.read_excel(STATIC_FNAME, 'FEASIBLE_INPUT-OUTPUT', header=[0], index_col=[0, 1, 2]),
-    'installed': pd.read_excel(STATIC_FNAME, 'Capacities', header=[0], index_col=[0, 1, 2], skiprows=[0, 1, 2]),
+    'installed': pd.read_excel(STATIC_FNAME, 'Capacities', header=[0, 1], index_col=[0, 1, 2], skiprows=[0, 1, 2]),
     'CAP_X': pd.read_excel(STATIC_FNAME, 'ATC', index_col=[0]),
     'DISTANCE': pd.read_excel(STATIC_FNAME, 'KM', index_col=[0])
 }
@@ -26,6 +27,7 @@ ts_data = {
 
 estimates = {
     'ESTIMATES': pd.read_excel(STATIC_FNAME, 'ESTIMATES', index_col=[0]),
+    'VALUE_NSE': pd.read_excel(STATIC_FNAME, 'VALUE_NSE', index_col=[0]),
     'AIR_POLLUTION': pd.read_excel(STATIC_FNAME, 'AIR_POLLUTION', index_col=[0]),
     'CO2_INTENSITY': pd.read_excel(STATIC_FNAME, 'CO2_INTENSITY', index_col=[0]),
     'COST_TRANSPORT': pd.read_excel(STATIC_FNAME, 'COST_TRANSPORT', index_col=[0]),
@@ -36,17 +38,17 @@ estimates = {
 # %% create dict_sets
 
 dict_sets = {
-    'all_tec': {all_tec: [True] for all_tec in plant_data['technology'].index},
-    'f': {fuel: [True] for fuel in plant_data['technology'].loc[:, 'fuel'].unique()},
-    'i': {plant: [True] for plant in plant_data['technology'].loc[
+    't': {all_tec: [True] for all_tec in plant_data['technology'].index},
+    'i': {fuel: [True] for fuel in np.append(plant_data['technology'].loc[:, 'fuel'].unique(), np.array(['ch4']))},
+    'd': {plant: [True] for plant in plant_data['technology'].loc[
         plant_data['technology']['conventional'] == 1].index.unique()},
-    'k': {storage: [True] for storage in plant_data['technology'].loc[
+    's': {storage: [True] for storage in plant_data['technology'].loc[
         plant_data['technology']['storage'] == 1].index.unique()},
     'l': {f'l{x}': [True] for x in range(1, 5)},
-    'm': {'el': True, 'ht': True},
-    'n': {intmit: [True] for intmit in plant_data['technology'].loc[
+    'f': {'el': True, 'ht': True, 'h2': True, 'ch4': True},
+    'r': {intmit: [True] for intmit in plant_data['technology'].loc[
         plant_data['technology']['intermittent'] == 1].index.unique()},
-    't': {f't{hour}': [True] for hour in range(1, hours_in_year(cfg.year) + 1)},
+    'h': {f'h{hour}': [True] for hour in range(1, hours_in_year(cfg.year) + 1)},
     'z': {zone: [True] for zone in cfg.zones}
 }
 
@@ -68,9 +70,14 @@ plant_data['chp']['fuel_need'] = plant_data['chp']['fuel'] / plant_data['technol
 # --------------------------------------------------------------------------- #
 # %% transmission capacities and distances
 # --------------------------------------------------------------------------- #
-plant_data.update({'CAP_X': plant_data['CAP_X'].loc[
-                                plant_data['CAP_X'].index.str.contains('|'.join(cfg.zones)),
-                                plant_data['CAP_X'].columns.str.contains('|'.join(cfg.zones))] / 1000})
+# add fuel for transmission capacities
+plant_data.update({'CAP_X':
+                       plant_data['CAP_X'].stack().to_frame().assign(f='el').set_index('f', append=True).unstack(1)})
+
+plant_data.update({'CAP_X':
+                       plant_data['CAP_X'].loc[
+                           plant_data['CAP_X'].index.get_level_values(0).str.contains('|'.join(cfg.zones)),
+                           plant_data['CAP_X'].columns.get_level_values(1).str.contains('|'.join(cfg.zones))] / 1000})
 
 plant_data.update({'DISTANCE': plant_data['DISTANCE'].loc[
     plant_data['DISTANCE'].index.str.contains('|'.join(cfg.zones)),
@@ -87,8 +94,8 @@ ts_data['timeseries'] = ts_data['timeseries'].loc[
     (ts_data['timeseries'].index <= pd.Timestamp(cfg.year, 12, 31, 23, 0).tz_localize('UTC'))]
 
 # drop index and set index of df_time instead
-if len(ts_data['timeseries']) == len(dict_sets['t']):
-    ts_data['timeseries'].set_index(dict_sets['t'].index, inplace=True)
+if len(ts_data['timeseries']) == len(dict_sets['h']):
+    ts_data['timeseries'].set_index(dict_sets['h'].index, inplace=True)
 else:
     raise ValueError('Mismatch of time series data and model time resolution. Is cfg.year wrong?')
 
@@ -128,7 +135,7 @@ inflow_factor = plant_data['installed'].loc[idx['Installed Capacity Out', :, cfg
 inflow_factor.columns = inflow_factor.columns.droplevel([0, 2])
 
 ts_inflows = pd.DataFrame(index=list(ts_data['ZONAL'].index),
-                          columns=pd.MultiIndex.from_product([cfg.zones, dict_sets['k'].index]))
+                          columns=pd.MultiIndex.from_product([cfg.zones, dict_sets['s'].index]))
 
 for zone in list(cfg.zones):
     for strg in hydro_storage:
@@ -152,9 +159,9 @@ invest_limits = {
     'potentials': pd.read_excel(STATIC_FNAME, 'potentials', index_col=[0]),
     'thermal': pd.DataFrame([float('inf') if cfg.invest_conventionals else 0]),
     'intermittent': pd.DataFrame(data=[float('inf') if cfg.invest_renewables else 0][0],
-                                 index=cfg.zones, columns=dict_sets['n'].index),
+                                 index=cfg.zones, columns=dict_sets['r'].index),
     'storage': pd.DataFrame(data=[float('inf') if cfg.invest_storage else 0][0],
-                            index=cfg.zones, columns=dict_sets['k'].index),
+                            index=cfg.zones, columns=dict_sets['s'].index),
     'atc': pd.DataFrame(data=[1 if cfg.invest_tc else 0][0],
                         index=cfg.zones, columns=cfg.zones)
 }
