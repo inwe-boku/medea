@@ -119,6 +119,23 @@ AIR_POL_COST_VAR = df2gdx(db, estimates['AIR_POLLUTION']['variable cost'],
 # --------------------------------------------------------------------------- #
 # time series
 # --------------------------------------------------------------------------- #
+# read data for 4 MW wind turbines in DE and AT
+wind_on_4mw = pd.read_excel('D:/git_repos/medea/data/raw/Wind_profile_4MW.xlsx')
+wind_on_4mw.loc[:, 'time'] = pd.to_datetime(wind_on_4mw.loc[:, 'time'])
+wind_on_4mw.set_index('time', inplace=True)
+wind_on_4mw = wind_on_4mw.loc[
+                  (pd.Timestamp(cfg.year, 1, 1, 0, 0) <= wind_on_4mw.index) &
+                  (wind_on_4mw.index <= pd.Timestamp(cfg.year, 12, 31, 23,
+                                                     0))] * 0.95  # 0.95 accounts for downtime and wakes
+# drop index and set index of df_time instead
+if len(wind_on_4mw) == len(dict_sets['t']):
+    wind_on_4mw.set_index(dict_sets['t'].index, inplace=True)
+else:
+    raise ValueError('Mismatch of time series data and model time resolution. Is cfg.year wrong?')
+wind_on_4mw.columns = wind_on_4mw.columns.str.split('-', expand=True)
+
+FUTURE_WIND_PROFILE = df2gdx(db, wind_on_4mw.loc[:, idx[:, :, 'profile_4MW']].stack((0, 1)).reorder_levels((1, 0, 2)),
+                             'GEN_PROFILE_FUTURE', 'par', [z_set, t_set, n_set])
 
 DEMAND = df2gdx(db, ts_data['ZONAL'].loc[:, idx[:, :, 'load']].stack((0, 1)).reorder_levels((1, 0, 2)).round(4),
                 'DEMAND', 'par', [z_set, t_set, m_set])
@@ -153,6 +170,6 @@ logging.info('medea data exported')
 # --------------------------------------------------------------------------- #
 # %% data export to gdx
 # --------------------------------------------------------------------------- #
-export_location = os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'gdx', 'medea_main_data_adj.gdx')
+export_location = os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'gdx', 'medea_main_data_adja.gdx')
 db.export(export_location)
 logging.info(f'medea gdx exported to {export_location}')

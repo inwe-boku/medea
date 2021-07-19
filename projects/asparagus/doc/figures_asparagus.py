@@ -157,6 +157,8 @@ for scen in scenario:
     coco['Trade Balance'] = - coco.loc[:, ['AnnValueX', 'AnnValueI']].sum(axis=1)
     coco = coco.iloc[::-1]  # coco.reindex(coco.index.levels[1][::-1], level=1, axis=0)
 
+    toco = coco.loc[idx[pco2, :], ['Invest', 'O&M', 'Fuel & CO$_2$', 'Trade Balance']].sum(axis=1) / 1000
+
     ploco = coco.loc[idx[pco2, :], ['Invest', 'O&M', 'Fuel & CO$_2$', 'Trade Balance']] / 1000
     ploco.index = ploco.index.droplevel(0)
     ploco.index = ploco.index + 1

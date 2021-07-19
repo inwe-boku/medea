@@ -107,7 +107,7 @@ scenario_2030 = {
         'nuc': [0.0],
         'oil': [1.0],
         # levels
-        'wind_on': [90.8],
+        'wind_on': [45.283],  # [90.8], reset to 2016 capacity account for 4MW wind turbine profile
         'wind_off': [15],
         'pv': [73],
         'ror': [4.5]

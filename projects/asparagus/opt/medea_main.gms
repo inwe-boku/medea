@@ -62,10 +62,11 @@ Parameters
          DISTANCE(z,zz)          distance between centers of gravity of market areas [km]
          EFFICIENCY_G(i,m,f)     generation efficiency of dispatchable power plants [MWh_el per MWh_th]
          EFFICIENCY_S_OUT(k)     generation efficiency of storages
-         EFFICIENCY_S_IN(k)    storing-in efficiency of storages
+         EFFICIENCY_S_IN(k)      storing-in efficiency of storages
          FEASIBLE_INPUT(i,l,f)   relative fuel requirement at corners of feasible operating region
          FEASIBLE_OUTPUT(i,l,m)  relative energy production at corners of feasible operating region
          GEN_PROFILE(z,t,n)      generation profile of intermittent sources
+         GEN_PROFILE_FUTURE(z,t,n) generation profile of future wind turbines
          INFLOWS(z,t,k)          energy content of (exogenous) inflows to storages [GW]
          INITIAL_CAP_G(z,i)      initial installed capacity of dispatchable generators [GW]
          INITIAL_CAP_R(z,n)      initial installed capacity of intermittent generators [GW]
@@ -79,8 +80,8 @@ Parameters
          MAP_FUEL_R(n,f)         maps fuels to renewable generators
          OM_COST_G_QFIX(i)       quasi-fixed operation and maintenance cost [EUR per MW]
          OM_COST_G_VAR(i)        variable operation and maintenance cost [EUR per MWh]
-         OM_COST_R_QFIX(n)     quasi-fixed operation and maintenance cost [EUR per MW]
-         OM_COST_R_VAR(n)      variable operation and maintenance cost [EUR per MWh]
+         OM_COST_R_QFIX(n)       quasi-fixed operation and maintenance cost [EUR per MW]
+         OM_COST_R_VAR(n)        variable operation and maintenance cost [EUR per MWh]
          PEAK_LOAD(z)            maximum electricity demand [GW]
          PEAK_PROFILE(z,n)       maximum relative generation from intermittent sources
          PRICE_CO2(z,t)          CO2 price [EUR per t CO2]
@@ -107,7 +108,7 @@ $load    all_tec f i h j k l m n z
 $load    AIR_POL_COST_FIX AIR_POL_COST_VAR
 $load    CAPITALCOST_P CAPITALCOST_E DISCOUNT_RATE LIFETIME
 $load    CO2_INTENSITY DEMAND DISTANCE EFFICIENCY_G EFFICIENCY_S_OUT
-$load    EFFICIENCY_S_IN FEASIBLE_INPUT FEASIBLE_OUTPUT GEN_PROFILE INFLOWS
+$load    EFFICIENCY_S_IN FEASIBLE_INPUT FEASIBLE_OUTPUT GEN_PROFILE GEN_PROFILE_FUTURE INFLOWS
 $load    INITIAL_CAP_G INITIAL_CAP_R INITIAL_CAP_S_OUT INITIAL_CAP_S_IN
 $load    INITIAL_CAP_V INITIAL_CAP_X LAMBDA OM_COST_G_QFIX OM_COST_G_VAR
 $load    OM_COST_R_QFIX OM_COST_R_VAR PRICE_CO2
@@ -131,6 +132,10 @@ CAPITALCOST_V(z,k) = DISCOUNT_RATE(z)*(1+DISCOUNT_RATE(z))**LIFETIME(k) / ((1+DI
 CAPITALCOST_X(z) = DISCOUNT_RATE(z)*(1+DISCOUNT_RATE(z))**LIFETIME('transmission') / ((1+DISCOUNT_RATE(z))**LIFETIME('transmission')-1)*CAPITALCOST_P('transmission') * 1000;
 
 display CAPITALCOST_G;
+
+GEN_PROFILE_FUTURE(z,t,'ror') = GEN_PROFILE(z,t,'ror');
+GEN_PROFILE_FUTURE(z,t,'pv') = GEN_PROFILE(z,t,'pv');
+GEN_PROFILE_FUTURE(z,t,'wind_off') = GEN_PROFILE(z,t,'wind_off');
 
 * ------------------------------------------------------------------------------
 * enable the use of synthetic gas in natural gas-fired plant
@@ -340,7 +345,8 @@ w.UP(z,t,i,l,f)$(NOT FEASIBLE_INPUT(i,l,f)) = 0;
 acn_itm(z,t,n)..
                  r(z,t,n)
                  =E=
-                 GEN_PROFILE(z,t,n) * (INITIAL_CAP_R(z,n) + add_r(z,n) - deco_r(z,n) )
+                 GEN_PROFILE(z,t,n) * (INITIAL_CAP_R(z,n) - deco_r(z,n) )
+                 + add_r(z,n) * GEN_PROFILE_FUTURE(z,t,n)
                  ;
 * ------------------------------------------------------------------------------
 * ELECTRICITY STORAGE
@@ -431,7 +437,8 @@ uplim_deco_g(z,i)..
 uplim_deco_r(z,n)..
                  deco_r(z,n)
                  =L=
-                 INITIAL_CAP_R(z,n) + add_r(z,n)
+                 INITIAL_CAP_R(z,n)
+*                + add_r(z,n)
                  ;
 * ------------------------------------------------------------------------------
 * ANCILLARY SERVICES
@@ -485,6 +492,7 @@ BRatio = 1
 $if %NORAGUROBI% == yes $include solve_with_noragurobi.gms
 
 $onecho > cplex.opt
+names no
 lpmethod 4
 $offecho
 medea.OptFile = 1;

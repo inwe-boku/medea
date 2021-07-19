@@ -26,6 +26,7 @@ add_r.UP('AT','pv') = 80;
 add_r.UP('AT','wind_off') = 0;
 add_r.UP('DE','wind_off') = 15;
 add_r.UP(z,'ror') = 0;
+add_r.LO('DE','wind_on') = 45.517;
 
 add_g.UP('AT','bio') = 0;
 add_g.UP('AT','bio_chp') = 0;

@@ -81,7 +81,7 @@ dispatch = pd.DataFrame(data=0,
                         index=pd.date_range(start='2016/1/1', end='2017/1/1', freq='M'))
 dispatch['Biomass'] = thmm.loc[idx[scen, co2p, wlim, :], idx[reg, :, 'el', 'Biomass']].sum(axis=1).values
 dispatch['Gas'] = thmm.loc[idx[scen, co2p, wlim, :], idx[reg, :, 'el', 'Gas']].sum(axis=1).values
-dispatch['Coal'] = thmm.loc[idx[scen, co2p, wlim, :], idx[reg, :, 'el', 'Coal']].sum(axis=1).values
+# dispatch['Coal'] = thmm.loc[idx[scen, co2p, wlim, :], idx[reg, :, 'el', 'Coal']].sum(axis=1).values
 dispatch['Oil'] = thmm.loc[idx[scen, co2p, wlim, :], idx[reg, :, 'el', 'Oil']].sum(axis=1).values
 dispatch['PV'] = resm.loc[idx[scen, co2p, wlim, :], idx[reg, 'pv']].values
 dispatch['Wind'] = resm.loc[idx[scen, co2p, wlim, :], idx[reg, 'wind_on']].values
@@ -107,7 +107,7 @@ dispatchb = pd.DataFrame(data=0,
                          index=pd.date_range(start='2016/1/1', end='2017/1/1', freq='M'))
 dispatchb['Biomass'] = thmm.loc[idx[scen, co2p, wlimb, :], idx[reg, :, 'el', 'Biomass']].sum(axis=1).values
 dispatchb['Gas'] = thmm.loc[idx[scen, co2p, wlimb, :], idx[reg, :, 'el', 'Gas']].sum(axis=1).values
-dispatchb['Coal'] = thmm.loc[idx[scen, co2p, wlimb, :], idx[reg, :, 'el', 'Coal']].sum(axis=1).values
+# dispatchb['Coal'] = thmm.loc[idx[scen, co2p, wlimb, :], idx[reg, :, 'el', 'Coal']].sum(axis=1).values
 dispatchb['Oil'] = thmm.loc[idx[scen, co2p, wlimb, :], idx[reg, :, 'el', 'Oil']].sum(axis=1).values
 dispatchb['PV'] = resm.loc[idx[scen, co2p, wlimb, :], idx[reg, 'pv']].values
 dispatchb['Wind'] = resm.loc[idx[scen, co2p, wlimb, :], idx[reg, 'wind_on']].values
@@ -152,13 +152,13 @@ ax1.grid()
 ax1.set_axisbelow(True)
 ax1.stackplot(dispatch_pos.index, dispatch_pos.T / 1000, colors=cols)
 ax1.stackplot(dispatch_neg.index, dispatch_neg.T / 1000, colors=cols)
-# ax1.set_ylim([-4, 10])
+ax1.set_ylim([-4, 10])
 ax1.set_ylabel('[TWh]')
 ax1.xaxis.set_major_formatter(mdates.DateFormatter('%b'))
 ax1.text(0.025, 0.975, '(a)', transform=ax1.transAxes, fontsize=14, verticalalignment='top')  # , bbox=props)
 ax2.stackplot(dispatchb_pos.index, dispatchb_pos.T / 1000, colors=cols)
 ax2.stackplot(dispatchb_neg.index, dispatchb_neg.T / 1000, colors=cols, labels=labs)
-# ax2.set_ylim([-4, 10])
+ax2.set_ylim([-4, 10])
 ax2.tick_params(labelleft=False)
 ax2.xaxis.set_major_formatter(mdates.DateFormatter('%b'))
 ax2.text(0.025, 0.975, '(b)', transform=ax2.transAxes, fontsize=14, verticalalignment='top')  # , bbox=props)

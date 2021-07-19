@@ -1,4 +1,8 @@
 # %% imports
+import sys
+
+sys.path.extend(['D:\\git_repos\\medea', 'D:/git_repos/medea'])
+
 import os
 
 import pandas as pd
