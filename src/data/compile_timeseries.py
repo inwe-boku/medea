@@ -23,7 +23,7 @@ ts_medea = ts_opsd[
     ['utc_timestamp', 'cet_cest_timestamp', 'AT_load_actual_entsoe_transparency', 'AT_solar_generation_actual',
      'AT_wind_onshore_generation_actual', 'DE_load_actual_entsoe_transparency',
      'DE_solar_generation_actual', 'DE_solar_capacity', 'DE_wind_onshore_generation_actual', 'DE_wind_onshore_capacity',
-     'DE_wind_offshore_generation_actual', 'DE_wind_offshore_capacity', 'DE_price_day_ahead']]
+     'DE_wind_offshore_generation_actual', 'DE_wind_offshore_capacity', 'DE_LU_price_day_ahead']]
 del ts_opsd
 
 ts_medea = ts_medea.copy()
@@ -39,7 +39,7 @@ ts_medea.rename(columns={'AT_load_actual_entsoe_transparency': 'AT-power-load',
                          'DE_wind_onshore_capacity': 'DE-wind_on-capacity',
                          'DE_wind_offshore_generation_actual': 'DE-wind_off-generation',
                          'DE_wind_offshore_capacity': 'DE-wind_off-capacity',
-                         'DE_price_day_ahead': 'price_day_ahead'}, inplace=True)
+                         'DE_LU_price_day_ahead': 'price_day_ahead'}, inplace=True)
 if ts_medea.index.max() < pd.Timestamp(f'{ts_medea.index.max().year}-07-01 00:00:00', tz='UTC'):
     df_expand = pd.DataFrame(
         index=pd.date_range(start=ts_medea.index.max() + pd.Timedelta(hours=1),
@@ -64,7 +64,7 @@ ts_medea['DE-hydro-generation'] = ts_hydro_generation[['ror_DE', 'res_DE']].sum(
 # %% scale intermittent generation to match annual numbers from national energy balances
 cols = ['pv', 'wind_on', 'wind_off', 'ror', 'load']
 first_year = max(ts_medea.index.year.min(), 2010)
-last_year = ts_medea.index.year.max()
+last_year = min(ts_medea.index.year.max(), 2018)
 scale_index = pd.MultiIndex.from_product([cols, [str(yr) for yr in range(first_year, last_year)]])
 scaling_factor = pd.DataFrame(data=1, columns=cfg.zones, index=scale_index)
 # download energy balances
@@ -113,6 +113,11 @@ url = 'https://www.erneuerbare-energien.de/EE/Redaktion/DE/Downloads/' \
 download_file(url, medea_path('data', 'raw', 'res_DE.xlsx'))
 res_de = pd.read_excel(medea_path('data', 'raw', 'res_DE.xlsx'), sheet_name='3', header=[7], index_col=[0], nrows=13)
 
+# get rid of "Unnamed..." columns and set year as column name
+res_de_clean = res_de.filter(regex = r'^\d+', axis = 1)
+res_de_clean_cols = res_de_clean.columns
+res_de_clean.columns = [str(x.year) for x in res_de_clean_cols]
+res_de = res_de_clean                                                            
 download_energy_balance('DE')
 process_energy_balance('DE')
 nbal_de_el = pd.read_csv(medea_path('data', 'processed', 'enbal_DE_el.csv'), index_col=[0], sep=';')
@@ -121,22 +126,22 @@ for year in range(first_year, last_year):
     # wind_off_gen_nbal = nbal_de.loc['Wind energy offshore', str(cfg.year)] * 10**3
     if ts_medea.loc[str(year), 'DE-pv-generation'].sum() > 0:
         scaling_factor.loc[idx['pv', str(year)], 'DE'] = \
-            res_de.loc['Solar Photovoltaic', str(year)].values * 10 ** 3 / \
+            res_de.loc['Solar Photovoltaic', str(year)] * 10 ** 3 / \
             ts_medea.loc[str(year), 'DE-pv-generation'].sum()
 
     if ts_medea.loc[str(year), 'DE-wind_on-generation'].sum() > 0:
         scaling_factor.loc[idx['wind_on', str(year)], 'DE'] = \
-            res_de.loc['Wind energy onshore', str(year)].values * 10 ** 3 / \
+            res_de.loc['Wind energy onshore', str(year)] * 10 ** 3 / \
             ts_medea.loc[str(year), 'DE-wind_on-generation'].sum()
 
     if ts_medea.loc[str(year), 'DE-wind_off-generation'].sum() > 0:
         scaling_factor.loc[idx['wind_off', str(year)], 'DE'] = \
-            res_de.loc['Wind energy offshore', str(year)].values * 10 ** 3 / \
+            res_de.loc['Wind energy offshore', str(year)] * 10 ** 3 / \
             ts_medea.loc[str(year), 'DE-wind_off-generation'].sum()
 
     if ts_medea.loc[str(year), 'DE-hydro-generation'].sum() > 0:
         scaling_factor.loc[idx['ror', str(year)], 'DE'] = \
-            res_de.loc['Hydropower ¹⁾', str(year)].values * 10 ** 3 / \
+            res_de.loc['Hydropower ¹⁾', str(year)] * 10 ** 3 / \
             ts_medea.loc[str(year), 'DE-hydro-generation'].sum()
 
     if ts_medea.loc[str(year), 'DE-power-load'].sum() > 0:
@@ -282,6 +287,8 @@ for reg in cfg.zones:
 # %% fuel and co2 price data
 df_fuels = pd.read_csv(medea_path('data', 'processed', 'monthly_fuel_prices.csv'), index_col=[0], parse_dates=True)
 ts_prices = df_fuels[['NGas_DE', 'Brent_UK', 'Coal_SA']]
+# remove duplicated indices, i.e. remove NaNs
+ts_prices = ts_prices[ts_prices.index.duplicated() != True]                           
 ts_prices = ts_prices.resample('H').interpolate('pchip')
 ts_prices.rename({'NGas_DE': 'Gas', 'Coal_SA': 'Coal', 'Brent_UK': 'Oil'}, axis=1, inplace=True)
 ts_prices.index = ts_prices.index.tz_localize('utc')

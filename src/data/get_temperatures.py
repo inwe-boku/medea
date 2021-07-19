@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 from netCDF4 import Dataset, num2date
 from scipy import interpolate
+from datetime import datetime as dt
 
 import config as cfg
 from logging_config import setup_logging
@@ -62,7 +63,10 @@ for zne in cfg.zones:
             temp_itp = np.diagonal(f(chp_lon, chp_lat)) * chp['UnitNameplate'].values / chp['UnitNameplate'].sum()
             era_date = num2date(era5.variables['time'][hour], era5.variables['time'].units,
                                 era5.variables['time'].calendar)
+            # conversion of date formats
+            era_date = dt.fromisoformat(era_date.isoformat())
             daily_mean_temp.loc[era_date, zne] = np.nansum(temp_itp)
+            # print(era_date)
 
 # %% export results
 daily_mean_temp.replace(-9999, np.nan, inplace=True)
