@@ -12,16 +12,25 @@ RPATH = APATH / 'results'
 FIGPATH = APATH / 'doc' / 'figures'
 REFUEL_COLORS = ['#c72321', '#0d8085', '#f0c220', '#595959', '#3b68f9', '#7794dd']
 ANNUITY_FACTOR = 0.05827816
-FLH_PV = 1003.36
-FLH_WIND = 1983.16
 idx = pd.IndexSlice
 
 # %% read data
+scenario = ['base', 'low_cost']
+co2price = [25, 50]
+wind_limit = [16, 0]
+pvcost = 36424
+reg = 'AT'
+
 res = pd.read_csv(RPATH / 'hourly_res.csv', sep=';', decimal=',', index_col=[0, 1, 2, 3, 4], header=[0, 1])
+res = res.loc[idx[scenario, co2price, wind_limit, pvcost], :]
 thm = pd.read_csv(RPATH / 'hourly_thermal.csv', sep=';', decimal=',', index_col=[0, 1, 2, 3, 4], header=[0, 1, 2, 3])
+thm = thm.loc[idx[scenario, co2price, wind_limit, pvcost], :]
 s_in = pd.read_csv(RPATH / 'hourly_sin.csv', sep=';', decimal=',', index_col=[0, 1, 2, 3, 4], header=[0, 1])
+s_in = s_in.loc[idx[scenario, co2price, wind_limit, pvcost], :]
 s_out = pd.read_csv(RPATH / 'hourly_sout.csv', sep=';', decimal=',', index_col=[0, 1, 2, 3, 4], header=[0, 1])
+s_out = s_out.loc[idx[scenario, co2price, wind_limit, pvcost], :]
 nxp = pd.read_csv(RPATH / 'hourly_export.csv', sep=';', decimal=',', index_col=[0, 1, 2, 3, 4], header=[0, 1])
+nxp = nxp.loc[idx[scenario, co2price, wind_limit, pvcost], :]
 
 
 def to_timeindex(df, startdate, enddate, freq, timeset, firstindex, missing_elements=False):
@@ -71,10 +80,9 @@ nxpt = to_timeindex(nxp, datetime(2016, 1, 1), datetime(2017, 1, 1), 'H', 't', 1
 nxpm = nxpt.groupby([nxpt.index.get_level_values(i) for i in [0, 1, 2]] + [pd.Grouper(freq='M', level=-1)]).sum()
 
 # %% data preparation
-co2p = 25
-wlim = 16
-reg = 'AT'
-scen = 'base'
+scen = scenario[0]
+co2p = co2price[0]
+wlim = wind_limit[0]
 
 dispatch = pd.DataFrame(data=0,
                         columns=['Biomass', 'Coal', 'Ror', 'PV', 'Wind', 'Gas', 'Oil', 'SOut', 'SIn', 'NetX', 'NetI'],
