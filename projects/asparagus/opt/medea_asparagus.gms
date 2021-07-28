@@ -25,16 +25,16 @@ add_r.UP('AT','wind_on') = WIND_ON_LIMIT;
 add_r.UP('AT','pv') = 80;
 add_r.UP('AT','wind_off') = 0;
 
-add_r.FX('DE','wind_off') = 20-7.747;
-add_r.FX('DE','wind_on') = 71-54.420;
-add_r.FX('DE','pv') = 100-53.848;
+add_r.FX('DE','wind_off') = 20 - INITIAL_CAP_R('DE','wind_off');
+add_r.FX('DE','wind_on') = 71 - INITIAL_CAP_R('DE','wind_on');
+add_r.FX('DE','pv') = 100 - INITIAL_CAP_R('DE','pv');
 add_r.UP(z,'ror') = 0;
 
 
 add_g.UP('AT','bio') = 0;
 add_g.UP('AT','bio_chp') = 0;
-add_g.FX('DE','bio') = 0.55;
-add_g.FX('DE','bio_chp') = 2;
+add_g.FX('DE','bio') = 0;
+add_g.FX('DE','bio_chp') = 0;
 add_g.UP(z,'nuc') = 0;
 add_g.UP(z,'lig_stm') = 0;
 add_g.UP(z,'lig_stm_chp') = 0;

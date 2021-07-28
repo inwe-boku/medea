@@ -66,7 +66,7 @@ Parameters
          FEASIBLE_INPUT(i,l,f)   relative fuel requirement at corners of feasible operating region
          FEASIBLE_OUTPUT(i,l,m)  relative energy production at corners of feasible operating region
          GEN_PROFILE(z,t,n)      generation profile of intermittent sources
-*         GEN_PROFILE_FUTURE(z,t,n) generation profile of future wind turbines
+         GEN_PROFILE_FUTURE(z,t,n) generation profile of future wind turbines
          INFLOWS(z,t,k)          energy content of (exogenous) inflows to storages [GW]
          INITIAL_CAP_G(z,i)      initial installed capacity of dispatchable generators [GW]
          INITIAL_CAP_R(z,n)      initial installed capacity of intermittent generators [GW]
