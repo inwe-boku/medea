@@ -17,10 +17,11 @@ SERVER = 'sftp-transparency.entsoe.eu'
 RAW_DATA_DIR = medea_path('data', 'raw')
 
 CATEGORIES = [
-    'ActualGenerationOutputPerUnit',
-    'AggregatedGenerationPerType',
-    'AggregateFillingRateWaterReservoirs',
-    'ScheduledCommercialExchanges'
+    'ActualGenerationOutputPerGenerationUnit_16.1.A',
+    'AggregatedGenerationPerType_16.1.B_C',
+    'AggregatedFillingRateOfWaterReservoirsAndHydroStoragePlants_16.1.D',
+    'TotalCommercialSchedules_12.1.F'
+    #    'ScheduledCommercialExchanges'
 ]
 
 credentials = yaml.load(open(medea_path('credentials.yml')), Loader=yaml.SafeLoader)

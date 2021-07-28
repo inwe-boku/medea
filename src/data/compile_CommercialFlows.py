@@ -1,3 +1,4 @@
+# %% imports
 import os
 
 import pandas as pd
@@ -5,7 +6,8 @@ import pandas as pd
 import config as cfg
 from src.utils.data_processing import medea_path
 
-directory = medea_path('data', 'raw', 'ScheduledCommercialExchanges')
+# %% settings
+directory = medea_path('data', 'raw', 'TotalCommercialSchedules_12.1.F')  # 'ScheduledCommercialExchanges')
 
 df_imports = pd.DataFrame(columns=[f'imp_{zn}' for zn in cfg.zones])
 df_exports = pd.DataFrame(columns=[f'exp_{zn}' for zn in cfg.zones])
@@ -15,8 +17,8 @@ for file in os.listdir(directory):
     filename = os.fsdecode(file)
     print(filename)
     if filename.endswith('.csv'):
-        df_flows = pd.read_csv(medea_path('data', 'raw', 'ScheduledCommercialExchanges', filename),
-                               sep='\t', encoding='utf-16')
+        df_flows = pd.read_csv(medea_path('data', 'raw', 'TotalCommercialSchedules_12.1.F', filename),
+                               sep='\t', encoding='utf-8')
         df_flows['DateTime'] = pd.to_datetime(df_flows['DateTime'])
         # for each zone: sum import and export flows from / to all other zones except the ones included in model
         # 1) import flows
