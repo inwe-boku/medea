@@ -66,7 +66,7 @@ Parameters
          FEASIBLE_INPUT(i,l,f)   relative fuel requirement at corners of feasible operating region
          FEASIBLE_OUTPUT(i,l,m)  relative energy production at corners of feasible operating region
          GEN_PROFILE(z,t,n)      generation profile of intermittent sources
-         GEN_PROFILE_FUTURE(z,t,n) generation profile of future wind turbines
+*         GEN_PROFILE_FUTURE(z,t,n) generation profile of future wind turbines
          INFLOWS(z,t,k)          energy content of (exogenous) inflows to storages [GW]
          INITIAL_CAP_G(z,i)      initial installed capacity of dispatchable generators [GW]
          INITIAL_CAP_R(z,n)      initial installed capacity of intermittent generators [GW]
@@ -108,7 +108,7 @@ $load    all_tec f i h j k l m n z
 $load    AIR_POL_COST_FIX AIR_POL_COST_VAR
 $load    CAPITALCOST_P CAPITALCOST_E DISCOUNT_RATE LIFETIME
 $load    CO2_INTENSITY DEMAND DISTANCE EFFICIENCY_G EFFICIENCY_S_OUT
-$load    EFFICIENCY_S_IN FEASIBLE_INPUT FEASIBLE_OUTPUT GEN_PROFILE GEN_PROFILE_FUTURE INFLOWS
+$load    EFFICIENCY_S_IN FEASIBLE_INPUT FEASIBLE_OUTPUT GEN_PROFILE INFLOWS
 $load    INITIAL_CAP_G INITIAL_CAP_R INITIAL_CAP_S_OUT INITIAL_CAP_S_IN
 $load    INITIAL_CAP_V INITIAL_CAP_X LAMBDA OM_COST_G_QFIX OM_COST_G_VAR
 $load    OM_COST_R_QFIX OM_COST_R_VAR PRICE_CO2
@@ -116,6 +116,7 @@ $load    PEAK_LOAD PEAK_PROFILE PRICE_FUEL SIGMA VALUE_NSE
 $load    SWITCH_INVEST_THERM SWITCH_INVEST_ITM SWITCH_INVEST_STORAGE
 $load    SWITCH_INVEST_ATC SWITCH_ANCILLARY
 $gdxin
+* GEN_PROFILE_FUTURE
 
 MAP_FUEL_G(i,f)$(sum(m,EFFICIENCY_G(i,m,f))) = yes;
 MAP_FUEL_R('ror','Water') = yes;
@@ -135,7 +136,6 @@ display CAPITALCOST_G;
 
 GEN_PROFILE_FUTURE(z,t,'ror') = GEN_PROFILE(z,t,'ror');
 GEN_PROFILE_FUTURE(z,t,'pv') = GEN_PROFILE(z,t,'pv');
-GEN_PROFILE_FUTURE(z,t,'wind_off') = GEN_PROFILE(z,t,'wind_off');
 
 * ------------------------------------------------------------------------------
 * enable the use of synthetic gas in natural gas-fired plant
@@ -345,8 +345,8 @@ w.UP(z,t,i,l,f)$(NOT FEASIBLE_INPUT(i,l,f)) = 0;
 acn_itm(z,t,n)..
                  r(z,t,n)
                  =E=
-                 GEN_PROFILE(z,t,n) * (INITIAL_CAP_R(z,n) - deco_r(z,n) )
-                 + add_r(z,n) * GEN_PROFILE_FUTURE(z,t,n)
+                 GEN_PROFILE(z,t,n) * (INITIAL_CAP_R(z,n) + add_r(z,n) - deco_r(z,n) )
+*                 + add_r(z,n) * GEN_PROFILE_FUTURE(z,t,n)
                  ;
 * ------------------------------------------------------------------------------
 * ELECTRICITY STORAGE

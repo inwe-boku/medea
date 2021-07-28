@@ -24,14 +24,17 @@ CAPITALCOST_R(z,'pv') = PV_CAPEX;
 add_r.UP('AT','wind_on') = WIND_ON_LIMIT;
 add_r.UP('AT','pv') = 80;
 add_r.UP('AT','wind_off') = 0;
-add_r.UP('DE','wind_off') = 15;
+
+add_r.FX('DE','wind_off') = 20-7.747;
+add_r.FX('DE','wind_on') = 71-54.420;
+add_r.FX('DE','pv') = 100-53.848;
 add_r.UP(z,'ror') = 0;
-add_r.LO('DE','wind_on') = 45.517;
+
 
 add_g.UP('AT','bio') = 0;
 add_g.UP('AT','bio_chp') = 0;
-add_g.UP('DE','bio') = 1;
-add_g.UP('DE','bio_chp') = 1;
+add_g.FX('DE','bio') = 0.55;
+add_g.FX('DE','bio_chp') = 2;
 add_g.UP(z,'nuc') = 0;
 add_g.UP(z,'lig_stm') = 0;
 add_g.UP(z,'lig_stm_chp') = 0;

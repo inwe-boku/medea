@@ -164,7 +164,7 @@ def gdx2plot(db_gams, symbol, index_list, column_list, base_year, slicer=None, s
     return df
 
 
-def run_medea(gms_exe_dir, gms_model, medea_project, project_scenario, export_location):
+def run_medea(gms_exe_dir, gms_model, medea_project, project_scenario, export_location, compress=True):
     """
     flexible run of power system model medea
     :param gms_exe_dir: string of path to GAMS executable
@@ -172,33 +172,45 @@ def run_medea(gms_exe_dir, gms_model, medea_project, project_scenario, export_lo
     :param medea_project: string of medea-project name
     :param project_scenario: string of project-scenario (typically one iteration)
     :param export_location: string of path where to save results
+    :param compress: boolean; set to True to compress output-gdx
     :return:
     """
     # generate identifier of scenario output
-    gdx_out = f'gdx=medea_out_{project_scenario}.gdx'
+    gdx_out = f'medea_out_{project_scenario}.gdx'
     # call GAMS to solve model / scenario
     subprocess.run(
-        f'{gms_exe_dir}\\gams {gms_model} {gdx_out} lo=3 o=nul --project={medea_project} --scenario={project_scenario}')
+        f'{gms_exe_dir}\\gams {gms_model} gdx={gdx_out} lo=3 o=nul --project={medea_project} --scenario={project_scenario}')
+    # compress generated gdx file
+    if compress:
+        subprocess.run(
+            f'gdxcopy -V7C -Replace {gdx_out}'
+        )
     # clean up after each run and delete input data (which is also included in output, so no information lost)
     if os.path.isfile(export_location):
         os.remove(export_location)
 
 
-def run_medea_project(project_name, scenario_id):
+def run_medea_project(project_name, scenario_id, compress=True):
     """
     runs / solves a project of power system model medea with strict project directory conventions
     :param project_name: string of medea-project name
     :param scenario_id: string of project-scenario (typically one iteration)
+	:param compress: boolean; set to True to compress output-gdx
     :return:
     """
     # generate file names
     gms_model_fname = os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', project_name, 'opt', 'medea_main.gms')
-    gdx_out_fname = f'gdx=medea_out_{scenario_id}.gdx'
+    gdx_out_fname = f'medea_out_{scenario_id}.gdx'
     input_fname = os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', project_name, 'opt', f'medea_{scenario_id}_data.gdx')
 
     # call GAMS to solve model / scenario
     subprocess.run(
-        f'{cfg.GMS_SYS_DIR}\\gams {gms_model_fname} {gdx_out_fname} lo=3 o=nul --project={project_name} --scenario={scenario_id}')
+        f'{cfg.GMS_SYS_DIR}\\gams {gms_model_fname} gdx={gdx_out_fname} lo=3 o=nul --project={project_name} --scenario={scenario_id}')
+    # compress generated gdx file
+    if compress:
+        subprocess.run(
+            f'gdxcopy -V7C -Replace {gdx_out_fname}'
+        )
     # clean up after each run and delete input data (which is also included in output, so no information lost)
     if os.path.isfile(input_fname):
         os.remove(input_fname)
