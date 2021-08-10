@@ -108,7 +108,7 @@ $load    all_tec f i h j k l m n z
 $load    AIR_POL_COST_FIX AIR_POL_COST_VAR
 $load    CAPITALCOST_P CAPITALCOST_E DISCOUNT_RATE LIFETIME
 $load    CO2_INTENSITY DEMAND DISTANCE EFFICIENCY_G EFFICIENCY_S_OUT
-$load    EFFICIENCY_S_IN FEASIBLE_INPUT FEASIBLE_OUTPUT GEN_PROFILE INFLOWS
+$load    EFFICIENCY_S_IN FEASIBLE_INPUT FEASIBLE_OUTPUT GEN_PROFILE GEN_PROFILE_FUTURE INFLOWS
 $load    INITIAL_CAP_G INITIAL_CAP_R INITIAL_CAP_S_OUT INITIAL_CAP_S_IN
 $load    INITIAL_CAP_V INITIAL_CAP_X LAMBDA OM_COST_G_QFIX OM_COST_G_VAR
 $load    OM_COST_R_QFIX OM_COST_R_VAR PRICE_CO2
@@ -116,7 +116,6 @@ $load    PEAK_LOAD PEAK_PROFILE PRICE_FUEL SIGMA VALUE_NSE
 $load    SWITCH_INVEST_THERM SWITCH_INVEST_ITM SWITCH_INVEST_STORAGE
 $load    SWITCH_INVEST_ATC SWITCH_ANCILLARY
 $gdxin
-* GEN_PROFILE_FUTURE
 
 MAP_FUEL_G(i,f)$(sum(m,EFFICIENCY_G(i,m,f))) = yes;
 MAP_FUEL_R('ror','Water') = yes;
@@ -345,8 +344,8 @@ w.UP(z,t,i,l,f)$(NOT FEASIBLE_INPUT(i,l,f)) = 0;
 acn_itm(z,t,n)..
                  r(z,t,n)
                  =E=
-                 GEN_PROFILE(z,t,n) * (INITIAL_CAP_R(z,n) + add_r(z,n) - deco_r(z,n) )
-*                 + add_r(z,n) * GEN_PROFILE_FUTURE(z,t,n)
+                 GEN_PROFILE(z,t,n) * (INITIAL_CAP_R(z,n) - deco_r(z,n) )
+                 + add_r(z,n) * GEN_PROFILE_FUTURE(z,t,n)
                  ;
 * ------------------------------------------------------------------------------
 * ELECTRICITY STORAGE
@@ -480,6 +479,7 @@ $if set PROJECT $include medea_%PROJECT%.gms
 model medea / all /;
 
 options
+solvelink = 0,
 reslim = 54000,
 threads = 8,
 optCR = 0.01,
@@ -492,6 +492,7 @@ BRatio = 1
 $if %NORAGUROBI% == yes $include solve_with_noragurobi.gms
 
 $onecho > cplex.opt
+memoryemphasis 1
 names no
 lpmethod 4
 $offecho
