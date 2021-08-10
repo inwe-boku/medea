@@ -10,7 +10,7 @@ dict_base = {
     'must_run': [1],
     'policy': [1],
     'co2_price': range(100, -1, -25),
-    'wind_cap': range(16, -1, -2),
+    'wind_cap': range(20, -1, -2),
     'pv_cost': [36424],  # [36424, 32530] with open-space / rooftop as stated by Gewessler
     'transmission': [4.9],
     'd_power': [79302.65]  # *
@@ -27,51 +27,52 @@ dict_base = {
 
 # campaigns  -- total number of runs: 35+75+35+35+5+35=260; 220 * 11 min = ~40 Stunden Rechenzeit
 dict_campaigns = {
-    # 'base': {  # 5 x 9 = 45 runs
-    # },
-    'base_hist': {  # 5 x 9 = 45 runs
+    'base': {  # 5 x 9 = 45 runs
+
     },
+    # 'base_hist': {  # 5 x 9 = 45 runs
+    # },
     # 'uncopt_DE': {  # 5 x 9 = 45 runs
     # },
-    ## sensitivity of results to overnight cost of solar PV
-    # 'pv_sens': {  # 5 x 15 = 75 runs
-    #    'wind_cap': [max(dict_base['wind_cap'])],
-    #    'pv_cost': range(36424, 15026, -1500),  # range(25924, 15026, -1500),
-    # },
-    # sensitivity to PV capital cost with historical capacity factors
-    'pv_sens_hist': {  # 5 x 15 = 75 runs
+    # sensitivity of results to overnight cost of solar PV
+    'pv_sens': {  # 5 x 15 = 75 runs
         'wind_cap': [max(dict_base['wind_cap'])],
         'pv_cost': range(36424, 15026, -1500),  # range(25924, 15026, -1500),
     },
-    ## no (artificial) bottleneck that constrains electricity trade between AT and DE (which was put in place in 2018 to
-    ## prevent loop-flows from DE to AT through eastern Europe
-    # 'no_bottleneck': {  # 5 x 9 = 45 runs
-    #    'transmission': [10],
-    # },
-    ## no (artificial) bottleneck that constrains electricity trade between AT and DE (which was put in place in 2018 to
-    ## prevent loop-flows from DE to AT through eastern Europe
-    'no_bottleneck_hist': {  # 5 x 9 = 45 runs
-        'transmission': [10],
-    },
-    ## disables the must-run condition mimicking ancillary services requirements
-    # 'must_run': {  # 5 x 9 = 45 runs
-    #    'must_run': [0],
-    #	'co2_price': range(75, -1, -25),
-    # },
-    ## disables the policy objective of generating sufficient electricity from renewable sources under 2030 conditions
-    # 'no_policy': {  # 5 runs
-    #    'policy': [0],
-    #    'co2_price': [25, 42, 45, 50, 63],
+    # sensitivity to PV capital cost with historical capacity factors
+    # 'pv_sens_hist': {  # 5 x 15 = 75 runs
     #    'wind_cap': [max(dict_base['wind_cap'])],
+    #    'pv_cost': range(36424, 15026, -1500),  # range(25924, 15026, -1500),
     # },
-    # calculates the opportunity cost of wind turbines at low overnight cost for solar PV
-    # 'low_cost': {  # 5 x 9 = 45 runs
-    #    'pv_cost': [32530],  # [22146, 29285],
-    # },
-    # calculates the opportunity cost of wind turbines at low overnight cost for solar PV
-    'low_cost_hist': {  # 5 x 9 = 45 runs
-        'pv_cost': [32530],  # [22146, 29285],
+    # no (artificial) bottleneck that constrains electricity trade between AT and DE (which was put in place in 2018 to
+    # prevent loop-flows from DE to AT through eastern Europe
+    'no_bottleneck': {  # 5 x 9 = 45 runs
+        'transmission': [10],
+        # },
+        ## no (artificial) bottleneck that constrains electricity trade between AT and DE (which was put in place in 2018 to
+        ## prevent loop-flows from DE to AT through eastern Europe
+        # 'no_bottleneck_hist': {  # 5 x 9 = 45 runs
+        #    'transmission': [10],
+        # },
+        ## disables the must-run condition mimicking ancillary services requirements
+        # 'must_run': {  # 5 x 9 = 45 runs
+        #    'must_run': [0],
+        #	'co2_price': range(75, -1, -25),
+        # },
+        ## disables the policy objective of generating sufficient electricity from renewable sources under 2030 conditions
+        # 'no_policy': {  # 5 runs
+        #    'policy': [0],
+        #    'co2_price': [25, 42, 45, 50, 63],
+        #    'wind_cap': [max(dict_base['wind_cap'])],
+        # },
+        # calculates the opportunity cost of wind turbines at low overnight cost for solar PV
+        # 'low_cost': {  # 5 x 9 = 45 runs
+        #    'pv_cost': [32530],  # [22146, 29285],
     }
+    # calculates the opportunity cost of wind turbines at low overnight cost for solar PV
+    # 'low_cost_hist': {  # 5 x 9 = 45 runs
+    #    'pv_cost': [32530],  # [22146, 29285],
+    # }
     ##     # # disables policy objective and sets generation capacities & electricity demand to 2016 level
     ##     # 'base-2016': {
     ##     #     'policy': [0],
