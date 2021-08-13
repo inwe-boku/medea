@@ -561,6 +561,10 @@ CostCO2(z)                       annual cost of CO2 emissions
 CostFuel(z)                      annual cost of fuel
 CostOMG(z)                       annual O&M cost of dispatchable generators
 CostOMR(z)                       annual O&M cost of intermittent generators
+CostFuelCo2(z)                   total annual cost of fuel and emissions
+CostInvest(z)                    total annual investment cost
+CostOM(z)                        total annual operation and maintenance cost
+TradeBalance(z)                  annual trade balance
 ;
 * ------------------------------------------------------------------------------
 * parameter calculation
@@ -576,7 +580,10 @@ AnnRenew(z) = AnnR(z) + AnnGBiomass(z) + sum((t,k), INFLOWS(z,t,k)*EFFICIENCY_S_
 AnnSIn(z) = sum((t,k), s_in.L(z,t,k));
 AnnSOut(z) = sum((t,k), s_out.L(z,t,k));
 AnnCons(z,m) = sum(t, DEMAND(z,t,m));
-AnnFullLoadHours(z,n) = sum(t, GEN_PROFILE(z,t,n));
+AnnFullLoadHours(z,n)$(INITIAL_CAP_R(z,n)- deco_r.L(z,n) + add_r.L(z,n)) =
+         sum(t, GEN_PROFILE(z,t,n) * (INITIAL_CAP_R(z,n) - deco_r.L(z,n))
+              + GEN_PROFILE_FUTURE(z,t,n) * add_r.L(z,n) ) /
+              (INITIAL_CAP_R(z,n) - deco_r.L(z,n) + add_r.L(z,n));
 AnnX(zz) = sum(t, x.L('AT',zz,t));
 AnnB(z,f) = sum((t,i), b.L(z,t,i,f));
 AnnCO2Emissions(z) = sum((t,i), emission_co2.L(z,t,i));
@@ -611,6 +618,10 @@ CostCO2(z) = sum((t,i), cost_co2.L(z,t,i)) ;
 CostFuel(z) = sum((t,i), cost_fuel.L(z,t,i));
 CostOMG(z) = sum((i), cost_om_g.L(z,i));
 CostOMR(z) = sum((n), cost_om_r.L(z,n));
+CostFuelCo2(z) = sum((t,i), cost_co2.L(z,t,i)) + sum((t,i), cost_fuel.L(z,t,i));
+CostInvest(z) = cost_invest_g.L(z) + cost_invest_r.L(z) + cost_invest_sv.L(z) + cost_invest_x.L(z);
+CostOM(z) = sum((i), cost_om_g.L(z,i)) + sum((n), cost_om_r.L(z,n));
+TradeBalance(z) = sum(zz, AnnValueX(z,zz)) - sum(zz, AnnValueI(z,zz));
 
 * ==============================================================================
 * THE END

@@ -79,12 +79,11 @@ equations
 ;
 * ------------------------------------------------------------------------------
 * according to govt need 27 TWh additional energy from RES to meet target
-* RES generation in 2016: 51.1 TWh ==> in 2030 51.1 + 27 = 78.1 TWh needed
 policy_100resbalance$(SWITCH_POLICY)..
          sum((t,n), GEN_PROFILE('AT',t,n) * (INITIAL_CAP_R('AT',n) + add_r('AT',n) ) )
          + sum(t, g('AT',t,'bio_chp','el','biomass'))
          + sum(t, g('AT',t,'bio','el','biomass'))
          + sum((t,k), INFLOWS('AT',t,k)* EFFICIENCY_S_OUT(k))
          =G=
-         74809.4
+         78291.7
          ;
