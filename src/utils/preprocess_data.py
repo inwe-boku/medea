@@ -21,7 +21,7 @@ plant_data = {
 }
 
 ts_data = {
-    'timeseries': pd.read_csv(medea_path('data', 'processed', 'medea_regional_timeseries.csv'))
+    'timeseries': pd.read_csv(medea_path('data', 'processed', 'medea_regional_timeseries.csv'), sep=';', decimal=',')
 }
 
 estimates = {
