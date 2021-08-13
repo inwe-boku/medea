@@ -10,12 +10,14 @@ from src.utils.data_processing import download_file, medea_path, download_energy
 idx = pd.IndexSlice
 
 eta_hydro_storage = 0.9
+download_data = False
 # ======================================================================================================================
 # %% download and process opsd time series
 
-url_opsd = 'https://data.open-power-system-data.org/time_series/latest/time_series_60min_singleindex.csv'
 opsd_file = medea_path('data', 'raw', 'opsd_time_series_60min.csv')
-download_file(url_opsd, opsd_file)
+if download_data:
+    url_opsd = 'https://data.open-power-system-data.org/time_series/latest/time_series_60min_singleindex.csv'
+    download_file(url_opsd, opsd_file)
 ts_opsd = pd.read_csv(opsd_file)
 
 # create medea time series dataframe
@@ -61,6 +63,26 @@ ts_medea['DE-hydro-generation'] = ts_hydro_generation[['ror_DE', 'res_DE']].sum(
 # https://www.fwt.fichtner.de/userfiles/fileadmin-fwt/Publikationen/WaWi_2017_10_Heimerl_Kohler_PSKW.pdf) are included
 # in official hydropower generation numbers.
 
+# %% capacity data for offshore wind in Germany from Marktstammdatenregister
+mastr = pd.read_csv(medea_path('data', 'raw', 'Stromerzeuger_offshore-wind_MaStR.csv'), sep=';', decimal=',')
+mastr['Inbetriebnahmedatum der Einheit'] = pd.to_datetime(mastr['Inbetriebnahmedatum der Einheit'])
+mastr_day = mastr.groupby('Inbetriebnahmedatum der Einheit').sum()
+wind_off_installation = pd.DataFrame(data=0,
+                                     columns=['DE-wind_offshore-installation'],
+                                     index=pd.date_range(datetime(2010, 1, 1),
+                                                         datetime(
+                                                             mastr['Inbetriebnahmedatum der Einheit'].max().year + 1, 1,
+                                                             1),
+                                                         freq='h'))
+
+wind_off_installation.loc[wind_off_installation.index.isin(mastr_day.index), 'DE-wind_offshore-installation'] = \
+    mastr_day.loc[mastr_day.index.isin(wind_off_installation.index), 'Bruttoleistung der Einheit']
+wind_off_installation.loc[wind_off_installation.index.min(), 'DE-wind_offshore-installation'] = \
+    mastr_day.loc[mastr_day.index < '2010', 'Bruttoleistung der Einheit'].sum()  # + \
+# mastr.loc[mastr['Inbetriebnahmedatum der Einheit'].isna(), 'Bruttoleistung der Einheit'].sum()
+wind_off_capacity = wind_off_installation.cumsum().copy()
+wind_off_capacity.columns = ['DE-wind_off-capacity']
+
 # %% scale intermittent generation to match annual numbers from national energy balances
 cols = ['pv', 'wind_on', 'wind_off', 'ror', 'load']
 first_year = max(ts_medea.index.year.min(), 2010)
@@ -68,9 +90,10 @@ last_year = min(ts_medea.index.year.max(), 2018)
 scale_index = pd.MultiIndex.from_product([cols, [str(yr) for yr in range(first_year, last_year)]])
 scaling_factor = pd.DataFrame(data=1, columns=cfg.zones, index=scale_index)
 # download energy balances
-download_energy_balance('AT')
-url_econtrol = 'https://www.e-control.at/documents/1785851/1811609/BStGes-JR1_Bilanz.xlsx'
-download_file(url_econtrol, medea_path('data', 'raw', 'BStGes-JR1_Bilanz.xlsx'))
+if download_data:
+    download_energy_balance('AT')
+    url_econtrol = 'https://www.e-control.at/documents/1785851/1811609/BStGes-JR1_Bilanz.xlsx'
+    download_file(url_econtrol, medea_path('data', 'raw', 'BStGes-JR1_Bilanz.xlsx'))
 
 # ---------
 # Austria - PV, wind, run-of-river
@@ -108,7 +131,7 @@ for year in range(first_year, last_year):
 # ---------
 # Germany - PV, wind
 url = 'https://www.erneuerbare-energien.de/EE/Redaktion/DE/Downloads/' \
-      'zeitreihen-zur-entwicklung-der-erneuerbaren-energien-in-deutschland-1990-2019-excel-en.xlsx' \
+      'zeitreihen-zur-entwicklung-der-erneuerbaren-energien-in-deutschland-1990-2020-excel-en.xlsx' \
       '?__blob=publicationFile'
 download_file(url, medea_path('data', 'raw', 'res_DE.xlsx'))
 res_de = pd.read_excel(medea_path('data', 'raw', 'res_DE.xlsx'), sheet_name='3', header=[7], index_col=[0], nrows=13)
@@ -169,7 +192,8 @@ for reg in cfg.zones:
 # %% convert capacities from MW to GW
 ts_medea['DE-pv-capacity'] = ts_medea['DE-pv-capacity'] / 1000
 ts_medea['DE-wind_on-capacity'] = ts_medea['DE-wind_on-capacity'] / 1000
-ts_medea['DE-wind_off-capacity'] = ts_medea['DE-wind_off-capacity'] / 1000
+# ts_medea['DE-wind_off-capacity'] = ts_medea['DE-wind_off-capacity'] / 1000
+ts_medea['DE-wind_off-capacity'] = wind_off_capacity['DE-wind_off-capacity'].tz_localize('UTC') / 1000000
 
 # ----------------------------------------------------------------------------------------------------------------------
 # %% generate scaled generation profiles
@@ -189,7 +213,7 @@ for reg in cfg.zones:
                 ts_medea.loc[str(yr), f'{reg}-{itm}-profile'] = ts_medea.loc[str(yr), f'{reg}-{itm}-generation'] / \
                                                                 ts_medea.loc[str(yr), f'{reg}-{itm}-capacity']
         # cut off profile peaks larger than 1
-        ts_medea.loc[ts_medea[f'{reg}-{itm}-profile'] > 1] = 1
+        #ts_medea.loc[ts_medea[f'{reg}-{itm}-profile'] > 1, f'{reg}-{itm}-profile'] = 1
 
 # ----------------------------------------------------------------------------------------------------------------------
 # %% scale electricity load
@@ -302,4 +326,4 @@ ts_medea = pd.merge(ts_medea, ts_prices, how='outer', left_index=True, right_ind
 # %% Write only one date, call that column DateTime
 ts_medea.index.name = 'DateTime'
 ts_medea.drop(['cet_cest_timestamp'], axis=1, inplace=True)
-ts_medea.to_csv(medea_path('data', 'processed', 'medea_regional_timeseries.csv'))
+ts_medea.to_csv(medea_path('data', 'processed', 'medea_regional_timeseries.csv'), sep=';', decimal=',')
