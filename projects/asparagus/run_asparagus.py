@@ -81,8 +81,9 @@ for campaign in dict_campaigns.keys():
     # set campaign-parameters for:
     # 1) electricity demand,
     DEM = DEMAND
-    d_factor = dict_camp['d_power'][0] / DEMAND.loc[idx['AT', :, 'el'], :].sum()
-    DEM.loc[idx['AT', :, 'el'], :] = DEM.loc[idx['AT', :, 'el'], :] * d_factor
+    for z in cfg.zones:
+        d_factor = scenario_2030[z]['d_power'][0] / DEMAND.loc[idx[z, :, 'el'], :].sum()
+        DEM.loc[idx[z, :, 'el'], :] = DEM.loc[idx[z, :, 'el'], :] * d_factor
     reset_symbol(db_input, 'DEMAND', DEM)
     # 2) transmission capacity,
     INIT_CAP_X = INITIAL_CAP_X
