@@ -73,7 +73,6 @@ for campaign in dict_campaigns.keys():
     if '2016' not in campaign:
         for z in cfg.zones:
             for itm in dict_r:
-                #        if itm != 'ror':
                 INIT_CAP_R.loc[idx[z, itm], :] = scenario_2030[z][itm][0]
     reset_symbol(db_input, 'INITIAL_CAP_R', INIT_CAP_R)
     print(INIT_CAP_R)
@@ -96,12 +95,6 @@ for campaign in dict_campaigns.keys():
     reset_symbol(db_input, 'SWITCH_ANCILLARY', pd.DataFrame(data=dict_camp['must_run']))
     # 4) policy constraint
     reset_symbol(db_input, 'SWITCH_POLICY', pd.DataFrame(data=dict_camp['policy']))
-
-    # if campaign == 'pv_upscale':
-    #     GEN_PROFILE = GEN_PROFILE.unstack(['z', 'n'])
-    #     GEN_PROFILE = time_sort(GEN_PROFILE)
-    #     GEN_PROFILE = GEN_PROFILE.stack(['z', 'n']).reorder_levels(['z', 't', 'n'])
-    #     reset_symbol(db_input, 'GEN_PROFILE', GEN_PROFILE)
 
     # a) co2-price
     for price_co2 in dict_camp['co2_price']:

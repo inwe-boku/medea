@@ -1,5 +1,4 @@
 # This file holds all scenario-specific settings and assumptions
-
 PROJECT_NAME = 'asparagus'
 
 # -------------------------------------------------------------------------------------------------------------------- #
@@ -16,15 +15,6 @@ dict_base = {
 }
 
 # campaigns
-"""
-  - total number of runs: 3*5*10+5*15 = 225
-    - base: 5*10
-	- pv_sens: 5*15
-	- no_bottleneck: 5*10
-	- low_cost: 5*10
-  - time per run: 
-  - total computing time: 225*
-"""
 dict_campaigns = {
     # baseline scenario
     'base': {
@@ -36,28 +26,14 @@ dict_campaigns = {
         'pv_cost': range(36424, 15026, -1500),
     },
     # no (artificial) bottleneck that constrains electricity trade between AT and DE
-    #    'no_bottleneck': {
-    #        'transmission': [10],
-    #    },
+    'no_bottleneck': {
+        'transmission': [10],
+    },
     # calculates the opportunity cost of wind turbines at low overnight cost for solar PV
-    #    'low_cost': {
-    #        'pv_cost': [32530],
-    #    },
+    'low_cost': {
+        'pv_cost': [32530],
+    },
 }
-
-"""
-# disables the must-run condition mimicking ancillary services requirements
-'must_run': {  # 5 x 9 = 45 runs
-    'must_run': [0],
-	'co2_price': range(75, -1, -25),
-},
-# disables the policy objective of generating sufficient electricity from renewable sources under 2030 conditions
-'no_policy': {  # 5 runs
-    'policy': [0],
-    'co2_price': [25, 42, 45, 50, 63],
-    'wind_cap': [max(dict_base['wind_cap'])],
-}
-"""
 
 # %% SCENARIO ASSUMPTIONS
 """
@@ -69,13 +45,13 @@ CAPACITIES:
   - EEG 2021:
     - Biomass: 8.4 GW
     - Solar PV: 100 GW
-	- Wind onshore: 71 GW
-	- Wind offshore: 20 GW
+    - Wind onshore: 71 GW
+    - Wind offshore: 20 GW
 - AUSTRIA:
   - follows scenario 2030 DG from ENTSO-E's Ten Year Network Development Plan 2018 (TYNDP 2018) for
     conventional capacities:
              Country    Gas   Hard coal   Oil   Biomass
-    2030 DG       AT   3928           0   174       620
+    2030 DG       AT   3928           0   174       660
   - endogenous optimization of intermittent capacities from baseline
 
 ELECTRICITY DEMAND:
@@ -93,8 +69,8 @@ ELECTRICITY DEMAND:
 - GERMANY:
   - https://www.bmwi.de/Redaktion/DE/Pressemitteilungen/2021/07/20210713-erste-abschaetzungen-stromverbrauch-2030.html
     electricity consumption in 2030 is expected between 645 and 665 TWh, with a mean of 655 TWh.
-	Expected are 14 million electric vehicles, 6 million heatpumps and 30 TWh electricity for hydrogen production
-	- Electrolysis capacitiy of 5 GW envisioned in hydrogen strategy (implies 6000 full load hours)
+    Expected are 14 million electric vehicles, 6 million heatpumps and 30 TWh electricity for hydrogen production
+    - Electrolysis capacity of 5 GW envisioned in hydrogen strategy (implies 6000 full load hours)
 """
 
 scenario_2030 = {
@@ -115,7 +91,7 @@ scenario_2030 = {
         'pv': [1.976],
         'ror': [6.84],  # (+1.04 GW vs 5.796 GW in 2020) consistent with generating +5 TWh from hydro power
         'h2': [0.5],
-        'd_power': [83193.3]  # legacy:     # 'd_power': [79302.65]
+        'd_power': [83193.3]
     },
     'DE': {
         # scaling factors
