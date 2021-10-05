@@ -25,9 +25,9 @@ add_r.UP('AT','wind_on') = WIND_ON_LIMIT;
 add_r.UP('AT','pv') = 80;
 add_r.UP('AT','wind_off') = 0;
 
-add_r.FX('DE','wind_off') = 20 - INITIAL_CAP_R('DE','wind_off');
-add_r.FX('DE','wind_on') = 71 - INITIAL_CAP_R('DE','wind_on');
-add_r.FX('DE','pv') = 100 - INITIAL_CAP_R('DE','pv');
+add_r.UP('DE','wind_off') = 20 - INITIAL_CAP_R('DE','wind_off');
+add_r.FX('DE','wind_on') = 0;  # 71 - INITIAL_CAP_R('DE','wind_on');
+add_r.UP('DE','pv') = 100 - INITIAL_CAP_R('DE','pv');
 add_r.UP(z,'ror') = 0;
 
 
@@ -66,10 +66,7 @@ add_v.UP(z,'hyd_psp_week') = 0;
 add_v.UP(z,'hyd_psp_season') = 0;
 
 add_x.UP(z,zz) = FLOW_LIMIT;
-*add_x.LO(z,zz,t) = -FLOW_LIMIT;
-* no transmission from region to itself
-*x.FX(z,zz,t)$(not INITIAL_CAP_X(z,zz)) = 0;
-*x.FX(zz,z,t)$(not INITIAL_CAP_X(zz,z)) = 0;
+
 * ------------------------------------------------------------------------------
 * policy constraints
 * ------------------------------------------------------------------------------
