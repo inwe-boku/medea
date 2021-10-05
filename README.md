@@ -3,19 +3,16 @@
 _medea_
 =======
 
-This repository contains code for the power system model _medea_, developed by 
-[Sebastian Wehrle](https://sites.google.com/site/sebwehrle/) and 
+This repository contains code for the power system model _medea_, developed by
+[Sebastian Wehrle](https://sites.google.com/site/sebwehrle/) and
 [Johannes Schmidt](https://homepage.boku.ac.at/jschmidt/).
 
-_medea_ was used to analyze [district heating systems under high CO2 prices](https://arxiv.org/abs/1810.02109)
-and is currently employed within the [reFUEL](https://refuel.world) project.
+_medea_ is currently employed within the [reFUEL](https://refuel.world) project and will be part of the upcoming
+[NetZero2040](https://twitter.com/netzero2040) project.
 
-Recently, _medea_ was used in [project _asparagus_](projects/asparagus), in which we investigate the electricity system
-cost of undisturbed Austrian landscapes. We present findings at the
-[NOeG annual meeting 2020](https://www.wu.ac.at/economics/ver/noeg-tagung) and the [EGU 2020](https://www.egu2020.eu/).
-Corresponding slides are available [here](doc/slides.pdf). A preprint of the paper is available at
-[arXiv](https://arxiv.org/abs/2006.08009).
- 
+Recently, _medea_ was used to assess _The cost of undisturbed landscapes_. The corresponding peer-reviewed publication
+can be found [here](https://doi.org/10.1016/j.enpol.2021.112617).
+
 
 Requirements
 -------------
@@ -23,7 +20,7 @@ Requirements
 * python 3.6 or later
 * for python dependencies: see [requirements.txt](https://github.com/inwe-boku/medea/blob/master/requirements.txt)
 * [GAMS](https://www.gams.com/) 24.8 or later
-* a solver for mathematical programs, such as [Gurobi](http://www.gurobi.com/)
+* a solver for mathematical programs, such as CPLEX or [Gurobi](http://www.gurobi.com/)
 
 
 Installation of _medea_ and its prerequisites
