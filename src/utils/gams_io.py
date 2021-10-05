@@ -72,6 +72,8 @@ def gdx2df(db_gams, symbol, index_list, column_list, check_sets=False):
         gdx_df = pd.DataFrame([False], index=[symbol], columns=['Value'])
     elif isinstance(sym, GamsSet):
         gdx_df = pd.DataFrame(data=True, index=gdx_dict, columns=['Value'])
+    elif not any(gdx_dict.keys()):
+        gdx_df = pd.DataFrame(data=list(gdx_dict.values())[0], index=[symbol], columns=['Value'])
     else:
         gdx_df = pd.DataFrame(list(gdx_dict.values()), index=pd.MultiIndex.from_tuples(gdx_dict.keys()),
                               columns=['Value'])
