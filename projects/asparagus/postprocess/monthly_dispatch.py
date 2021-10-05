@@ -12,6 +12,8 @@ RPATH = APATH / 'results'
 FIGPATH = APATH / 'doc' / 'figures'
 REFUEL_COLORS = ['#c72321', '#0d8085', '#f0c220', '#595959', '#3b68f9', '#7794dd']
 ANNUITY_FACTOR = 0.05827816
+FLH_PV = 1003.36
+FLH_WIND = 1983.16
 idx = pd.IndexSlice
 
 # %% read data
@@ -21,15 +23,15 @@ wind_limit = [16, 0]
 pvcost = 36424
 reg = 'AT'
 
-res = pd.read_csv(RPATH / 'hourly_res.csv', sep=';', decimal=',', index_col=[0, 1, 2, 3, 4], header=[0, 1])
+res = pd.read_csv(RPATH / 'hourly_results_r.csv', sep=';', decimal=',', index_col=[0, 1, 2, 3, 4], header=[0, 1])
 res = res.loc[idx[scenario, co2price, wind_limit, pvcost], :]
-thm = pd.read_csv(RPATH / 'hourly_thermal.csv', sep=';', decimal=',', index_col=[0, 1, 2, 3, 4], header=[0, 1, 2, 3])
+thm = pd.read_csv(RPATH / 'hourly_results_g.csv', sep=';', decimal=',', index_col=[0, 1, 2, 3, 4], header=[0, 1, 2, 3])
 thm = thm.loc[idx[scenario, co2price, wind_limit, pvcost], :]
-s_in = pd.read_csv(RPATH / 'hourly_sin.csv', sep=';', decimal=',', index_col=[0, 1, 2, 3, 4], header=[0, 1])
+s_in = pd.read_csv(RPATH / 'hourly_results_s_in.csv', sep=';', decimal=',', index_col=[0, 1, 2, 3, 4], header=[0, 1])
 s_in = s_in.loc[idx[scenario, co2price, wind_limit, pvcost], :]
-s_out = pd.read_csv(RPATH / 'hourly_sout.csv', sep=';', decimal=',', index_col=[0, 1, 2, 3, 4], header=[0, 1])
+s_out = pd.read_csv(RPATH / 'hourly_results_s_out.csv', sep=';', decimal=',', index_col=[0, 1, 2, 3, 4], header=[0, 1])
 s_out = s_out.loc[idx[scenario, co2price, wind_limit, pvcost], :]
-nxp = pd.read_csv(RPATH / 'hourly_export.csv', sep=';', decimal=',', index_col=[0, 1, 2, 3, 4], header=[0, 1])
+nxp = pd.read_csv(RPATH / 'hourly_results_x.csv', sep=';', decimal=',', index_col=[0, 1, 2, 3, 4], header=[0, 1])
 nxp = nxp.loc[idx[scenario, co2price, wind_limit, pvcost], :]
 
 
