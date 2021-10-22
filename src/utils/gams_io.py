@@ -1,5 +1,9 @@
+import multiprocessing as mp
 import os
 import subprocess
+from collections import OrderedDict
+from itertools import product, repeat
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -166,6 +170,62 @@ def gdx2plot(db_gams, symbol, index_list, column_list, base_year, slicer=None, s
     return df
 
 
+def create_scenario_gdx(gdb, gdx_path, dict_base, dict_campaign):
+    """
+    Generates gdx input files for each scenario iteration in a separate folder for each campaign.
+    :param gdb: A GAMS database holding all required MEDEA parameters
+    :param gdx_path: a Path-object with the path to the GAMS project directory
+    :param dict_base: a nested dictionary that defines baseline values for all parameters to be (potentially) modified.
+        Expected structure: dict_base = {'base': {'co2_price': [value], pv_limit: [values]}}
+    :param dict_campaign: a nested dictionary with parameter modifications for each campaign
+    :return:
+    """
+    for campaign in dict_campaign.keys():
+        # update campaign dictionary
+        parms_dict = dict_base.copy()
+        parms_dict.update(dict_campaign[campaign])
+
+        od = OrderedDict(sorted(parms_dict.items()))
+        cart = list(product(*od.values()))
+        moddf = pd.DataFrame(cart, columns=od.keys())
+
+        for par in parms_dict.keys():
+            try:
+                _ = gdb.get_symbol(par)
+            except GamsException:
+                _ = df2gdx(gdb, pd.DataFrame(data=[0]), par, 'par', 0, 'auto-generated scenario parameter')
+
+        # create campaign path if it does not exist
+        (gdx_path / campaign).mkdir(parents=True, exist_ok=True)
+
+        for n in range(0, len(cart)):
+            for par in parms_dict.keys():
+                _ = reset_symbol(gdb, par, pd.DataFrame(data=[moddf.loc[n, par]]))
+                # df2gdx(gdb, moddf.loc[n, par], par, symtype, symdomstr, 'auto-generated scenario parameter')
+
+            identifier = '_'.join(map(str, cart[n]))
+            input_fname = gdx_path / campaign / f'medea_{identifier}_data.gdx'
+            gdb.export(input_fname)
+
+
+def run_medea_parallel(number_of_workers, project_name, campaign_dict):
+    """
+    Run medea models in parallel. Requires pre-prepared gdx-input for each run. create_scenario_gdx can be used for
+    this purpose.
+    :param number_of_workers: integer specifying the number of parallel processes started
+    :param project_name: string holding the project name
+    :param campaign_dict: dictionary with scenario definitions with format according to medea-conventions
+    :return:
+    """
+    for campaign in campaign_dict.keys():
+        od = OrderedDict(sorted(campaign_dict[campaign].items()))
+        cart = list(product(*od.values()))
+        identifier = ['_'.join(map(str, cart[n])) for n in range(0, len(cart))]
+
+        p = mp.Pool(number_of_workers)
+        _ = p.starmap(run_medea_campaign, zip(repeat(project_name), identifier, repeat(campaign)))
+
+
 def run_medea(gms_exe_dir, gms_model, medea_project, project_scenario, export_location, compress=True):
     """
     flexible run of power system model medea
@@ -204,6 +264,35 @@ def run_medea_project(project_name, scenario_id, compress=True):
     gms_model_fname = os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', project_name, 'opt', 'medea_main.gms')
     gdx_out_fname = f'medea_out_{scenario_id}.gdx'
     input_fname = os.path.join(cfg.MEDEA_ROOT_DIR, 'projects', project_name, 'opt', f'medea_{scenario_id}_data.gdx')
+
+    # call GAMS to solve model / scenario
+    subprocess.run(
+        f'{cfg.GMS_SYS_DIR}\\gams {gms_model_fname} gdx={gdx_out_fname} lo=3 o=nul --project={project_name} --scenario={scenario_id}')
+    # compress generated gdx file
+    if compress:
+        subprocess.run(
+            f'gdxcopy -V7C -Replace {gdx_out_fname}'
+        )
+    # clean up after each run and delete input data (which is also included in output, so no information lost)
+    if os.path.isfile(input_fname):
+        os.remove(input_fname)
+
+
+def run_medea_campaign(project_name, scenario_id, campaign, compress=True):
+    """
+    runs / solves a project of power system model medea with strict project directory conventions
+    :param project_name: string of medea-project name
+    :param scenario_id: string of project-scenario (typically one iteration)
+    :param compress: boolean; set to True to compress output-gdx
+    :return:
+    """
+
+    # generate file names
+    gms_model_fname = Path(cfg.MEDEA_ROOT_DIR) / 'projects' / project_name / 'opt' / 'medea_main.gms'
+    gdx_out_fname = Path(
+        cfg.MEDEA_ROOT_DIR) / 'projects' / project_name / 'opt' / campaign / f'medea_out_{scenario_id}.gdx'
+    input_fname = Path(
+        cfg.MEDEA_ROOT_DIR) / 'projects' / project_name / 'opt' / campaign / f'medea_{scenario_id}_data.gdx'
 
     # call GAMS to solve model / scenario
     subprocess.run(
