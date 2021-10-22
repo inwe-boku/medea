@@ -1,16 +1,20 @@
-pyyaml~=5.4.1
-pysftp~=0.2.9
-numpy~=1.19.2
-scipy~=1.6.0
-pandas~=1.2.1
+# medea model interface
+pandas
 openpyxl
-netCDF4~=1.5.5.1
-cdsapi~=0.4.0
-matplotlib~=3.3.4
+matplotlib
+# scipy
+
+# data download and processing
+pyyaml
+certifi
+urllib3
+pysftp
+
+# conda-forge
+netCDF4
+cdsapi
 
 # local installation from GAMS distribution
 ## in the <GAMS folder>/apifiles/Python/api_<python version without dot> execute: 'python.exe setup.py install'
-gams~=1.0
+gams
 
-certifi~=2020.12.5
-urllib3~=1.26.3
