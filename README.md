@@ -3,15 +3,19 @@
 _medea_
 =======
 
-This repository contains code for the power system model _medea_, developed by
-[Sebastian Wehrle](https://sites.google.com/site/sebwehrle/) and
-[Johannes Schmidt](https://homepage.boku.ac.at/jschmidt/).
+_medea_ is a power system model, developed by [Sebastian Wehrle](https://homepage.boku.ac.at/sebwehrle/index.html) and
+[Johannes Schmidt](https://homepage.boku.ac.at/jschmidt/). This repository contains code for the abstract model along
+with dummy data. Code to download and compile actual data for Austria and Germany is provided in the
+[medea-data-atde](https://github.com/boku-inwe/medea-data-atde) repository.
 
-_medea_ is currently employed within the [reFUEL](https://refuel.world) project and will be part of the upcoming
-[NetZero2040](https://twitter.com/netzero2040) project.
+_medea_ is currently employed within the [reFUEL](https://refuel.world)
+and [NetZero2040](https://twitter.com/netzero2040)
+projects.
 
 Recently, _medea_ was used to assess _The cost of undisturbed landscapes_. The corresponding peer-reviewed publication
-can be found [here](https://doi.org/10.1016/j.enpol.2021.112617).
+can be found [here](https://doi.org/10.1016/j.enpol.2021.112617). The replication code for the model can be
+found [here]() or
+[here](https://github.com/inwe-boku/medea/releases/tag/v0.2-cost_of_undisturbed_landscapes).
 
 
 Requirements
