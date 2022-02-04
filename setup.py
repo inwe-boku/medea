@@ -18,7 +18,7 @@ setuptools.setup(
     project_urls={},
     license='MIT',
     packages=['medea'],
-    install_requires=['pandas', 'openpyxl'],
+    install_requires=['yaml'],
     data_files=[('gms', ['medea/opt/medea_main.gms']),
                 ('gms', ['medea/opt/medea_custom.gms'])],
     include_package_data=True,
