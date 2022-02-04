@@ -1,6 +1,3 @@
-import matplotlib
-import openpyxl
-import pandas
 import setuptools
 
 with open('README.md', 'r', encoding='utf-8') as readme_file:
