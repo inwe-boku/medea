@@ -5,18 +5,16 @@ _medea_
 
 _medea_ is a power system model, developed by [Sebastian Wehrle](https://homepage.boku.ac.at/sebwehrle/index.html) and
 [Johannes Schmidt](https://homepage.boku.ac.at/jschmidt/). This repository contains code for the abstract model along
-with dummy data. Code to download and compile actual data for Austria and Germany is provided in the
+with dummy data. 
+Code to download and compile actual data for Austria and Germany is provided in the
 [medea-data-atde](https://github.com/boku-inwe/medea-data-atde) repository.
 
-_medea_ is currently employed within the [reFUEL](https://refuel.world)
-and [NetZero2040](https://twitter.com/netzero2040)
-projects.
+_medea_ is currently employed within the [reFUEL](https://refuel.world) and 
+[NetZero2040](https://twitter.com/netzero2040) projects.
 
 Recently, _medea_ was used to assess _The cost of undisturbed landscapes_. The corresponding peer-reviewed publication
 can be found [here](https://doi.org/10.1016/j.enpol.2021.112617). The replication code for the model can be
-found [here]() or
-[here](https://github.com/inwe-boku/medea/releases/tag/v0.2-cost_of_undisturbed_landscapes).
-
+found [here]() or [here](https://github.com/inwe-boku/medea/releases/tag/v0.2-cost_of_undisturbed_landscapes).
 
 Requirements
 -------------
@@ -25,7 +23,6 @@ Requirements
 * for python dependencies: see [requirements.txt](https://github.com/inwe-boku/medea/blob/master/requirements.txt)
 * [GAMS](https://www.gams.com/) 24.8 or later
 * a solver for mathematical programs, such as CPLEX or [Gurobi](http://www.gurobi.com/)
-
 
 Installation of _medea_ and its prerequisites
 ------------
@@ -58,4 +55,5 @@ Feel free to use the github-tools for bug reporting, feature requests etc. You c
 [contact me](mailto:sebastian.wehrle@boku.ac.at).
 
 ------
-We gratefully acknowledge support from the European Research Council (“reFUEL” ERC2017-STG 758149).
+We gratefully acknowledge support from the European Research Council (“reFUEL” ERC2017-STG 758149) and the Austrian 
+Klimafonds as part of the 13th Austrian Climate Research Programme (“NetZero2040” KR20AC0K18182).
