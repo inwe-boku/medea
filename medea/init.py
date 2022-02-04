@@ -1,12 +1,9 @@
 # %% imports
 import os
 import sysconfig
-import logging
-from medea.logging_config import setup_logging
 from pathlib import Path
 from shutil import copyfile
 
-setup_logging()
 
 def medea_init(root_dir):
     """
@@ -31,4 +28,4 @@ def medea_init(root_dir):
     package_dir = Path(sysconfig.get_path('data'))
     copyfile(package_dir / 'gms' / 'medea_main.gms', root_dir / 'opt' / 'medea_main.gms')
     copyfile(package_dir / 'gms' / 'medea_custom.gms', root_dir / 'opt' / 'medea_custom.gms')
-    logging.info('medea sucessfully initialized')
+    print('medea sucessfully initialized')
