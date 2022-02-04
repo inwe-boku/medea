@@ -25,7 +25,7 @@ def medea_init(root_dir):
     os.makedirs(root_dir / 'opt')
     os.makedirs(root_dir / 'src')
     with open(root_dir / 'config.py', 'x') as cfg:
-        cfg.write(f'ROOT_DIR = {root_dir}\n')
+        cfg.write(f"'ROOT_DIR = {root_dir}\n'")
 
     # fetch main gams model
     package_dir = Path(sysconfig.get_path('data'))
