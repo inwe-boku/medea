@@ -1,13 +1,10 @@
 # %% imports
-import os
 from pathlib import Path
 import subprocess
-import pandas as pd
 import multiprocessing as mp
-from gams import *
-from gamstransfer import *
 from collections import OrderedDict
 from itertools import product, repeat
+from gamstransfer import *
 
 
 def run_medea(gams_dir, project_dir, medea_gms, project, run_id, compress=True):
