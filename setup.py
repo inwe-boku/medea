@@ -15,7 +15,7 @@ setuptools.setup(
     project_urls={},
     license='MIT',
     packages=['medea'],
-    install_requires=['yaml'],
+    install_requires=['pyyaml'],
     data_files=[('gms', ['medea/opt/medea_main.gms']),
                 ('gms', ['medea/opt/medea_custom.gms'])],
     include_package_data=True,
