@@ -24,6 +24,16 @@ def medea_init(root_dir):
     with open(root_dir / 'config.py', 'x') as cfg:
         cfg.write(f"ROOT_DIR = '{root_dir}'\n")
 
+    with open(root_dir / 'credentials.yaml', 'x') as crd:
+        crd.write(f"entsoe:\n")
+        crd.write(f"\tuser:\n")
+        crd.write(f"\tpwd:\n")
+        crd.write(f"quandl:\n")
+        crd.write(f"\tapikey:\n")
+        crd.write(f"copernicus:\n")
+        crd.write(f"\turl:\n")
+        crd.write(f"\tkey:\n")
+
     # fetch main gams model
     package_dir = Path(sysconfig.get_path('data'))
     copyfile(package_dir / 'gms' / 'medea_main.gms', root_dir / 'opt' / 'medea_main.gms')
