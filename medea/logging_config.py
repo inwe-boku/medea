@@ -1,9 +1,9 @@
-import logging.config
 import os
+import logging.config
+from config import ROOT_DIR
 
-import config as cfg
 
-LOG_FILE = os.path.join(cfg.MEDEA_ROOT_DIR, 'data', 'logfile.log')
+LOG_FILE = os.path.join(ROOT_DIR, 'data', 'logfile.log')
 
 
 def setup_logging(fname=LOG_FILE):
