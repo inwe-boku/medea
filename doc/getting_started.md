@@ -61,7 +61,8 @@ copernicus:
   key:
 ````
 Once _medea_ is initialized and the required log-in data is inserted into `credentials.yaml`, data can be retrieved 
-through the Python console:
+through the Python console. 
+Alternatively, all subsequent steps can also be carried out by running `medea/instantiate.py`.
 
 ````python
 from pathlib import Path
