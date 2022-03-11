@@ -18,12 +18,22 @@ def run_medea(gams_dir, project_dir, medea_gms, project, run_id, compress=True):
     :param compress: boolean; set to True to compress output-gdx
     :return:
     """
+    if Path(os.getcwd()) != project_dir:
+        os.chdir(project_dir)
+
     # generate identifier of scenario output
-    gdx_out = f'medea_out_{run_id}.gdx'
+    gdx_out = "medea_out{run_id}.gdx".format(run_id=f'_{run_id}' if run_id is not None else '')
     gdx_in = project_dir / f'medea_{run_id}_data.gdx'
+    run_str = "{gams_dir}\\gams {medea_gms} {gdx} lo=3 o=nul{prj}{scn}".format(
+        gams_dir=gams_dir,
+        medea_gms=medea_gms,
+        gdx=f'gdx={gdx_out}',
+        prj=f' --project={project}' if project is not None else '',
+        scn=f' --scenario={run_id}' if run_id is not None else ''
+    )
     # call GAMS to solve model / scenario
-    subprocess.run(
-        f'{gams_dir}\\gams {medea_gms} gdx={gdx_out} lo=3 o=nul --project={project} --scenario={run_id}')
+    subprocess.run(run_str)
+    #    f'{gams_dir}\\gams {medea_gms} gdx={gdx_out} lo=3 o=nul --project={project} --scenario={run_id}')
     # compress generated gdx file
     if compress:
         subprocess.run(
