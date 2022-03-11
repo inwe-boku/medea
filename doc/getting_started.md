@@ -47,18 +47,19 @@ The automated data download requires access to these sources:
 * [ENTSO-E transparency platform](https://transparency.entsoe.eu/) (go to "Login", then "Register")
 * [Copernicus Climate Data Store](https://cds.climate.copernicus.eu) (go to "Login/register")
 * [quandl]() (service terminated - looking for an alternative)
+
 Fill the respective credentials into `credentials.yaml`.
 ````yaml
 entsoe:
-  user: 
-  pwd: 
+  user: user_name
+  pwd: password
 
 quandl:
-  apikey:
+  apikey: your_apikey
 
 copernicus:
-  url:
-  key:
+  url: url://to.copernicus.cds/api
+  key: your_cds_key
 ````
 Once _medea_ is initialized and the required log-in data is inserted into `credentials.yaml`, data can be retrieved 
 through the Python console. 
