@@ -1,6 +1,6 @@
 ## Basic functionality
-The core of medea is implemented in GAMS and contained in `./src/model/medea_main.gms`. The model is documented in 
-[`mathematical_description.pdf`](./mathematical_description.pdf)
+The core of medea is implemented in GAMS and contained in `./medea/opt/medea_main.gms`. The model is documented in 
+[`mathematical_description.pdf`](./mathematical_description.pdf). (Changes as of March 2022 not yet documented)
 
 The GAMS model expects data input via a gdx-file named `medea_main_data.gdx`, located in the same directory as the 
 model file. After data preprocessing, the `.gdx`-input is stored in `./data/gdx`.

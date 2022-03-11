@@ -1,7 +1,3 @@
-import matplotlib
-import openpyxl
-import pandas
-import pyyaml
 import setuptools
 
 with open('README.md', 'r', encoding='utf-8') as readme_file:
@@ -9,7 +5,7 @@ with open('README.md', 'r', encoding='utf-8') as readme_file:
 
 setuptools.setup(
     name='medea',
-    version='0.1',
+    version='0.1.0',
     author='Sebastian Wehrle',
     author_email='sebastian.wehrle@boku.ac.at',
     description='medea - a power system model',
@@ -19,5 +15,8 @@ setuptools.setup(
     project_urls={},
     license='MIT',
     packages=['medea'],
-    install_requires=[pandas, openpyxl, matplotlib, pyyaml],
+    install_requires=['pyyaml'],
+    data_files=[('gms', ['medea/opt/medea_main.gms']),
+                ('gms', ['medea/opt/medea_custom.gms'])],
+    include_package_data=True,
 )
