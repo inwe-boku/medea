@@ -1,11 +1,12 @@
 # %% imports
+import logging
 import os
 import sysconfig
 from pathlib import Path
 from shutil import copyfile
 
 
-def medea_init(root_dir):
+def init_medea(root_dir):
     """
     Creates a directory structure for a medea project
     :param root_dir: String or Path-object with the project's root directory
@@ -38,4 +39,11 @@ def medea_init(root_dir):
     package_dir = Path(sysconfig.get_path('data'))
     copyfile(package_dir / 'gms' / 'medea_main.gms', root_dir / 'opt' / 'medea_main.gms')
     copyfile(package_dir / 'gms' / 'medea_custom.gms', root_dir / 'opt' / 'medea_custom.gms')
-    print('medea sucessfully initialized')
+    logging.info('medea sucessfully initialized')
+
+
+def update_medea_model(root_dir):
+    package_dir = Path(sysconfig.get_path('data'))
+    copyfile(package_dir / 'gms' / 'medea_main.gms', root_dir / 'opt' / 'medea_main.gms')
+    copyfile(package_dir / 'gms' / 'medea_custom.gms', root_dir / 'opt' / 'medea_custom.gms')
+    logging.info('medea model updated')

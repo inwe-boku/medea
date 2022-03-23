@@ -36,9 +36,9 @@ application-specific project-repository. Such a repository is expected to follow
 be initialized through the Python console:
 
 ```python
-from medea.init import medea_init
+from medea.init import init_medea
 ROOT_DIR = 'path/to/your/project/directory'
-medea_init(ROOT_DIR)
+init_medea(ROOT_DIR)
 ```
 
 download data
