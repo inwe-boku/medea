@@ -49,7 +49,7 @@ Sets
          d(t)                       dispatchable technologies  - prev "i"
          r(t)                       intermittent technologies  - prev "n"
          s(t)                       storage technologies       - prev "k"
-*g(t)         j(i)                   transmission technologies / e_grid, ht_grid, h2_grid /
+         g(t)                       transmission technologies / e_grid, ht_grid, h2_grid /
          l                          limits of feasible operating regions of CHPs
          h                          time \ hours               - prev "t"
          z                          market zones
@@ -59,6 +59,8 @@ alias(z,zz);
 Parameters
          AIR_POL_COST_FIX(i)        fixed air pollution cost [EUR per MW]
          AIR_POL_COST_VAR(i)        variable air pollution cost [EUR per MWh]
+         ANNUITY_FACTOR(z,t)        annuity factor for investment cost
+         ANNUITY_FACTOR_X(z,f)      annuity factor for grid investment cost
          CAPACITY(z,t)              installed capacity of conversion units [GW]
          CAPACITY_X(z,zz,f)         initial transmission capacity [GW]
          CAPACITY_STORAGE(z,f,s)    volume of storage [GWh]
@@ -70,8 +72,8 @@ Parameters
          CAPITALCOST_X(z,f)         specific annualized overnight cost of transmission capacity [EUR per MW]
          CO2_INTENSITY(i)           CO2 intensitiy of fuels burned [t CO2 per MWh_th]
          CONVERSION(e,f,t)          conversion efficiency of technologies
-         COST_OM_QFIX(z,t)          quasi-fixed operation and maintenance cost [EUR per MW]
-         COST_OM_VAR(z,t)           variable operation and maintenance cost [EUR per MWh]
+         COST_OM_QFIX(t)            quasi-fixed operation and maintenance cost [EUR per MW]
+         COST_OM_VAR(t)             variable operation and maintenance cost [EUR per MWh]
          DEMAND(z,h,f)              demand for product f at time h [GW]
          DISCOUNT_RATE(z)           discount rate
          DISTANCE(z,zz)             distance between centers of gravity of market areas [km]
@@ -85,14 +87,15 @@ Parameters
          OVERNIGHTCOST(t)           overnight investment cost of technologies [EUR per kW]
          OVERNIGHTCOST_E(s)         overnight investment cost of storage volume [EUR per kWh]
          OVERNIGHTCOST_P(s)         overnight investment cost of storage technologies [EUR per kW]
+         OVERNIGHTCOST_X(f)         overnight investment cost of transmission expansion
          PEAK_LOAD(z)               maximum electricity load [GW]
          PEAK_PROFILE(z,i)          maximum share of generation from intermittent sources [%]
          PRICE_CO2(z,h)             price of CO2 emissions [EUR per t CO2]
          PRICE(z,h,i)               price of energy carrier [EUR per MWh]
-         PRICE_TRADE(i)             price of imported energy carriers [EUR per MWh]
+         PRICE_TRADE(f)             price of imported energy carriers [EUR per MWh]
          PROFILE(z,h,i)             intermittent generation profile
-         SIGMA                      intermittent generation scaling factor for system service requirement
-         VALUE_NSE(z,f)             value of non-served energy [EUR]
+         SIGMA(z)                   intermittent generation scaling factor for system service requirement
+         VALUE_NSE(z)               value of non-served energy [EUR]
          SWITCH_INVEST              switches between long-term and short-term perspective
 ;
 
@@ -105,11 +108,11 @@ $if %PROJECT% == test $gdxin
 $if NOT exist MEDEA_%scenario%_data.gdx  $gdxin medea_main_data
 $if     exist MEDEA_%scenario%_data.gdx  $gdxin medea_%scenario%_data
 $if NOT %PROJECT% == test $load h
-$load    e m i c d r s l z
+$load    e i f t c d r s l z
 $load    AIR_POL_COST_FIX AIR_POL_COST_VAR CAPACITY CAPACITY_X CAPACITY_STORAGE
 $load    CAPACITY_STORE_IN CAPACITY_STORE_OUT OVERNIGHTCOST OVERNIGHTCOST_E
-$load    OVERNIGHTCOST_P CAPITALCOST_X CONVERSION CO2_INTENSITY COST_OM_QFIX
-$load    COST_OM_VAR DEMAND DISCOUNT_RATE DISTANCE FEASIBLE_INPUT FEASIBLE_OUPUT
+$load    OVERNIGHTCOST_P OVERNIGHTCOST_X CONVERSION CO2_INTENSITY COST_OM_QFIX
+$load    COST_OM_VAR DEMAND DISCOUNT_RATE DISTANCE FEASIBLE_INPUT FEASIBLE_OUTPUT
 $load    INFLOWS LAMBDA LIFETIME MAP_INPUTS MAP_OUTPUTS PEAK_LOAD PEAK_PROFILE
 $load    PRICE PRICE_CO2 PRICE_TRADE PROFILE SIGMA SWITCH_INVEST VALUE_NSE
 $gdxin
@@ -122,10 +125,12 @@ $if %SYNGAS% == yes FEASIBLE_INPUT(i,l,'Syngas') = FEASIBLE_INPUT(i,l,'Gas');
 
 * ------------------------------------------------------------------------------
 * derived parameters
-ANNUITY_FACTOR(z,t) = (DISCOUNT_RATE(z)*(1+DISCOUNT_RATE(z))**LIFETIME(t)) / ((1+DISCOUNT_RATE(z))**LIFETIME(t)-1)
+ANNUITY_FACTOR(z,t) = (DISCOUNT_RATE(z)*(1+DISCOUNT_RATE(z))**LIFETIME(t)) / ((1+DISCOUNT_RATE(z))**LIFETIME(t)-1);
+ANNUITY_FACTOR_X(z,f) = (DISCOUNT_RATE(z)*(1+DISCOUNT_RATE(z))**LIFETIME('transmission')) / ((1+DISCOUNT_RATE(z))**LIFETIME('transmission')-1);
 CAPITALCOST(z,t) = OVERNIGHTCOST(t) * ANNUITY_FACTOR(z,t);
 CAPITALCOST_E(z,s) = OVERNIGHTCOST_E(s) * ANNUITY_FACTOR(z,s);
 CAPITALCOST_P(z,s) = OVERNIGHTCOST_P(s) * ANNUITY_FACTOR(z,s);
+CAPITALCOST_X(z,f) = OVERNIGHTCOST_X(f) * ANNUITY_FACTOR_X(z,f);
 
 * ------------------------------------------------------------------------------
 Variables
@@ -143,11 +148,11 @@ Positive Variables
         cost_invest(z,t)            cost of investment
         cost_grid(z,f)              cost of grid expansion
         cost_nse(z,f)               cost of non-served demand
-        cost_trade(z,i)             cost of trade in energy carriers
+        cost_trade(z,f)             cost of trade in energy carriers
         curtail(z,h,f)              discarded energy output
         decommission(z,t)           capacity decommissioned
         emission_co2(z,h,i)         quantity of CO2 emitted
-        fuel_trade(z,h,i)           fuel shipment
+        fuel_trade(z,h,f)           fuel shipment
         gen(z,h,f,t)                energy generation
         invest(z,t)                 capacity investmed
         nse(z,h,f)                  non-served energy
@@ -167,7 +172,7 @@ Positive Variables
 * ------------------------------------------------------------------------------
 Equations
 objective, acc_zonal, acc_inputs, acc_emissions, acc_opmaint, acc_invest, acc_grid, acc_nse, acc_trade,
-balance, intermittent_generation, dispatchable_generation, capacity_constraint,
+balance, intermittent_generation, energy_conversion, capacity_constraint,
 storage_balance,storage_limit,store_in_limit,store_out_limit,
 bal_w_chp,uplim_g_chp,lolim_b_chp,
 uplim_transmission,lolim_transmission,bal_transmission,bal_add_x,
@@ -178,6 +183,25 @@ bal_co2, acn_airpollute,limit_curtail,ancillary_services
 
 * ==============================================================================
 * MODEL FORMULATION
+* ------------------------------------------------------------------------------
+* CONSTRAIN VARIABLES
+gen.UP(z,h,f,t)$(not MAP_OUTPUTS(f,t)) = 0;
+use.UP(z,h,i,t)$(not MAP_INPUTS(i,t)) = 0;
+w.UP(z,h,c,l,i)$(NOT MAP_INPUTS(i,c)) = 0;
+w.UP(z,h,c,l,i)$(NOT FEASIBLE_INPUT(l,i,c)) = 0;
+storage_content.UP(z,h,f,s)$(NOT MAP_OUTPUTS(f,s)) = 0;
+storage_content.UP(z,h,f,s)$(NOT MAP_INPUTS(f,s)) = 0;
+x.FX(z,zz,h,f)$SAMEAS(z,zz) = 0;
+x.FX(zz,z,h,f)$SAMEAS(z,zz) = 0;
+x.FX(zz,z,h,'ht') = 0;
+emission_co2.UP(z,h,i)$(NOT CO2_INTENSITY(i)) = 0;
+curtail.UP(z,h,f)$(NOT MAP_OUTPUTS(f,r)) = 0;
+fuel_trade.UP(z,h,f)$(NOT PRICE_TRADE(f)) = 0;
+decommission.UP(z,t) = CAPACITY(z,t);
+invest.UP(z,t) =  SWITCH_INVEST;
+
+* add_x.UP(z,zz,f)
+
 * ------------------------------------------------------------------------------
 * TOTAL SYSTEM COST AND ITS COMPONENTS
 objective..
@@ -195,14 +219,14 @@ acc_zonal(z)..
          + sum(t, cost_invest(z,t) )
          + sum(f, cost_grid(z,f) )
          + sum(f, cost_nse(z,f) )
-         + sum(i, cost_trade(z,i) )
+         + sum(f, cost_trade(z,f) )
 ;
-acc_inputs(z,i,t)..
+acc_inputs(z,i,t)$MAP_INPUTS(i,t)..
          cost_inputs(z,i,t)
          =E=
          sum(h$MAP_INPUTS(i,t), PRICE(z,h,i) * use(z,h,i,t))
          ;
-acc_emissions(z,i)..
+acc_emissions(z,i)$CO2_INTENSITY(i)..
          cost_emissions(z,i)
          =E=
          sum(h, PRICE_CO2(z,h) * emission_co2(z,h,i) )
@@ -216,7 +240,8 @@ acn_airpollute(z,i)..
 acc_opmaint(z,t)..
          cost_om(z,t)
          =E=
-         COST_OM_QFIX(z,t) * (CAPACITY(z,t) + invest(z,t) - decommission(z,t)) + sum((h,f), COST_OM_VAR(z,t) * gen(z,h,f,t) )
+         COST_OM_QFIX(t) * (CAPACITY(z,t) + invest(z,t) - decommission(z,t))
+         + sum((h,f), COST_OM_VAR(t) * gen(z,h,f,t)$MAP_OUTPUTS(f,t) )
          ;
 acc_invest(z,t)..
          cost_invest(z,t)
@@ -231,12 +256,12 @@ acc_grid(z,f)..
 acc_nse(z,f)..
          cost_nse(z,f)
          =E=
-         sum(h, VALUE_NSE(z,f) * nse(z,h,f) )
+         sum(h, VALUE_NSE(z) * nse(z,h,f) )
          ;
-acc_trade(z,i)..
-         cost_trade(z,i)
+acc_trade(z,f)..
+         cost_trade(z,f)
          =E=
-         sum(h, PRICE_TRADE(i) * fuel_trade(z,h,i) )
+         sum(h, PRICE_TRADE(f) * fuel_trade(z,h,f) )
 ;
 
 * ------------------------------------------------------------------------------
@@ -253,30 +278,26 @@ balance(z,h,f)..
 ;
 * ------------------------------------------------------------------------------
 * ENERGY CONVERSION
-gen.UP(z,h,f,t)$(not MAP_OUTPUTS(f,t)) = 0;
-use.UP(z,h,i,t)$(not MAP_INPUTS(i,t)) = 0;
-
 * Capacity Constraint on Energy Output
 * * * * does investment raise capacity for all products? * * * *
-capacity_constraint(z,h,f,d)$MAP_OUTPUTS(f,d)..
-         gen(z,h,f,d)
+capacity_constraint(z,h,f,t)$MAP_OUTPUTS(f,t)..
+         gen(z,h,f,t)
          =L=
-         CAPACITY(z,d) + invest(z,d) - decommission(z,d)
+         CAPACITY(z,t) + invest(z,t) - decommission(z,t)
 ;
 * Intermittent Energy Supply
 intermittent_generation(z,h,i,r)..
-         use(z,h,i,r)
+         use(z,h,i,r)$MAP_INPUTS(i,r)
          =E=
-         PROFILE(z,h,i) * MAP_INPUTS(i,r) * (CAPACITY(z,r) + invest(z,r) - decommission(z,r))
+         PROFILE(z,h,i)$MAP_INPUTS(i,r) * (CAPACITY(z,r) + invest(z,r) - decommission(z,r))
 ;
 * Energy Conversion With Fixed Efficiency
-dispatchable_generation(z,h,f,t)$(MAP_OUTPUTS(f,t) AND NOT c(t) AND NOT s(t))..
+energy_conversion(z,h,f,t)$(MAP_OUTPUTS(f,t) AND NOT c(t) AND NOT s(t))..
          gen(z,h,f,t)
          =E=
          sum(i, CONVERSION(i,f,t) * use(z,h,i,t))
 ;
 * Energy Conversion for Flexible Co-Generation Of Heat And Power
-w.UP(z,h,c,l,i)$(NOT FEASIBLE_INPUT(l,i,c)) = 0;
 bal_w_chp(z,h,c)..
          sum((l,i)$(MAP_INPUTS(i,c) ), w(z,h,c,l,i))
          =L=
@@ -295,29 +316,32 @@ lolim_b_chp(z,h,c,i)$MAP_INPUTS(i,c)..
 * ------------------------------------------------------------------------------
 * CURTAILMENT OF ENERGY
 * might be superfluous
-limit_curtail(z,h,f)..
-         curtail(z,h,f)
+limit_curtail(z,h,'el')..
+         curtail(z,h,'el')
          =L=
-         sum(r, gen(z,h,f,r) )
+         sum(r, gen(z,h,'el',r) )
 ;
 * ------------------------------------------------------------------------------
 * ENERGY STORAGE
-storage_balance(z,h,f,s)..
+storage_balance(z,h,f,s)$MAP_INPUTS(f,s)..
          storage_content(z,h,f,s)
          =E=
-         use(z,h,f,s) - gen(z,h,f,s) + storage_content(z,h-1,f,s)
+         INFLOWS(z,h,s)
+         + CONVERSION(f,f,s) * use(z,h,f,s)
+         - (1/CONVERSION(f,f,s)) * gen(z,h,f,s)
+         + storage_content(z,h-1,f,s)
 ;
-storage_limit(z,h,f,s)..
+storage_limit(z,h,f,s)$MAP_INPUTS(f,s)..
          storage_content(z,h,f,s)
          =L=
          CAPACITY_STORAGE(z,f,s)
 ;
-store_in_limit(z,h,f,s)..
+store_in_limit(z,h,f,s)$MAP_INPUTS(f,s)..
          use(z,h,f,s)
          =L=
          CAPACITY_STORE_IN(z,f,s) + invest(z,s) - decommission(z,s)
 ;
-store_out_limit(z,h,f,s)..
+store_out_limit(z,h,f,s)$MAP_INPUTS(f,s)..
          gen(z,h,f,s)
          =L=
          CAPACITY_STORE_OUT(z,f,s) + invest(z,s) - decommission(z,s)
@@ -331,10 +355,6 @@ bal_co2(z,h,i)$CO2_INTENSITY(i)..
 ;
 * ------------------------------------------------------------------------------
 * EXCHANGE OF ENERGY OUTPUTS BETWEEN MARKET ZONES
-x.FX(z,zz,h,f)$SAMEAS(z,zz) = 0;
-x.FX(zz,z,h,f)$SAMEAS(z,zz) = 0;
-x.FX(zz,z,h,'heat') = 0;
-
 uplim_transmission(z,zz,h,f)$(NOT SAMEAS(z,zz))..
          x(z,zz,h,f)
          =L=
@@ -355,24 +375,17 @@ bal_add_x(z,zz,f)$(NOT SAMEAS(z,zz))..
          =E=
          add_x(zz,z,f)
 ;
-* ------------------------------------------------------------------------------
-* DECOMMISSIONING
-decommission.UP(z,t) = CAPACITY(z,t)
-;
+
 * ------------------------------------------------------------------------------
 * ANCILLARY SERVICES
 ancillary_services(z,h)..
-         sum(t$(NOT r(t)), gen(z,h,'electricity',t) )
+         sum(t$(NOT r(t)), gen(z,h,'el',t) )
 *         + gen(z,h,'electricity','ror')
-         + sum(t, use(z,h,'electricity',t))
+         + sum(t, use(z,h,'el',t))
          =G=
          LAMBDA(z) * PEAK_LOAD(z)
          + SIGMA * sum(r$(NOT SAMEAS(r,'ror')), sum(i,PEAK_PROFILE(z,i) * MAP_INPUTS(i,r)) * (CAPACITY(z,r) + invest(z,r) - decommission(z,r)) )
 ;
-* ------------------------------------------------------------------------------
-* INVESTMENT SWITCHES FOR THE LONG AND THE SHORT RUN
-invest.UP(z,t) =  SWITCH_INVEST;
-decommission.UP(z,t) = SWITCH_INVEST;
 
 * ==============================================================================
 
