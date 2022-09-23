@@ -7,7 +7,7 @@ _medea_ is a power system model, developed by [Sebastian Wehrle](https://homepag
 [Johannes Schmidt](https://homepage.boku.ac.at/jschmidt/). This repository contains code for the abstract model along
 with dummy data. 
 Code to download and compile actual data for Austria and Germany is provided in the
-[medea-data-atde](https://github.com/boku-inwe/medea-data-atde) repository.
+[medea-data-atde](https://github.com/inwe-boku/medea_data_atde) repository.
 
 _medea_ is currently employed within the [reFUEL](https://refuel.world) and 
 [NetZero2040](https://twitter.com/netzero2040) projects.
