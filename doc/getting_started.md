@@ -25,8 +25,8 @@ model.
 To install both packages via the command line:
 ```commandline
 conda install git pip
-pip install git+git://github.com/sebwehrle/medea_data_atde.git
-pip install git+git://github.com/sebwehrle/medea.git
+pip install git+https://github.com/sebwehrle/medea_data_atde.git
+pip install git+https://github.com/sebwehrle/medea.git
 ```
 
 do medea init
